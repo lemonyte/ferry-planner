@@ -3,4 +3,7 @@ __pycache__/
 [Bb]uild/
 dist/
 *env*
-sailings/
+cache*
+nicepage/
+raw*/
+scripts/

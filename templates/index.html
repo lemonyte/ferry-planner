@@ -1,13 +1,101 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
-  </head>
-  <body>
-    <select name="Departing Terminal" id="fromTerminalList"></select>
-    <select name="Arriving Terminal" id="toTerminalList"></select>
-    <input type="number" min="0" max="4096" placeholder="Drive time to ferry terminal"></input>
-    <script type="text/javascript" src="{{ url_for('static', filename='scripts/script.js') }}"></script>
-    <div id="timeline" style="height: 200px;"></div>
+
+<head>
+  <title>Ferry Planner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='w3.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+  <div class="w3-bar w3-light-grey w3-large">
+    <a href="#" class="w3-bar-item w3-button w3-blue"><span class="fa fa-home"></span> Home</a>
+    <a href="about" class="w3-bar-item w3-button"><span class="fa fa-info-circle"></span> About</a>
+    <a href="https://github.com/LemonPi314/ferry-planner" class="w3-bar-item w3-button"><span
+        class="fa fa-github"></span> GitHub</a>
+  </div>
+
+  <div class="w3-container w3-padding">
+    <div class="w3-row">
+      <div class="w3-third w3-padding">
+        <input class="w3-input w3-border w3-cell-middle" type="text" id="from" list="locations"
+          placeholder="Select start location">
+      </div>
+      <div class="w3-third w3-padding">
+        <input class="w3-input w3-border w3-cell-middle" type="text" id="to" list="locations"
+          placeholder="Select destination">
+      </div>
+      <div class="w3-third">
+        <div class="w3-half w3-padding w3-cell-middle">
+          <input class="w3-input w3-border" type="date" id="date">
+        </div>
+        <div class="w3-half w3-padding w3-cell-middle w3-right">
+          <div class="w3-dropdown-hover w3-right">
+            <button class="w3-button">Options</button>
+            <div class="w3-dropdown-content w3-card-4" style="right:0; width:350px">
+              <div class="w3-row w3-padding" id="options">
+                <div class="w3-cell-middle">
+                  <input class="w3-check" type="checkbox" id="reservation" checked="true">
+                  <label>Assume ferry reservation</label>
+                </div>
+                <div class="w3-cell-middle">
+                  <input class="w3-check" type="checkbox" id="assured">
+                  <label>Assured loading</label>
+                </div>
+                <div class="w3-cell-middle">
+                  <input class="w3-check" type="checkbox" id="hostled">
+                  <label>Hostled vehicle</label>
+                </div>
+                <div class="w3-cell-middle">
+                  <input class="w3-check" type="checkbox" id="show-all">
+                  <label>Show all possible routes</label>
+                </div>
+                <div class="w3-cell-middle">
+                  <p>Arrive at terminal <input class="w3-padding-small w3-border-0 w3-border-bottom " type="number"
+                      id="buff-min" min="0" max="60" value="15"> minutes in advance</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="w3-row">
+        <div class="w3-half w3-padding w3-cell-middle">
+          <button class="w3-btn w3-padding w3-blue" id="submit" onclick="submit();">Submit</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="w3-panel w3-center" id='loading' hidden="">
+      <p><i class="fa fa-spinner w3-spin" style="font-size:64px"></i></p>
+    </div>
+
+    <datalist id="locations"></datalist>
+
+    <div class="w3-center w3-card" id="message-card" hidden>
+      <div class="w3-container w3-padding">
+          <span class="w3-large" id="message-heading"></span><span class="" id="message-content"></span>
+        </div>
+    </div>
+    <!-- <div id="message-card" class="w3-card w3-center w3-display-middle" style="width:30%;" hidden>
+      <header class="w3-container">
+        <h1 id="message-heading"></h1>
+      </header>
+      <div class="w3-container">
+        <p id="message-content"></p>
+      </div>
+    </div> -->
+
+    <div id="timeline-panel" class="w3-panel">
+      <div id="timeline" style="height:1000px"></div>
+    </div>
+    <pre id="schedule" style="height:100px"></pre>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
+
 </html>

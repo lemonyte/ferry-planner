@@ -1,0 +1,3405 @@
+{
+  "cities": {
+    "smithers": {
+      "region": "North British Columbia",
+      "name": "Smithers",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "queen_charlotte_city": {
+      "region": "Haida Gwaii",
+      "name": "Queen Charlotte City",
+      "land_group": "Haida Gwaii",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "tatla_lake": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Tatla Lake",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "radium_hot_springs": {
+      "region": "Kootenays",
+      "name": "Radium Hot Springs",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "qualicum": {
+      "region": "Vancouver Island",
+      "name": "Qualicum",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "ladysmith": {
+      "region": "Vancouver Island",
+      "name": "Ladysmith",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "new_westminster": {
+      "region": "Lower Mainland",
+      "name": "New Westminster",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "gibsons": {
+      "region": "Sunshine Coast",
+      "name": "Gibsons",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "port_clements": {
+      "region": "Haida Gwaii",
+      "name": "Port Clements",
+      "land_group": "Haida Gwaii",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "pitt_meadows": {
+      "region": "Lower Mainland",
+      "name": "Pitt Meadows",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "dawson_creek": {
+      "region": "North British Columbia",
+      "name": "Dawson Creek",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "invermere": {
+      "region": "Kootenays",
+      "name": "Invermere",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "merritt": {
+      "region": "Thompon Shuswap",
+      "name": "Merritt",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "victoria": {
+      "region": "Vancouver Island",
+      "name": "Victoria",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "delta": {
+      "region": "Lower Mainland",
+      "name": "Delta",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "tumbler_ridge": {
+      "region": "North British Columbia",
+      "name": "Tumbler Ridge",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "atlin": {
+      "region": "North British Columbia",
+      "name": "Atlin",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "massett": {
+      "region": "Haida Gwaii",
+      "name": "Massett",
+      "land_group": "Haida Gwaii",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "powell_river": {
+      "region": "Sunshine Coast (PR)",
+      "name": "Powell River",
+      "land_group": "Sunshine Coast (PR)",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "kelowna": {
+      "region": "Okanagan",
+      "name": "Kelowna",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "sicamous": {
+      "region": "Thompon Shuswap",
+      "name": "Sicamous",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "anahim_lake": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Anahim Lake",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "hagensborg": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Hagensborg",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "egmont": {
+      "region": "Sunshine Coast",
+      "name": "Egmont",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "houston": {
+      "region": "North British Columbia",
+      "name": "Houston",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "summerland": {
+      "region": "Okanagan",
+      "name": "Summerland",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "courtenay": {
+      "region": "Vancouver Island",
+      "name": "Courtenay",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "osoyoos": {
+      "region": "Okanagan",
+      "name": "Osoyoos",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "fort_st_james": {
+      "region": "North British Columbia",
+      "name": "Fort St. James",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "pemberton": {
+      "region": "Whistler Region",
+      "name": "Pemberton",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "hope": {
+      "region": "Lower Mainland",
+      "name": "Hope",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "nakusp": {
+      "region": "Kootenays",
+      "name": "Nakusp",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "ainsworth_hot_springs": {
+      "region": "Kootenays",
+      "name": "Ainsworth Hot Springs",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "fairmont_hot_springs": {
+      "region": "Kootenays",
+      "name": "Fairmont Hot Springs",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "100_mile_house": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "100 Mile House",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "coquitlam": {
+      "region": "Lower Mainland",
+      "name": "Coquitlam",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "castlegar": {
+      "region": "Kootenays",
+      "name": "Castlegar",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "alexis_creek": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Alexis Creek",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "burnaby": {
+      "region": "Lower Mainland",
+      "name": "Burnaby",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "maple_ridge": {
+      "region": "Lower Mainland",
+      "name": "Maple Ridge",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "lake_country": {
+      "region": "Okanagan",
+      "name": "Lake Country",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "mission": {
+      "region": "Lower Mainland",
+      "name": "Mission",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "lumby": {
+      "region": "Okanagan",
+      "name": "Lumby",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "surrey": {
+      "region": "Lower Mainland",
+      "name": "Surrey",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "gold_river": {
+      "region": "Vancouver Island",
+      "name": "Gold River",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "golden": {
+      "region": "Kootenays",
+      "name": "Golden",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "campbell_river": {
+      "region": "Vancouver Island",
+      "name": "Campbell River",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "quesnel": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Quesnel",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "gillies_bay": {
+      "region": "Sunshine Coast (Texada)",
+      "name": "Gillies Bay",
+      "land_group": "Sunshine Coast (Texada)",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "kamloops": {
+      "region": "Thompon Shuswap",
+      "name": "Kamloops",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "squamish": {
+      "region": "Whistler Region",
+      "name": "Squamish",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "penticton": {
+      "region": "Okanagan",
+      "name": "Penticton",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "skidegate": {
+      "region": "Haida Gwaii",
+      "name": "Skidegate",
+      "land_group": "Haida Gwaii",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "sandspit_village": {
+      "region": "Haida Gwaii",
+      "name": "Sandspit Village",
+      "land_group": "Haida Gwaii",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "port_alberni": {
+      "region": "Vancouver Island",
+      "name": "Port Alberni",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "van_anda": {
+      "region": "Sunshine Coast (Texada)",
+      "name": "Van Anda",
+      "land_group": "Sunshine Coast (Texada)",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "richmond": {
+      "region": "Lower Mainland",
+      "name": "Richmond",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "ucluelet": {
+      "region": "Vancouver Island",
+      "name": "Ucluelet",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "trail": {
+      "region": "Kootenays",
+      "name": "Trail",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "keremeos": {
+      "region": "Okanagan",
+      "name": "Keremeos",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "creston": {
+      "region": "Kootenays",
+      "name": "Creston",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "pender_harbour": {
+      "region": "Sunshine Coast",
+      "name": "Pender Harbour",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "port_renfrew": {
+      "region": "Vancouver Island",
+      "name": "Port Renfrew",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "logan_lake": {
+      "region": "Thompon Shuswap",
+      "name": "Logan Lake",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "lillooet": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Lillooet",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "port_moody": {
+      "region": "Lower Mainland",
+      "name": "Port Moody",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "alert_bay": {
+      "region": "Vancouver Island",
+      "name": "Alert Bay",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "naramata": {
+      "region": "Okanagan",
+      "name": "Naramata",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "prince_george": {
+      "region": "North British Columbia",
+      "name": "Prince George",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "roberts_creek": {
+      "region": "Sunshine Coast",
+      "name": "Roberts Creek",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "tahsis": {
+      "region": "Vancouver Island",
+      "name": "Tahsis",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "vancouver": {
+      "region": "Lower Mainland",
+      "name": "Vancouver",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "north_vancouver": {
+      "region": "Lower Mainland",
+      "name": "North Vancouver",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "tofino": {
+      "region": "Vancouver Island",
+      "name": "Tofino",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "prince_rupert": {
+      "region": "North British Columbia",
+      "name": "Prince Rupert",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "bamfield": {
+      "region": "Vancouver Island",
+      "name": "Bamfield",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "oliver": {
+      "region": "Okanagan",
+      "name": "Oliver",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "port_mellon": {
+      "region": "Sunshine Coast",
+      "name": "Port Mellon",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "kaslo": {
+      "region": "Kootenays",
+      "name": "Kaslo",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "cowichan_valley": {
+      "region": "Vancouver Island",
+      "name": "Cowichan Valley",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "clinton": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Clinton",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "peachland": {
+      "region": "Okanagan",
+      "name": "Peachland",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "parksville": {
+      "region": "Vancouver Island",
+      "name": "Parksville",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "rossland": {
+      "region": "Kootenays",
+      "name": "Rossland",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "port_mcneill": {
+      "region": "Vancouver Island",
+      "name": "Port McNeill",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "langley": {
+      "region": "Lower Mainland",
+      "name": "Langley",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "whiterock": {
+      "region": "Lower Mainland",
+      "name": "Whiterock",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "vanderhoof": {
+      "region": "North British Columbia",
+      "name": "Vanderhoof",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "terrace": {
+      "region": "North British Columbia",
+      "name": "Terrace",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "whistler": {
+      "region": "Whistler Region",
+      "name": "Whistler",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "burns_lake": {
+      "region": "North British Columbia",
+      "name": "Burns Lake",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "fort_nelson": {
+      "region": "North British Columbia",
+      "name": "Fort Nelson",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "saltery_bay": {
+      "region": "Sunshine Coast (PR)",
+      "name": "Saltery Bay",
+      "land_group": "Sunshine Coast (PR)",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "comox_valley": {
+      "region": "Vancouver Island",
+      "name": "Comox Valley",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "chilliwack": {
+      "region": "Lower Mainland",
+      "name": "Chilliwack",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "sidney": {
+      "region": "Vancouver Island",
+      "name": "Sidney",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "revelstoke": {
+      "region": "Kootenays",
+      "name": "Revelstoke",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "kimberley": {
+      "region": "Kootenays",
+      "name": "Kimberley",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "nimpo_lake": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Nimpo Lake",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "nanaimo": {
+      "region": "Vancouver Island",
+      "name": "Nanaimo",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "port_hardy": {
+      "region": "Vancouver Island",
+      "name": "Port Hardy",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "cache_creek": {
+      "region": "Thompon Shuswap",
+      "name": "Cache Creek",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "williams_lake": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Williams Lake",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "slocan_valley": {
+      "region": "Kootenays",
+      "name": "Slocan Valley",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "shuswap_lake": {
+      "region": "Thompon Shuswap",
+      "name": "Shuswap Lake",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "nelson": {
+      "region": "Kootenays",
+      "name": "Nelson",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "salmon_arm": {
+      "region": "Thompon Shuswap",
+      "name": "Salmon Arm",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "kaleden": {
+      "region": "Okanagan",
+      "name": "Kaleden",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "sooke": {
+      "region": "Vancouver Island",
+      "name": "Sooke",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "ashcroft": {
+      "region": "Thompon Shuswap",
+      "name": "Ashcroft",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "fort_st_john": {
+      "region": "North British Columbia",
+      "name": "Fort St. John",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "tsawwassen": {
+      "region": "Lower Mainland",
+      "name": "Tsawwassen",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "cranbrook": {
+      "region": "Kootenays",
+      "name": "Cranbrook",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "okanagan_falls": {
+      "region": "Okanagan",
+      "name": "Okanagan Falls",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "bella_coola": {
+      "region": "Cariboo Chilcotin Coast",
+      "name": "Bella Coola",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "abbotsford": {
+      "region": "Lower Mainland",
+      "name": "Abbotsford",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "tlell": {
+      "region": "Haida Gwaii",
+      "name": "Tlell",
+      "land_group": "Haida Gwaii",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "halfmoon_bay": {
+      "region": "Sunshine Coast",
+      "name": "Halfmoon Bay",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "fernie": {
+      "region": "Kootenays",
+      "name": "Fernie",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "comox": {
+      "region": "Vancouver Island",
+      "name": "Comox",
+      "land_group": "Vancouver Island",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "sechelt": {
+      "region": "Sunshine Coast",
+      "name": "Sechelt",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "west_vancouver": {
+      "region": "Lower Mainland",
+      "name": "West Vancouver",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "lund": {
+      "region": "Sunshine Coast (PR)",
+      "name": "Lund",
+      "land_group": "Sunshine Coast (PR)",
+      "province": "BC",
+      "country": "Canada"
+    },
+    "harrison_hot_spring": {
+      "region": "Lower Mainland",
+      "name": "Harrison Hot Spring",
+      "land_group": "Mainland",
+      "province": "BC",
+      "country": "Canada"
+    }
+  },
+  "ferry_connections": {
+    "LNG-HSB": {
+      "destination_terminal": "Vancouver (Horseshoe Bay)",
+      "origin_terminal": "Sunshine Coast (Langdale)",
+      "origincode": "LNG",
+      "destinationcode": "HSB",
+      "destination_location": "6750 Keith Rd , West Vancouver, V7W 2V1",
+      "mapkmlinternalfilename": "LNG-HSB",
+      "coordinates": " -123.271062,49.376162,0 -123.27103,49.37624,0 -123.27082,49.37715,0 -123.27063,49.37778,0 -123.27022,49.37874,0 -123.2684,49.38377,0 -123.26826,49.38742,0 -123.26818,49.39035,0 -123.26871,49.39315,0 -123.27406,49.40118,0 -123.27629,49.4042,0 -123.28544,49.41015,0 -123.29007,49.41325,0 -123.31587,49.42671,0 -123.32825,49.4263,0 -123.356,49.42416,0 -123.36136,49.42374,0 -123.37706,49.42265,0 -123.38631,49.42269,0 -123.39583,49.42292,0 -123.41154,49.42314,0 -123.42796,49.4232,0 -123.43912,49.42344,0 -123.4435,49.42365,0 -123.44676,49.42415,0 -123.44924,49.42488,0 -123.45041,49.42546,0 -123.45212,49.42645,0 -123.45483,49.42817,0 -123.46251,49.43544,0 -123.46393,49.43637,0 -123.46459,49.43668,0 -123.46547,49.43678,0 -123.46653,49.43673,0 -123.46751,49.43653,0 -123.46819,49.4363,0 -123.46915,49.43599,0 -123.47074,49.4351,0 -123.471621,49.434359,0 -123.471654,49.434312,0 -123.47199,49.433841,0 -123.471998,49.433821,0 -123.471992,49.433777,0 -123.472035,49.433668,0 ",
+      "index": "13",
+      "origin_location": "1376 Port Mellon Highway, Langdale, V0N 1V0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/vancouver-horseshoe-bay/HSB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/sunshine-coast-langdale/LNG",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h42/hae/8808355692574.xml"
+    },
+    "KLE-PBB": {
+      "destination_terminal": "Bella Bella (McLoughlin Bay)",
+      "origin_terminal": "Klemtu",
+      "origincode": "KLE",
+      "destination_location": "Waglisla , Bella Bella, V0T 1Z0",
+      "mapkmlinternalfilename": "KLE-PBB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/klemtu/KLE",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h7e/hf0/8808357527582.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "origin_location": "Marine Drive, Swindle Island, V0T 1L0",
+      "destinationcode": "PBB",
+      "index": "29"
+    },
+    "PSK-PPR": {
+      "destination_terminal": "Prince Rupert",
+      "origin_terminal": "Graham Island (Skidegate)",
+      "origincode": "PSK",
+      "destinationcode": "PPR",
+      "destination_location": "2000 Park Avenue, Prince Rupert, V8J 3S1",
+      "mapkmlinternalfilename": "PSK-PPR",
+      "coordinates": " -132.0102653,53.2467017,0 -132.0128199,53.2402663,0 -132.0117901,53.2377234,0 -132.0069836,53.236696,0 -131.9985721,53.2370043,0 -131.9815777,53.2398809,0 -131.9632099,53.2422437,0 -131.9522236,53.2453254,0 -131.9434688,53.2505638,0 -131.9101665,53.2923455,0 -131.8907688,53.3230142,0 -131.8746326,53.3587835,0 -131.8602131,53.4153995,0 -131.85163,53.491962,0 -131.8492267,53.4985998,0 -131.7956684,53.5597204,0 -131.7393635,53.6223819,0 -131.4681385,53.9517771,0 -131.2710712,54.1368319,0 -131.0829304,54.2958256,0 -131.0492847,54.3110504,0 -130.9957264,54.3166581,0 -130.9140156,54.3162576,0 -130.8810566,54.3122521,0 -130.5981586,54.2461055,0 -130.4999683,54.2276457,0 -130.4058979,54.2200186,0 -130.3787211,54.2222247,0 -130.3643039,54.2287475,0 -130.3576926,54.2348682,0 -130.359721,54.2560343,0 -130.3651863,54.276331,0 -130.3643874,54.2903634,0 -130.3562768,54.298854,0 -130.3548818,54.2988916,0 -130.3546885,54.2981279,0 ",
+      "index": "15",
+      "origin_location": "#1 Hwy 16 Skidegate Landing, Haida Gwaii, V0T 1S1",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/prince-rupert/PPR",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/graham-island-skidegate/PSK",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hea/h69/8808357888030.xml"
+    },
+    "PPH-BEC": {
+      "destination_terminal": "Bella Coola",
+      "origin_terminal": "Port Hardy (Bear Cove)",
+      "origincode": "PPH",
+      "destination_location": "Chilcotin-Bella Coola Hwy, Bella Coola, V0T 1C0",
+      "mapkmlinternalfilename": "PPH-BEC",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hd6/h94/8808362246174.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/bella-coola/BEC",
+      "origin_location": "6800 Highway 19, Port Hardy, V0N 2P0",
+      "destinationcode": "BEC",
+      "index": "5"
+    },
+    "PVB-TSA": {
+      "destination_terminal": "Vancouver (Tsawwassen)",
+      "origin_terminal": "Mayne Island (Village Bay)",
+      "origincode": "PVB",
+      "destinationcode": "TSA",
+      "destination_location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "mapkmlinternalfilename": "PVB-TSA",
+      "coordinates": " -123.3245468,48.8446865,0 -123.3469486,48.8504477,0 -123.3503389,48.8525091,0 -123.3509397,48.8555023,0 -123.3487939,48.8593423,0 -123.346734,48.8601329,0 -123.3433866,48.860754,0 -123.3218431,48.8592294,0 -123.3152341,48.8593423,0 -123.3094835,48.8604717,0 -123.3045053,48.8695057,0 -123.2992696,48.8765059,0 -123.137778,49.0037362,0 -123.1350245,49.0054156,0 -123.1332865,49.0069217,0 ",
+      "index": "53",
+      "origin_location": "Village Bay Road, Mayne Island , V0N 2J0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/mayne-island-village-bay/PVB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h05/h03/8808378105886.xml"
+    },
+    "DNE-HRN": {
+      "destination_terminal": "Hornby Island (Shingle Spit)",
+      "origin_terminal": "Denman Island East (Gravelly Bay)",
+      "origincode": "DNE",
+      "destination_location": "Shingle Spit, 4000 Central Rd, Hornby Island, V0R 1Z0",
+      "mapkmlinternalfilename": "DNE-HRN",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/denman-island-east-gravelly-bay/DNE",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hdb/ha2/8808360411166.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/hornby-island-shingle-spit/HRN",
+      "origin_location": "Gravelly Bay, East Road, Denman Island, V0R 1T0",
+      "destinationcode": "HRN",
+      "index": "19"
+    },
+    "ALF-PSK": {
+      "destination_terminal": "Graham Island (Skidegate)",
+      "origin_terminal": "Moresby Island (Alliford Bay)",
+      "origincode": "ALF",
+      "destinationcode": "PSK",
+      "destination_location": "#1 Hwy 16 Skidegate Landing, Haida Gwaii, V0T 1S1",
+      "mapkmlinternalfilename": "ALF-PSK",
+      "coordinates": " -132.010209,53.246738,0 -132.010638,53.245377,0 -132.010939,53.241704,0 -132.006518,53.224468,0 -131.997291,53.211954,0 -131.992356,53.211157,0 -131.989988,53.211276,0 -131.988724,53.211536,0 ",
+      "index": "45",
+      "origin_location": "Beach Road, Moresby Island Haida Gwaii, V0T 1T0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/graham-island-skidegate/PSK",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/moresby-island-alliford-bay/ALF",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hb4/he2/8808361951262.xml"
+    },
+    "PWR-CMX": {
+      "destination_terminal": "Comox (Little River)",
+      "origin_terminal": "Powell River (Westview)",
+      "origincode": "PWR",
+      "destination_location": "1300 Ellenor Rd, Comox, V9M 4B3",
+      "mapkmlinternalfilename": "PWR-CMX",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/powell-river-westview/PWR",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hab/ha7/8808358314014.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/comox-little-river/CMX",
+      "origin_location": "4465 Willingdon Avenue, Powell River, V8A 2M7",
+      "destinationcode": "CMX",
+      "index": "11"
+    },
+    "TSA-DUK": {
+      "destination_terminal": "Nanaimo (Duke Point)",
+      "origin_terminal": "Vancouver (Tsawwassen)",
+      "origincode": "TSA",
+      "destination_location": "400 Duke Point Highway, Nanaimo, V9X 1H6",
+      "mapkmlinternalfilename": "TSA-DUK",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "mapkmlfile": "https://www.bcferries.com/web_image/heb/haf/8808362541086.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/nanaimo-duke-point/DUK",
+      "origin_location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "destinationcode": "DUK",
+      "index": "20"
+    },
+    "PPH-PBB": {
+      "destination_terminal": "Bella Bella (McLoughlin Bay)",
+      "origin_terminal": "Port Hardy (Bear Cove)",
+      "origincode": "PPH",
+      "destination_location": "Waglisla , Bella Bella, V0T 1Z0",
+      "mapkmlinternalfilename": "PPH-PBB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h0e/h72/8808356904990.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "origin_location": "6800 Highway 19, Port Hardy, V0N 2P0",
+      "destinationcode": "PBB",
+      "index": "30"
+    },
+    "ERL-SLT": {
+      "destination_terminal": "Powell River (Saltery Bay)",
+      "origin_terminal": "Sunshine Coast (Earls Cove)",
+      "origincode": "ERL",
+      "destinationcode": "SLT",
+      "destination_location": "15070 Highway 101, Powell River, V8A 0N2",
+      "mapkmlinternalfilename": "ERL-SLT",
+      "coordinates": " -124.008895,49.7531,0 -124.00883,49.75316,0 -124.00858,49.75364,0 -124.00782,49.75488,0 -124.00727,49.75552,0 -124.00659,49.75622,0 -124.00305,49.75841,0 -124.00155,49.75961,0 -123.99984,49.76041,0 -123.99538,49.76262,0 -123.99156,49.76533,0 -123.98891,49.76808,0 -123.9865,49.77095,0 -123.98463,49.77339,0 -123.984,49.77505,0 -123.9852,49.77647,0 -123.9868,49.77711,0 -123.9906,49.77866,0 -123.9978,49.78176,0 -124.0036,49.78512,0 -124.01071,49.78803,0 -124.0165,49.78869,0 -124.023,49.7885,0 -124.03161,49.78747,0 -124.04965,49.78604,0 -124.06633,49.784,0 -124.08634,49.78151,0 -124.11282,49.77791,0 -124.13064,49.77522,0 -124.15818,49.77308,0 -124.16653,49.77336,0 -124.16843,49.77378,0 -124.17063,49.77448,0 -124.17238,49.77552,0 -124.17344,49.77683,0 -124.17385,49.77875,0 -124.17562,49.78045,0 -124.1771,49.7814,0 -124.17722,49.78147,0 ",
+      "index": "58",
+      "origin_location": "16550 Sunshine Coast Highway, Madeira Park, V0N 2H4",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/powell-river-saltery-bay/SLT",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/sunshine-coast-earls-cove/ERL",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hec/h24/8808355954718.xml"
+    },
+    "PBB-KLE": {
+      "destination_terminal": "Klemtu",
+      "origin_terminal": "Bella Bella (McLoughlin Bay)",
+      "origincode": "PBB",
+      "destination_location": "Marine Drive, Swindle Island, V0T 1L0",
+      "mapkmlinternalfilename": "PBB-KLE",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/ha8/h41/8808357101598.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/klemtu/KLE",
+      "origin_location": "Waglisla , Bella Bella, V0T 1Z0",
+      "destinationcode": "KLE",
+      "index": "56"
+    },
+    "FUL-SWB": {
+      "destination_terminal": "Victoria (Swartz Bay)",
+      "origin_terminal": "Salt Spring Island (Fulford Harbour)",
+      "origincode": "FUL",
+      "destinationcode": "SWB",
+      "destination_location": "11300 Patricia Bay Hwy, Sidney, V8L 5J4",
+      "mapkmlinternalfilename": "FUL-SWB",
+      "coordinates": " -123.41167,48.68952,0 -123.40945,48.69508,0 -123.40572,48.70365,0 -123.40565,48.71149,0 -123.41329,48.72498,0 -123.41832,48.73441,0 -123.4241,48.74132,0 -123.42802,48.74553,0 -123.43419,48.75144,0 -123.44376,48.75989,0 -123.44637,48.76205,0 -123.44745,48.76354,0 -123.45074,48.76571,0 -123.45407,48.76826,0 -123.4542,48.76902,0 -123.45338,48.76967,0 -123.451321,48.769383,0 -123.451091,48.769395,0 ",
+      "index": "70",
+      "origin_location": "2920 Fulford-Ganges Road, Salt Spring Island, V8K 1Z2",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/victoria-swartz-bay/SWB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-fulford-harbour/FUL",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hdc/he8/8808355758110.xml"
+    },
+    "SOI-MCN": {
+      "destination_terminal": "Port McNeill",
+      "origin_terminal": "Malcolm Island (Sointula)",
+      "origincode": "SOI",
+      "destinationcode": "MCN",
+      "destination_location": "1626 Beach Drive , Port McNeill, V0N 2R0",
+      "mapkmlinternalfilename": "SOI-MCN",
+      "coordinates": " -127.085702,50.592623,0 -127.059889,50.601046,0 -127.036199,50.61194,0 -127.027359,50.626099,0 -127.018261,50.626807,0 ",
+      "index": "22",
+      "origin_location": "1st Street, Malcolm Island, V0N 3E0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/port-mcneill/MCN",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/malcolm-island-sointula/SOI",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h76/h27/8808361656350.xml"
+    },
+    "DUK-TSA": {
+      "destination_terminal": "Vancouver (Tsawwassen)",
+      "origin_terminal": "Nanaimo (Duke Point)",
+      "origincode": "DUK",
+      "destinationcode": "TSA",
+      "destination_location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "mapkmlinternalfilename": "DUK-TSA",
+      "coordinates": " -123.1332,49.00694,0 -123.13412,49.00641,0 -123.13477,49.00604,0 -123.13621,49.00499,0 -123.1367,49.0048,0 -123.13786,49.00477,0 -123.15536,49.00579,0 -123.16171,49.00635,0 -123.17047,49.00761,0 -123.18516,49.0099,0 -123.25231,49.02248,0 -123.26538,49.0252,0 -123.38574,49.05021,0 -123.39573,49.05307,0 -123.42032,49.0601,0 -123.42214,49.06059,0 -123.4253,49.06175,0 -123.48174,49.08276,0 -123.54512,49.1063,0 -123.59428,49.13361,0 -123.63838,49.15806,0 -123.70243,49.18906,0 -123.7301,49.20243,0 -123.78749,49.21789,0 -123.82757,49.22394,0 -123.83207,49.22462,0 -123.85872,49.22327,0 -123.87081,49.21599,0 -123.88807,49.20584,0 -123.89322,49.1909,0 -123.89201,49.1766,0 -123.89098,49.16259,0 ",
+      "index": "54",
+      "origin_location": "400 Duke Point Highway, Nanaimo, V9X 1H6",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/nanaimo-duke-point/DUK",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hea/h79/8808362475550.xml"
+    },
+    "CFT-VES": {
+      "destination_terminal": "Salt Spring Island (Vesuvius Bay)",
+      "origin_terminal": "Crofton",
+      "origincode": "CFT",
+      "destination_location": "Vesuvius Bay Road, Salt Spring Island, V8K 1L6",
+      "mapkmlinternalfilename": "CFT-VES",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/crofton/CFT",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hcb/h6c/8808355823646.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-vesuvius-bay/VES",
+      "origin_location": "1499 Chaplin Street, Crofton, V0R 1R0",
+      "destinationcode": "VES",
+      "index": "36"
+    },
+    "KLE-PPH": {
+      "destination_terminal": "Port Hardy (Bear Cove)",
+      "origin_terminal": "Klemtu",
+      "origincode": "KLE",
+      "destination_location": "6800 Highway 19, Port Hardy, V0N 2P0",
+      "mapkmlinternalfilename": "KLE-PPH",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/klemtu/KLE",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h3b/h72/8808357396510.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+      "origin_location": "Marine Drive, Swindle Island, V0T 1L0",
+      "destinationcode": "PPH",
+      "index": "39"
+    },
+    "BEC-POF": {
+      "destination_terminal": "Ocean Falls",
+      "origin_terminal": "Bella Coola",
+      "origincode": "BEC",
+      "destinationcode": "POF",
+      "destination_location": "Marine Drive, Ocean Falls, V0T 1P0",
+      "mapkmlinternalfilename": "BEC-POF",
+      "coordinates": " -127.693654,52.352576,0 -127.705176,52.351353,0 -127.716924,52.352368,0 -127.719638,52.35187,0 -127.729702,52.347532,0 -127.738693,52.340112,0 -127.75337,52.315747,0 -127.761867,52.290187,0 -127.768819,52.278478,0 -127.768948,52.273936,0 -127.767489,52.270627,0 -127.764356,52.267292,0 -127.76088,52.265453,0 -127.747748,52.264219,0 -127.734573,52.264455,0 -127.720325,52.265611,0 -127.681272,52.273804,0 -127.627757,52.278242,0 -127.608745,52.283073,0 -127.567718,52.304885,0 -127.529008,52.319944,0 -127.485492,52.332219,0 -127.47751,52.335392,0 -127.470987,52.34103,0 -127.462146,52.368631,0 -127.457941,52.381652,0 -127.452018,52.387912,0 -127.445066,52.390243,0 -127.421248,52.393228,0 -127.403653,52.399068,0 -127.393782,52.405536,0 -127.382581,52.411138,0 -127.375028,52.413677,0 -127.365544,52.41386,0 -127.353957,52.41064,0 -127.342541,52.411347,0 -127.326448,52.415719,0 -127.31353,52.422995,0 -127.303874,52.432285,0 -127.291772,52.442279,0 -127.277997,52.448478,0 -127.268727,52.450387,0 -127.256024,52.447641,0 -127.228901,52.434247,0 -127.221692,52.426292,0 -127.219117,52.419383,0 -127.219975,52.413415,0 -127.231648,52.387545,0 -127.22358,52.376334,0 -127.191994,52.363128,0 -127.173112,52.330934,0 -127.144616,52.327787,0 -127.046769,52.325479,0 -127.0066,52.319603,0 -126.981194,52.323171,0 -126.945832,52.355475,0 -126.841462,52.374971,0 -126.79889,52.379373,0 -126.794598,52.377853,0 -126.795027,52.375967,0 ",
+      "index": "73",
+      "origin_location": "Chilcotin-Bella Coola Hwy, Bella Coola, V0T 1C0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/ocean-falls/POF",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/bella-coola/BEC",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hdb/hd7/8808356413470.xml"
+    },
+    "CMX-PWR": {
+      "destination_terminal": "Powell River (Westview)",
+      "origin_terminal": "Comox (Little River)",
+      "origincode": "CMX",
+      "destinationcode": "PWR",
+      "destination_location": "4465 Willingdon Avenue, Powell River, V8A 2M7",
+      "mapkmlinternalfilename": "CMX-PWR",
+      "coordinates": " -124.52994,49.83601,0 -124.53,49.836,0 -124.53006,49.83598,0 -124.53009,49.83597,0 -124.53014,49.83595,0 -124.5302,49.83593,0 -124.53024,49.8359,0 -124.53027,49.83588,0 -124.53051,49.83567,0 -124.53055,49.83564,0 -124.53058,49.8356,0 -124.53061,49.83556,0 -124.53064,49.83551,0 -124.53066,49.83548,0 -124.53067,49.83545,0 -124.53068,49.83541,0 -124.53068,49.8354,0 -124.53069,49.83535,0 -124.5307,49.83515,0 -124.53083,49.83508,0 -124.53223,49.83434,0 -124.53373,49.83387,0 -124.53411,49.8338,0 -124.53432,49.83378,0 -124.5381,49.83386,0 -124.54065,49.83427,0 -124.54494,49.83354,0 -124.60298,49.81955,0 -124.66486,49.80474,0 -124.74717,49.78512,0 -124.79463,49.77201,0 -124.87613,49.7553,0 -124.89874,49.74928,0 -124.91182,49.74491,0 -124.92206,49.74078,0 -124.923671,49.740903,0 -124.923917,49.740994,0 -124.924016,49.741011,0 ",
+      "index": "43",
+      "origin_location": "1300 Ellenor Rd, Comox, V9M 4B3",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/powell-river-westview/PWR",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/comox-little-river/CMX",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h17/h9d/8808358019102.xml"
+    },
+    "QDR-CAM": {
+      "destination_terminal": "Campbell River",
+      "origin_terminal": "Quadra Island (Quathiaski Cove)",
+      "origincode": "QDR",
+      "destinationcode": "CAM",
+      "destination_location": "1001 Island Highway, Campbell River, V9W 8C7",
+      "mapkmlinternalfilename": "QDR-CAM",
+      "coordinates": " -125.242487,50.028848,0 -125.23708,50.030282,0 -125.236565,50.034196,0 -125.228067,50.042024,0 -125.223003,50.043072,0 -125.21751,50.042245,0 ",
+      "index": "9",
+      "origin_location": "Quathiaski Cove Road, Quathiaski Cove, V0P 1N0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/campbell-river/CAM",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/quadra-island-quathiaski-cove/QDR",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hfd/h2a/8808360837150.xml"
+    },
+    "PBB-PPH": {
+      "destination_terminal": "Port Hardy (Bear Cove)",
+      "origin_terminal": "Bella Bella (McLoughlin Bay)",
+      "origincode": "PBB",
+      "destinationcode": "PPH",
+      "destination_location": "6800 Highway 19, Port Hardy, V0N 2P0",
+      "mapkmlinternalfilename": "PBB-PPH",
+      "coordinates": " -127.9434983,51.8813872,0 -127.9201523,51.9982205,0 -127.9226228,52.0531436,0 -127.9393784,52.066655,0 ",
+      "index": "40",
+      "origin_location": "Waglisla , Bella Bella, V0T 1Z0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hed/h63/8808357462046.xml"
+    },
+    "PPR-PPH": {
+      "destination_terminal": "Port Hardy (Bear Cove)",
+      "origin_terminal": "Prince Rupert",
+      "origincode": "PPR",
+      "destinationcode": "PPH",
+      "destination_location": "6800 Highway 19, Port Hardy, V0N 2P0",
+      "mapkmlinternalfilename": "PPR-PPH",
+      "coordinates": " -127.4572488,50.7258273,0 -127.4660849,50.7278862,0 -127.4702477,50.7319039,0 -127.4749299,50.7736165,0 -127.5353547,50.7987947,0 -127.6053926,50.8144158,0 -127.635605,50.8308991,0 -127.6410981,50.8482436,0 -127.6520845,50.8621145,0 -127.6575776,50.8794474,0 -127.6836702,50.9123622,0 -127.8704377,51.1007395,0 -127.9006501,51.2943641,0 -127.8058931,51.4255642,0 -127.8429719,51.5051297,0 -127.9198762,51.6953511,0 -127.947342,51.8525537,0 -127.9226228,52.0531436,0 -127.9624482,52.0742506,0 -128.003647,52.0801587,0 -128.0530854,52.0691858,0 -128.1093904,52.0860661,0 -128.1258699,52.0978785,0 -128.1327363,52.13414,0 -128.1409761,52.1518384,0 -128.1148835,52.1661604,0 -128.0942842,52.1762674,0 -128.1107637,52.1989996,0 -128.1450959,52.2200376,0 -128.2577058,52.2469517,0 -128.4156343,52.2561996,0 -128.4733125,52.2561996,0 -128.5213777,52.2856121,0 -128.5309907,52.3594772,0 -128.5021516,52.4013912,0 -128.4513398,52.4248456,0 -128.4458467,52.4926256,0 -128.4678193,52.551117,0 -128.4650727,52.5803334,0 -128.5007783,52.632874,0 -128.5309907,52.6453744,0 -128.5447236,52.6870166,0 -128.5612031,52.7061586,0 -128.5296174,52.834111,0 -128.5254976,52.8697709,0 -128.5131379,52.9004315,0 -128.5131379,52.9608604,0 -128.5268708,53.0104649,0 -128.5364839,53.041026,0 -128.5529634,53.0600125,0 -128.5666963,53.0864145,0 -128.5969087,53.1325792,0 -128.6298677,53.1589368,0 -128.706772,53.1754021,0 -128.7740632,53.2181822,0 -128.8798066,53.2789881,0 -128.9058992,53.3101791,0 -128.9525911,53.3052558,0 -129.0377351,53.3216648,0 -129.1228791,53.2986904,0 -129.2299958,53.3339675,0 -129.334366,53.3716736,0 -129.4840547,53.4649755,0 -129.5719453,53.5197153,0 -129.6625825,53.5711226,0 -129.7298738,53.633869,0 -129.7930452,53.6965222,0 -129.9097749,53.7663885,0 -130.0512239,53.8620627,0 -130.1775666,53.9680215,0 -130.2297517,54.0172694,0 -130.3039094,54.1010988,0 -130.3341218,54.1517978,0 -130.3543452,54.2382793,0 -130.372574,54.297112,0 -130.3550318,54.2984284,0 ",
+      "index": "41",
+      "origin_location": "2000 Park Avenue, Prince Rupert, V8J 3S1",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/prince-rupert/PPR",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h4f/h57/8808357167134.xml"
+    },
+    "BEC-PPH": {
+      "destination_terminal": "Port Hardy (Bear Cove)",
+      "origin_terminal": "Bella Coola",
+      "origincode": "BEC",
+      "destination_location": "6800 Highway 19, Port Hardy, V0N 2P0",
+      "mapkmlinternalfilename": "BEC-PPH",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/bella-coola/BEC",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h0b/hb6/8808362180638.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+      "origin_location": "Chilcotin-Bella Coola Hwy, Bella Coola, V0T 1C0",
+      "destinationcode": "PPH",
+      "index": "42"
+    },
+    "PSB-SWB": {
+      "destination_terminal": "Victoria (Swartz Bay)",
+      "origin_terminal": "Galiano Island (Sturdies Bay)",
+      "origincode": "PSB",
+      "destinationcode": "SWB",
+      "destination_location": "11300 Patricia Bay Hwy, Sidney, V8L 5J4",
+      "mapkmlinternalfilename": "PSB-SWB",
+      "coordinates": " -123.3150131,48.876673,0 -123.3143187,48.876023,0 -123.3127308,48.8759948,0 -123.3069802,48.8744706,0 -123.3061219,48.87289,0 -123.3097697,48.8666797,0 -123.3111507,48.8622622,0 -123.3120013,48.8616545,0 -123.3159495,48.8607228,0 -123.3274937,48.8607792,0 -123.3391667,48.861965,0 -123.3449173,48.8621344,0 -123.3494664,48.8602428,0 -123.3524704,48.8564028,0 -123.3538437,48.8433278,0 -123.3481789,48.8290063,0 -123.3509684,48.8145112,0 -123.3523846,48.8096503,0 -123.3570195,48.7996726,0 -123.3617831,48.7764026,0 -123.3654309,48.7639008,0 -123.3702803,48.7567151,0 -123.404398,48.7368217,0 -123.4066296,48.73184,0 -123.4048701,48.7126447,0 -123.4052992,48.7027894,0 -123.41167,48.68952,0 ",
+      "index": "67",
+      "origin_location": "2622 Sturdies Bay Road, Galiano Island, V0N 1P0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/victoria-swartz-bay/SWB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/galiano-island-sturdies-bay/PSB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hfe/h93/8808376074270.xml"
+    },
+    "PST-SWB": {
+      "destination_terminal": "Victoria (Swartz Bay)",
+      "origin_terminal": "Saturna Island (Lyall Harbour)",
+      "origincode": "PST",
+      "destination_location": "11300 Patricia Bay Hwy, Sidney, V8L 5J4",
+      "mapkmlinternalfilename": "PST-SWB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/saturna-island-lyall-harbour/PST",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h6b/he6/8808376598558.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/victoria-swartz-bay/SWB",
+      "origin_location": "100 East Point Rd, Saturna Island, V0N 2Y0",
+      "destinationcode": "SWB",
+      "index": "64"
+    },
+    "PPH-PPR": {
+      "destination_terminal": "Prince Rupert",
+      "origin_terminal": "Port Hardy (Bear Cove)",
+      "origincode": "PPH",
+      "destination_location": "2000 Park Avenue, Prince Rupert, V8J 3S1",
+      "mapkmlinternalfilename": "PPH-PPR",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h52/h0c/8808356839454.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/prince-rupert/PPR",
+      "origin_location": "6800 Highway 19, Port Hardy, V0N 2P0",
+      "destinationcode": "PPR",
+      "index": "16"
+    },
+    "PBB-PPR": {
+      "destination_terminal": "Prince Rupert",
+      "origin_terminal": "Bella Bella (McLoughlin Bay)",
+      "origincode": "PBB",
+      "destinationcode": "PPR",
+      "destination_location": "2000 Park Avenue, Prince Rupert, V8J 3S1",
+      "mapkmlinternalfilename": "PBB-PPR",
+      "coordinates": " -128.1436225,52.1389987,0 -128.1379577,52.1413165,0 -128.1368419,52.1446349,0 -128.1362411,52.1513237,0 -128.1340095,52.1542991,0 -128.1270572,52.1561422,0 -128.1196758,52.1598808,0 -128.1140109,52.1646457,0 -128.0986902,52.1685152,0 -128.0938407,52.1787268,0 -128.0954715,52.1865156,0 -128.1026384,52.1933559,0 -128.1280014,52.2106363,0 -128.1517335,52.2194186,0 -128.1842634,52.2273842,0 -128.2216855,52.2383182,0 -128.2664892,52.2483037,0 -128.2915517,52.247568,0 -128.3576414,52.2524023,0 -128.4197828,52.2542939,0 -128.4805509,52.2593376,0 -128.5196897,52.2863329,0 -128.5332509,52.3418473,0 -128.5286161,52.3558985,0 -128.5267278,52.3720413,0 -128.5057851,52.3944639,0 -128.4726545,52.4099644,0 -128.4522268,52.428181,0 -128.4415838,52.4578976,0 -128.4436437,52.4912527,0 -128.4585782,52.5309529,0 -128.4618398,52.5458835,0 -128.4625265,52.5706174,0 -128.4656164,52.5829269,0 -128.4893056,52.6217107,0 -128.5064718,52.6333808,0 -128.5270711,52.640048,0 -128.5380575,52.6702462,0 -128.5452672,52.6804464,0 -128.5608884,52.7022959,0 -128.5576269,52.7292286,0 -128.5509321,52.7593652,0 -128.5354825,52.8086818,0 -128.5293027,52.8431183,0 -128.5293027,52.8613628,0 -128.5116216,52.8892329,0 -128.5100767,52.9392299,0 -128.5148832,52.9698414,0 -128.5203763,52.9847256,0 -128.520548,53.0017742,0 -128.5291311,53.0312058,0 -128.5473272,53.0542208,0 -128.5526487,53.0635059,0 -128.5584852,53.0800077,0 -128.5735914,53.0998016,0 -128.5914442,53.1285484,0 -128.6235448,53.1577906,0 -128.6321279,53.1609813,0 -128.6559888,53.1664359,0 -128.6801931,53.1694202,0 -128.6983892,53.1750794,0 -128.7334081,53.1966807,0 -128.7718603,53.2165237,0 -128.8607809,53.2686063,0 -128.8911649,53.2974453,0 -128.9052411,53.3094472,0 -128.9176008,53.312319,0 -128.9272138,53.3105755,0 -128.9500448,53.3043186,0 -128.9577695,53.304216,0 -128.995535,53.3135497,0 -129.0164777,53.3214458,0 -129.0283224,53.3213433,0 -129.0566465,53.3165237,0 -129.092867,53.3045238,0 -129.1158697,53.2993945,0 -129.1350957,53.3004204,0 -129.2157766,53.3340561,0 -129.3074438,53.3593679,0 -129.4090673,53.4175178,0 -129.5141241,53.4841694,0 -129.5896551,53.5315388,0 -129.6439001,53.5613217,0 -129.6892187,53.5931214,0 -129.7194311,53.6224537,0 -129.766123,53.6672276,0 -129.7977086,53.7001671,0 -129.8656866,53.742422,0 -129.9487707,53.7907194,0 -130.0167486,53.8397715,0 -130.0723669,53.8810766,0 -130.1461812,53.9407349,0 -130.2155324,54.0001063,0 -130.2594778,54.0565718,0 -130.3219625,54.1262412,0 -130.3446218,54.1881606,0 -130.3569814,54.2395557,0 -130.3635045,54.2740508,0 -130.3636762,54.2892837,0 -130.3562768,54.298854,0 -130.3550318,54.2984284,0 -130.3540687,54.29777,0 ",
+      "index": "17",
+      "origin_location": "Waglisla , Bella Bella, V0T 1Z0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/prince-rupert/PPR",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/ha9/h6f/8808356970526.xml"
+    },
+    "HSB-LNG": {
+      "destination_terminal": "Sunshine Coast (Langdale)",
+      "origin_terminal": "Vancouver (Horseshoe Bay)",
+      "origincode": "HSB",
+      "destination_location": "1376 Port Mellon Highway, Langdale, V0N 1V0",
+      "mapkmlinternalfilename": "HSB-LNG",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/vancouver-horseshoe-bay/HSB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h9a/h87/8808354971678.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/sunshine-coast-langdale/LNG",
+      "origin_location": "6750 Keith Rd , West Vancouver, V7W 2V1",
+      "destinationcode": "LNG",
+      "index": "61"
+    },
+    "MCN-ALR": {
+      "destination_terminal": "Cormorant Island (Alert Bay)",
+      "origin_terminal": "Port McNeill",
+      "origincode": "MCN",
+      "destinationcode": "ALR",
+      "destination_location": "10 Fir Street, Alert Bay, V0N 1A0",
+      "mapkmlinternalfilename": "MCN-ALR",
+      "coordinates": " -126.930741,50.587819,0 -126.933288,50.588261,0 -126.941212,50.583902,0 -126.954001,50.583574,0 -126.981639,50.586681,0 -127.000264,50.589514,0 -127.069186,50.59529,0 -127.084807,50.592729,0 ",
+      "index": "1",
+      "origin_location": "1626 Beach Drive , Port McNeill, V0N 2R0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/cormorant-island-alert-bay/ALR",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/port-mcneill/MCN",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hac/h48/8808361590814.xml"
+    },
+    "SHW-POF": {
+      "destination_terminal": "Ocean Falls",
+      "origin_terminal": "Shearwater",
+      "origincode": "SHW",
+      "destination_location": "Marine Drive, Ocean Falls, V0T 1P0",
+      "mapkmlinternalfilename": "SHW-POF",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/shearwater/SHW",
+      "mapkmlfile": "https://www.bcferries.com/web_image/he2/hd7/8808357756958.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/ocean-falls/POF",
+      "origin_location": "Denny Island, Shearwater, V0T 1B0",
+      "destinationcode": "POF",
+      "index": "72"
+    },
+    "POB-PLH": {
+      "destination_terminal": "Salt Spring Island (Long Harbour)",
+      "origin_terminal": "Pender Island (Otter Bay)",
+      "origincode": "POB",
+      "destinationcode": "PLH",
+      "destination_location": "1000 Long Harbour Rd, Salt Spring Island, V8K 2L8",
+      "mapkmlinternalfilename": "POB-PLH",
+      "coordinates": " -123.3156965,48.8000906,0 -123.317423,48.798576,0 -123.320684,48.797812,0 -123.381839,48.805416,0 -123.3984294,48.8128297,0 -123.414197,48.826582,0 -123.420763,48.840452,0 -123.43362,48.8481995,0 -123.443079,48.853415,0 -123.4457799,48.8520946,0 ",
+      "index": "38",
+      "origin_location": "1371 Otter Bay Road, North Pender Island, V0N 2M0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-long-harbour/PLH",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/pender-island-otter-bay/POB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hb7/hcb/8808378335262.xml"
+    },
+    "PVB-PST": {
+      "destination_terminal": "Saturna Island (Lyall Harbour)",
+      "origin_terminal": "Mayne Island (Village Bay)",
+      "origincode": "PVB",
+      "destination_location": "100 East Point Rd, Saturna Island, V0N 2Y0",
+      "mapkmlinternalfilename": "PVB-PST",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/mayne-island-village-bay/PVB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h9e/h4b/8808376991774.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/saturna-island-lyall-harbour/PST",
+      "origin_location": "Village Bay Road, Mayne Island , V0N 2J0",
+      "destinationcode": "PST",
+      "index": "76"
+    },
+    "ALR-MCN": {
+      "destination_terminal": "Port McNeill",
+      "origin_terminal": "Cormorant Island (Alert Bay)",
+      "origincode": "ALR",
+      "destinationcode": "MCN",
+      "destination_location": "1626 Beach Drive , Port McNeill, V0N 2R0",
+      "mapkmlinternalfilename": "ALR-MCN",
+      "coordinates": " -126.930741,50.587819,0 -126.933288,50.588261,0 -126.941212,50.583902,0 -126.954001,50.583574,0 -126.981639,50.586681,0 -127.000264,50.589514,0 -127.069186,50.59529,0 -127.084807,50.592729,0 ",
+      "index": "23",
+      "origin_location": "10 Fir Street, Alert Bay, V0N 1A0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/port-mcneill/MCN",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/cormorant-island-alert-bay/ALR",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h91/h72/8808361295902.xml"
+    },
+    "POB-PVB": {
+      "destination_terminal": "Mayne Island (Village Bay)",
+      "origin_terminal": "Pender Island (Otter Bay)",
+      "origincode": "POB",
+      "destinationcode": "PVB",
+      "destination_location": "Village Bay Road, Mayne Island , V0N 2J0",
+      "mapkmlinternalfilename": "POB-PVB",
+      "coordinates": " -123.3156965,48.8000906,0 -123.3181855,48.7991295,0 -123.3291719,48.8034261,0 -123.3319185,48.8066483,0 -123.3370683,48.8177266,0 -123.3386133,48.8255252,0 -123.3367679,48.8416271,0 -123.335893,48.843199,0 -123.3342886,48.8439236,0 -123.3242893,48.84463,0 ",
+      "index": "25",
+      "origin_location": "1371 Otter Bay Road, North Pender Island, V0N 2M0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/mayne-island-village-bay/PVB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/pender-island-otter-bay/POB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h56/h6d/8808375353374.xml"
+    },
+    "PSB-TSA": {
+      "destination_terminal": "Vancouver (Tsawwassen)",
+      "origin_terminal": "Galiano Island (Sturdies Bay)",
+      "origincode": "PSB",
+      "destination_location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "mapkmlinternalfilename": "PSB-TSA",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/galiano-island-sturdies-bay/PSB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h31/h35/8808377876510.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "origin_location": "2622 Sturdies Bay Road, Galiano Island, V0N 1P0",
+      "destinationcode": "TSA",
+      "index": "51"
+    },
+    "PST-TSA": {
+      "destination_terminal": "Vancouver (Tsawwassen)",
+      "origin_terminal": "Saturna Island (Lyall Harbour)",
+      "origincode": "PST",
+      "destinationcode": "TSA",
+      "destination_location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "mapkmlinternalfilename": "PST-TSA",
+      "coordinates": " -123.2013542,48.7981064,0 -123.203942,48.8004318,0 -123.2062284,48.8011564,0 -123.2101456,48.8015981,0 -123.2579852,48.8143163,0 -123.3257058,48.8265794,0 -123.3355295,48.8335835,0 -123.3371819,48.8414922,0 -123.3345461,48.8439801,0 -123.3248891,48.8446859,0 ",
+      "index": "48",
+      "origin_location": "100 East Point Rd, Saturna Island, V0N 2Y0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/saturna-island-lyall-harbour/PST",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h6f/h9b/8808495087646.xml"
+    },
+    "CHM-THT": {
+      "destination_terminal": "Thetis Island (Preedy Harbour)",
+      "origin_terminal": "Chemainus",
+      "origincode": "CHM",
+      "destinationcode": "THT",
+      "destination_location": "Preedy Harbour, Thetis Island, V0R 2Y0",
+      "mapkmlinternalfilename": "CHM-THT",
+      "coordinates": " -123.678682,48.980451,0 -123.681275,48.976631,0 -123.682649,48.973194,0 -123.684708,48.970603,0 -123.688313,48.968349,0 -123.713118,48.926015,0 -123.713569,48.925564,0 -123.71426,48.925533,0 ",
+      "index": "18",
+      "origin_location": "2830 Oak Street, Chemainus, V0R 1K1",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/thetis-island-preedy-harbour/THT",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/chemainus/CHM",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h6a/h0e/8808358805534.xml"
+    },
+    "BKY-DNM": {
+      "destination_terminal": "Denman Island West",
+      "origin_terminal": "Buckley Bay",
+      "origincode": "BKY",
+      "destinationcode": "DNM",
+      "destination_location": "3661 Denman Road, Denman Island , V0R 1T0",
+      "mapkmlinternalfilename": "BKY-DNM",
+      "coordinates": " -124.8233596,49.5347254,0 -124.8244969,49.535171,0 -124.8265997,49.5348507,0 -124.8353115,49.532163,0 -124.8469631,49.5275531,0 -124.8476497,49.5268845,0 -124.8474351,49.5263274,0 ",
+      "index": "4",
+      "origin_location": "6866 Island Highway, Fanny Bay, V0R 1W0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/denman-island-west/DNM",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/buckley-bay/BKY",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h62/h18/8808360116254.xml"
+    },
+    "GAB-NAH": {
+      "destination_terminal": "Nanaimo (Nanaimo Harbour)",
+      "origin_terminal": "Gabriola Island (Descanso Bay)",
+      "origincode": "GAB",
+      "destinationcode": "NAH",
+      "destination_location": "160 Front Street, Nanaimo, V9S 5R1",
+      "mapkmlinternalfilename": "GAB-NAH",
+      "coordinates": " -123.93096,49.16676,0 -123.93121,49.16715,0 -123.93126,49.16744,0 -123.9312,49.1677,0 -123.93097,49.16799,0 -123.93073,49.16813,0 -123.93041,49.16827,0 -123.92448,49.16954,0 -123.92283,49.1696,0 -123.92129,49.16947,0 -123.92014,49.16941,0 -123.91905,49.16937,0 -123.91799,49.16939,0 -123.91681,49.16944,0 -123.91558,49.16964,0 -123.88475,49.17748,0 -123.87886,49.17856,0 -123.87303,49.17905,0 -123.86908,49.1792,0 -123.86437,49.17909,0 -123.858742,49.177857,0 ",
+      "index": "62",
+      "origin_location": "350 North Road, Descanso Bay, Gabriola, V0R 1X2",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/nanaimo-nanaimo-harbour/NAH",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/gabriola-island-descanso-bay/GAB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h5c/hf3/8808358674462.xml"
+    },
+    "PLH-TSA": {
+      "destination_terminal": "Vancouver (Tsawwassen)",
+      "origin_terminal": "Salt Spring Island (Long Harbour)",
+      "origincode": "PLH",
+      "destinationcode": "TSA",
+      "destination_location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "mapkmlinternalfilename": "PLH-TSA",
+      "coordinates": " -123.1335278,49.0062648,0 -123.1349011,49.0043505,0 -123.3054467,48.8698817,0 -123.3102532,48.8611302,0 -123.3187505,48.8598314,0 -123.3431264,48.8611302,0 -123.3510228,48.8587585,0 -123.365099,48.8569514,0 -123.3963414,48.8585326,0 -123.4020062,48.8572338,0 -123.4170266,48.8416453,0 -123.4191724,48.8413629,0 -123.4408875,48.8531112,0 -123.4438058,48.8539019,0 -123.446209,48.8531112,0 -123.4457799,48.8520946,0 ",
+      "index": "52",
+      "origin_location": "1000 Long Harbour Rd, Salt Spring Island, V8K 2L8",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-long-harbour/PLH",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hfd/hb8/8808377581598.xml"
+    },
+    "POB-TSA": {
+      "destination_terminal": "Vancouver (Tsawwassen)",
+      "origin_terminal": "Pender Island (Otter Bay)",
+      "origincode": "POB",
+      "destination_location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "mapkmlinternalfilename": "POB-TSA",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/pender-island-otter-bay/POB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hd8/h4a/8808377810974.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "origin_location": "1371 Otter Bay Road, North Pender Island, V0N 2M0",
+      "destinationcode": "TSA",
+      "index": "50"
+    },
+    "PLH-SWB": {
+      "destination_terminal": "Victoria (Swartz Bay)",
+      "origin_terminal": "Salt Spring Island (Long Harbour)",
+      "origincode": "PLH",
+      "destination_location": "11300 Patricia Bay Hwy, Sidney, V8L 5J4",
+      "mapkmlinternalfilename": "PLH-SWB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-long-harbour/PLH",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h52/hf3/8808374992926.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/victoria-swartz-bay/SWB",
+      "origin_location": "1000 Long Harbour Rd, Salt Spring Island, V8K 2L8",
+      "destinationcode": "SWB",
+      "index": "68"
+    },
+    "PPR-PBB": {
+      "destination_terminal": "Bella Bella (McLoughlin Bay)",
+      "origin_terminal": "Prince Rupert",
+      "origincode": "PPR",
+      "destination_location": "Waglisla , Bella Bella, V0T 1Z0",
+      "mapkmlinternalfilename": "PPR-PBB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/prince-rupert/PPR",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hb0/hd5/8808357232670.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "origin_location": "2000 Park Avenue, Prince Rupert, V8J 3S1",
+      "destinationcode": "PBB",
+      "index": "31"
+    },
+    "PSB-PST": {
+      "destination_terminal": "Saturna Island (Lyall Harbour)",
+      "origin_terminal": "Galiano Island (Sturdies Bay)",
+      "origincode": "PSB",
+      "destination_location": "100 East Point Rd, Saturna Island, V0N 2Y0",
+      "mapkmlinternalfilename": "PSB-PST",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/galiano-island-sturdies-bay/PSB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hd4/hff/8808376303646.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/saturna-island-lyall-harbour/PST",
+      "origin_location": "2622 Sturdies Bay Road, Galiano Island, V0N 1P0",
+      "destinationcode": "PST",
+      "index": "75"
+    },
+    "CAM-QDR": {
+      "destination_terminal": "Quadra Island (Quathiaski Cove)",
+      "origin_terminal": "Campbell River",
+      "origincode": "CAM",
+      "destinationcode": "QDR",
+      "destination_location": "Quathiaski Cove Road, Quathiaski Cove, V0P 1N0",
+      "mapkmlinternalfilename": "CAM-QDR",
+      "coordinates": " -125.2424869,50.0288481,0 -125.2370796,50.0302816,0 -125.2365646,50.0341961,0 -125.2280673,50.0420242,0 -125.2230033,50.0430715,0 -125.2175102,50.0422447,0 ",
+      "index": "63",
+      "origin_location": "1001 Island Highway, Campbell River, V9W 8C7",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/quadra-island-quathiaski-cove/QDR",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/campbell-river/CAM",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h05/hc5/8808360476702.xml"
+    },
+    "SWB-TSA": {
+      "destination_terminal": "Vancouver (Tsawwassen)",
+      "origin_terminal": "Victoria (Swartz Bay)",
+      "origincode": "SWB",
+      "destination_location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "mapkmlinternalfilename": "SWB-TSA",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/victoria-swartz-bay/SWB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h0b/h44/8808354578462.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "origin_location": "11300 Patricia Bay Hwy, Sidney, V8L 5J4",
+      "destinationcode": "TSA",
+      "index": "49"
+    },
+    "MIL-BTW": {
+      "destination_terminal": "Brentwood Bay",
+      "origin_terminal": "Mill Bay",
+      "origincode": "MIL",
+      "destinationcode": "BTW",
+      "destination_location": "809 Verdier Avenue, Brentwood Bay, V8M 1C5",
+      "mapkmlinternalfilename": "MIL-BTW",
+      "coordinates": " -123.467343,48.577251,0 -123.4679,48.57703,0 -123.46877,48.57683,0 -123.46982,48.57675,0 -123.47087,48.57682,0 -123.47251,48.57731,0 -123.4743,48.57801,0 -123.47888,48.58049,0 -123.48305,48.58354,0 -123.49009,48.58895,0 -123.49822,48.59607,0 -123.50627,48.60468,0 -123.51153,48.6096,0 -123.515,48.61248,0 -123.51596,48.61332,0 -123.51676,48.61382,0 -123.51776,48.61398,0 ",
+      "index": "28",
+      "origin_location": "Ferry Road, Mill Bay, V0R 2P4",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/brentwood-bay/BTW",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/mill-bay/MIL",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hfb/he5/8808357953566.xml"
+    },
+    "NAN-HSB": {
+      "destination_terminal": "Vancouver (Horseshoe Bay)",
+      "origin_terminal": "Nanaimo (Departure Bay)",
+      "origincode": "NAN",
+      "destinationcode": "HSB",
+      "destination_location": "6750 Keith Rd , West Vancouver, V7W 2V1",
+      "mapkmlinternalfilename": "NAN-HSB",
+      "coordinates": " -123.271614,49.375894,0 -123.271609,49.375924,0 -123.271598,49.376027,0 -123.271495,49.376896,0 -123.271536,49.377193,0 -123.2716,49.37749,0 -123.27245,49.38199,0 -123.27285,49.38319,0 -123.2732,49.38404,0 -123.27375,49.38464,0 -123.27427,49.38505,0 -123.27522,49.38549,0 -123.27623,49.38581,0 -123.27851,49.38607,0 -123.28142,49.38607,0 -123.28528,49.38571,0 -123.28771,49.38501,0 -123.29014,49.38382,0 -123.29305,49.38202,0 -123.29557,49.37945,0 -123.29857,49.37469,0 -123.31434,49.35538,0 -123.32176,49.34831,0 -123.33309,49.33749,0 -123.36492,49.32783,0 -123.44631,49.31809,0 -123.45517,49.31703,0 -123.57826,49.29209,0 -123.70981,49.26528,0 -123.84121,49.23831,0 -123.87982,49.22833,0 -123.89005,49.22541,0 -123.89718,49.22277,0 -123.90867,49.21776,0 -123.92926,49.20854,0 -123.93997,49.20637,0 -123.94817,49.20401,0 -123.94975,49.20332,0 -123.95107,49.20226,0 -123.95233,49.20125,0 -123.95343,49.19952,0 -123.95428,49.19666,0 -123.95429,49.19664,0 -123.95454,49.19532,0 -123.95473,49.19381,0 -123.95475,49.19368,0 ",
+      "index": "14",
+      "origin_location": "680 Trans-Canada Highway, Nanaimo, V9S 5R1",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/vancouver-horseshoe-bay/HSB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/nanaimo-departure-bay/NAN",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hc4/h5e/8808354906142.xml"
+    },
+    "CMX-TEX": {
+      "destination_terminal": "Texada Island (Blubber Bay)",
+      "origin_terminal": "Comox (Little River)",
+      "origincode": "CMX",
+      "destination_location": "1000 Blubber Bay Road, Texada Island, V0N 3K0",
+      "mapkmlinternalfilename": "CMX-TEX",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/comox-little-river/CMX",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h26/hcc/8808358248478.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/texada-island-blubber-bay/TEX",
+      "origin_location": "1300 Ellenor Rd, Comox, V9M 4B3",
+      "destinationcode": "TEX",
+      "index": "60"
+    },
+    "PSB-PVB": {
+      "destination_terminal": "Mayne Island (Village Bay)",
+      "origin_terminal": "Galiano Island (Sturdies Bay)",
+      "origincode": "PSB",
+      "destination_location": "Village Bay Road, Mayne Island , V0N 2J0",
+      "mapkmlinternalfilename": "PSB-PVB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/galiano-island-sturdies-bay/PSB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hcf/hcd/8808376369182.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/mayne-island-village-bay/PVB",
+      "origin_location": "2622 Sturdies Bay Road, Galiano Island, V0N 1P0",
+      "destinationcode": "PVB",
+      "index": "26"
+    },
+    "TEX-CMX": {
+      "destination_terminal": "Comox (Little River)",
+      "origin_terminal": "Texada Island (Blubber Bay)",
+      "origincode": "TEX",
+      "destination_location": "1300 Ellenor Rd, Comox, V9M 4B3",
+      "mapkmlinternalfilename": "TEX-CMX",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/texada-island-blubber-bay/TEX",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h1f/h38/8808358379550.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/comox-little-river/CMX",
+      "origin_location": "1000 Blubber Bay Road, Texada Island, V0N 3K0",
+      "destinationcode": "CMX",
+      "index": "10"
+    },
+    "PVB-SWB": {
+      "destination_terminal": "Victoria (Swartz Bay)",
+      "origin_terminal": "Mayne Island (Village Bay)",
+      "origincode": "PVB",
+      "destination_location": "11300 Patricia Bay Hwy, Sidney, V8L 5J4",
+      "mapkmlinternalfilename": "PVB-SWB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/mayne-island-village-bay/PVB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h3f/h02/8808377286686.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/victoria-swartz-bay/SWB",
+      "origin_location": "Village Bay Road, Mayne Island , V0N 2J0",
+      "destinationcode": "SWB",
+      "index": "69"
+    },
+    "POB-SWB": {
+      "destination_terminal": "Victoria (Swartz Bay)",
+      "origin_terminal": "Pender Island (Otter Bay)",
+      "origincode": "POB",
+      "destinationcode": "SWB",
+      "destination_location": "11300 Patricia Bay Hwy, Sidney, V8L 5J4",
+      "mapkmlinternalfilename": "POB-SWB",
+      "coordinates": " -123.317423,48.798576,0 -123.3212755,48.7911571,0 -123.3374116,48.7739643,0 -123.3727739,48.7411458,0 -123.3810136,48.7345795,0 -123.3892534,48.7243888,0 -123.4002397,48.7044543,0 -123.41167,48.68952,0 ",
+      "index": "65",
+      "origin_location": "1371 Otter Bay Road, North Pender Island, V0N 2M0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/victoria-swartz-bay/SWB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/pender-island-otter-bay/POB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h6b/hd7/8808375058462.xml"
+    },
+    "NAH-GAB": {
+      "destination_terminal": "Gabriola Island (Descanso Bay)",
+      "origin_terminal": "Nanaimo (Nanaimo Harbour)",
+      "origincode": "NAH",
+      "destination_location": "350 North Road, Descanso Bay, Gabriola, V0R 1X2",
+      "mapkmlinternalfilename": "NAH-GAB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/nanaimo-nanaimo-harbour/NAH",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hc2/h7d/8808358739998.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/gabriola-island-descanso-bay/GAB",
+      "origin_location": "160 Front Street, Nanaimo, V9S 5R1",
+      "destinationcode": "GAB",
+      "index": "37"
+    },
+    "DNM-BKY": {
+      "destination_terminal": "Buckley Bay",
+      "origin_terminal": "Denman Island West",
+      "origincode": "DNM",
+      "destinationcode": "BKY",
+      "destination_location": "6866 Island Highway, Fanny Bay, V0R 1W0",
+      "mapkmlinternalfilename": "DNM-BKY",
+      "coordinates": " -124.8233596,49.5347254,0 -124.8244969,49.535171,0 -124.8265997,49.5348507,0 -124.8353115,49.532163,0 -124.8469631,49.5275531,0 -124.8476497,49.5268845,0 -124.8474351,49.5263274,0 ",
+      "index": "12",
+      "origin_location": "3661 Denman Road, Denman Island , V0R 1T0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/buckley-bay/BKY",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/denman-island-west/DNM",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h88/h43/8808360181790.xml"
+    },
+    "HSB-BOW": {
+      "destination_terminal": "Bowen Island (Snug Cove)",
+      "origin_terminal": "Vancouver (Horseshoe Bay)",
+      "origincode": "HSB",
+      "destination_location": "Snug Cove,  Bowen Island, V0N 1G0",
+      "mapkmlinternalfilename": "HSB-BOW",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/vancouver-horseshoe-bay/HSB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/he0/h9a/8808356020254.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/bowen-island-snug-cove/BOW",
+      "origin_location": "6750 Keith Rd , West Vancouver, V7W 2V1",
+      "destinationcode": "BOW",
+      "index": "32"
+    },
+    "POB-PST": {
+      "destination_terminal": "Saturna Island (Lyall Harbour)",
+      "origin_terminal": "Pender Island (Otter Bay)",
+      "origincode": "POB",
+      "destination_location": "100 East Point Rd, Saturna Island, V0N 2Y0",
+      "mapkmlinternalfilename": "POB-PST",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/pender-island-otter-bay/POB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hd0/hbe/8808375287838.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/saturna-island-lyall-harbour/PST",
+      "origin_location": "1371 Otter Bay Road, North Pender Island, V0N 2M0",
+      "destinationcode": "PST",
+      "index": "74"
+    },
+    "CHM-PEN": {
+      "destination_terminal": "Penelakut Island (Telegraph Harbour)",
+      "origin_terminal": "Chemainus",
+      "origincode": "CHM",
+      "destinationcode": "PEN",
+      "destination_location": "Clam Bay Rd N, Penelakut Island, V0R 1K6",
+      "mapkmlinternalfilename": "CHM-PEN",
+      "coordinates": " -123.660782,48.971089,0 -123.663996,48.965205,0 -123.66906,48.958682,0 -123.684617,48.945704,0 -123.695517,48.940292,0 -123.710795,48.928339,0 -123.713112,48.925462,0 -123.71426,48.925533,0 ",
+      "index": "34",
+      "origin_location": "2830 Oak Street, Chemainus, V0R 1K1",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/penelakut-island-telegraph-harbour/PEN",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/chemainus/CHM",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h81/hca/8808358871070.xml"
+    },
+    "PBB-SHW": {
+      "destination_terminal": "Shearwater",
+      "origin_terminal": "Bella Bella (McLoughlin Bay)",
+      "origincode": "PBB",
+      "destinationcode": "SHW",
+      "destination_location": "Denny Island, Shearwater, V0T 1B0",
+      "mapkmlinternalfilename": "PBB-SHW",
+      "coordinates": " -128.092939,52.151677,0 -128.093712,52.15431,0 -128.096844,52.158075,0 -128.103754,52.162077,0 -128.113882,52.163077,0 -128.1264998,52.1563409,0 -128.1337942,52.1543431,0 -128.1362536,52.1512795,0 -128.1383443,52.1421591,0 -128.143744,52.138831,0 ",
+      "index": "24",
+      "origin_location": "Waglisla , Bella Bella, V0T 1Z0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/shearwater/SHW",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h0a/h9e/8808356708382.xml"
+    },
+    "PPR-PSK": {
+      "destination_terminal": "Graham Island (Skidegate)",
+      "origin_terminal": "Prince Rupert",
+      "origincode": "PPR",
+      "destinationcode": "PSK",
+      "destination_location": "#1 Hwy 16 Skidegate Landing, Haida Gwaii, V0T 1S1",
+      "mapkmlinternalfilename": "PPR-PSK",
+      "coordinates": " -132.0102653,53.2467017,0 -132.0128199,53.2402663,0 -132.0117901,53.2377234,0 -132.0069836,53.236696,0 -131.9985721,53.2370043,0 -131.9815777,53.2398809,0 -131.9632099,53.2422437,0 -131.9522236,53.2453254,0 -131.9434688,53.2505638,0 -131.9101665,53.2923455,0 -131.8907688,53.3230142,0 -131.8746326,53.3587835,0 -131.8602131,53.4153995,0 -131.85163,53.491962,0 -131.8492267,53.4985998,0 -131.7956684,53.5597204,0 -131.7393635,53.6223819,0 -131.4681385,53.9517771,0 -131.2710712,54.1368319,0 -131.0829304,54.2958256,0 -131.0492847,54.3110504,0 -130.9957264,54.3166581,0 -130.9140156,54.3162576,0 -130.8810566,54.3122521,0 -130.5981586,54.2461055,0 -130.4999683,54.2276457,0 -130.4058979,54.2200186,0 -130.3787211,54.2222247,0 -130.3643039,54.2287475,0 -130.3576926,54.2348682,0 -130.359721,54.2560343,0 -130.3651863,54.276331,0 -130.3643874,54.2903634,0 -130.3562768,54.298854,0 -130.3548818,54.2988916,0 -130.3546885,54.2981279,0 ",
+      "index": "44",
+      "origin_location": "2000 Park Avenue, Prince Rupert, V8J 3S1",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/graham-island-skidegate/PSK",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/prince-rupert/PPR",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h44/h54/8808357822494.xml"
+    },
+    "PPR-KLE": {
+      "destination_terminal": "Klemtu",
+      "origin_terminal": "Prince Rupert",
+      "origincode": "PPR",
+      "destination_location": "Marine Drive, Swindle Island, V0T 1L0",
+      "mapkmlinternalfilename": "PPR-KLE",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/prince-rupert/PPR",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h07/he9/8808357298206.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/klemtu/KLE",
+      "origin_location": "2000 Park Avenue, Prince Rupert, V8J 3S1",
+      "destinationcode": "KLE",
+      "index": "57"
+    },
+    "PWR-TEX": {
+      "destination_terminal": "Texada Island (Blubber Bay)",
+      "origin_terminal": "Powell River (Westview)",
+      "origincode": "PWR",
+      "destinationcode": "TEX",
+      "destination_location": "1000 Blubber Bay Road, Texada Island, V0N 3K0",
+      "mapkmlinternalfilename": "PWR-TEX",
+      "coordinates": " -124.620319,49.794824,0 -124.619267,49.794824,0 -124.617025,49.796988,0 -124.61533,49.799426,0 -124.613914,49.800658,0 -124.60797,49.804245,0 -124.551601,49.82871,0 -124.531945,49.833582,0 -124.530658,49.835132,0 ",
+      "index": "59",
+      "origin_location": "4465 Willingdon Avenue, Powell River, V8A 2M7",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/texada-island-blubber-bay/TEX",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/powell-river-westview/PWR",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hb7/hf1/8808358445086.xml"
+    },
+    "THT-PEN": {
+      "destination_terminal": "Penelakut Island (Telegraph Harbour)",
+      "origin_terminal": "Thetis Island (Preedy Harbour)",
+      "origincode": "THT",
+      "destinationcode": "PEN",
+      "destination_location": "Clam Bay Rd N, Penelakut Island, V0R 1K6",
+      "mapkmlinternalfilename": "THT-PEN",
+      "coordinates": " -123.6607825,48.9710893,0 -123.6645838,48.9671974,0 -123.66703,48.9658591,0 -123.670077,48.9650702,0 -123.6727378,48.9650984,0 -123.6746046,48.9654647,0 -123.6763641,48.9662113,0 -123.6776516,48.9671692,0 -123.6788532,48.9685497,0 -123.680999,48.9722683,0 -123.6815139,48.9747191,0 -123.6786815,48.9804512,0 ",
+      "index": "33",
+      "origin_location": "Preedy Harbour, Thetis Island, V0R 2Y0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/penelakut-island-telegraph-harbour/PEN",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/thetis-island-preedy-harbour/THT",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hd3/h08/8808360050718.xml"
+    },
+    "HSB-NAN": {
+      "destination_terminal": "Nanaimo (Departure Bay)",
+      "origin_terminal": "Vancouver (Horseshoe Bay)",
+      "origincode": "HSB",
+      "destination_location": "680 Trans-Canada Highway, Nanaimo, V9S 5R1",
+      "mapkmlinternalfilename": "HSB-NAN",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/vancouver-horseshoe-bay/HSB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h8e/h3d/8808354840606.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/nanaimo-departure-bay/NAN",
+      "origin_location": "6750 Keith Rd , West Vancouver, V7W 2V1",
+      "destinationcode": "NAN",
+      "index": "21"
+    },
+    "VES-CFT": {
+      "destination_terminal": "Crofton",
+      "origin_terminal": "Salt Spring Island (Vesuvius Bay)",
+      "origincode": "VES",
+      "destinationcode": "CFT",
+      "destination_location": "1499 Chaplin Street, Crofton, V0R 1R0",
+      "mapkmlinternalfilename": "VES-CFT",
+      "coordinates": " -123.5735991,48.8813085,0 -123.5754016,48.8816754,0 -123.5765388,48.8810827,0 -123.5768392,48.8805042,0 -123.6294534,48.8679295,0 -123.6314919,48.8674072,0 -123.6351612,48.865544,0 -123.6378005,48.8657134,0 ",
+      "index": "3",
+      "origin_location": "Vesuvius Bay Road, Salt Spring Island, V8K 1L6",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/crofton/CFT",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-vesuvius-bay/VES",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hd0/h9e/8808355889182.xml"
+    },
+    "PEN-CHM": {
+      "destination_terminal": "Chemainus",
+      "origin_terminal": "Penelakut Island (Telegraph Harbour)",
+      "origincode": "PEN",
+      "destinationcode": "CHM",
+      "destination_location": "2830 Oak Street, Chemainus, V0R 1K1",
+      "mapkmlinternalfilename": "PEN-CHM",
+      "coordinates": " -123.6607825,48.9710893,0 -123.6639958,48.9652046,0 -123.6690598,48.9586818,0 -123.6846166,48.945704,0 -123.6955171,48.940292,0 -123.710795,48.9283386,0 -123.7131124,48.9254625,0 -123.7142604,48.925533,0 ",
+      "index": "7",
+      "origin_location": "Clam Bay Rd N, Penelakut Island, V0R 1K6",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/chemainus/CHM",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/penelakut-island-telegraph-harbour/PEN",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h13/h41/8808359591966.xml"
+    },
+    "PLH-PSB": {
+      "destination_terminal": "Galiano Island (Sturdies Bay)",
+      "origin_terminal": "Salt Spring Island (Long Harbour)",
+      "origincode": "PLH",
+      "destination_location": "2622 Sturdies Bay Road, Galiano Island, V0N 1P0",
+      "mapkmlinternalfilename": "PLH-PSB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-long-harbour/PLH",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hb6/hda/8808374763550.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/galiano-island-sturdies-bay/PSB",
+      "origin_location": "1000 Long Harbour Rd, Salt Spring Island, V8K 2L8",
+      "destinationcode": "PSB",
+      "index": "47"
+    },
+    "PLH-PVB": {
+      "destination_terminal": "Mayne Island (Village Bay)",
+      "origin_terminal": "Salt Spring Island (Long Harbour)",
+      "origincode": "PLH",
+      "destination_location": "Village Bay Road, Mayne Island , V0N 2J0",
+      "mapkmlinternalfilename": "PLH-PVB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-long-harbour/PLH",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h06/h6b/8808362606622.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/mayne-island-village-bay/PVB",
+      "origin_location": "1000 Long Harbour Rd, Salt Spring Island, V8K 2L8",
+      "destinationcode": "PVB",
+      "index": "27"
+    },
+    "PBB-BEC": {
+      "destination_terminal": "Bella Coola",
+      "origin_terminal": "Bella Bella (McLoughlin Bay)",
+      "origincode": "PBB",
+      "destination_location": "Chilcotin-Bella Coola Hwy, Bella Coola, V0T 1C0",
+      "mapkmlinternalfilename": "PBB-BEC",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h84/hc4/8808356479006.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/bella-coola/BEC",
+      "origin_location": "Waglisla , Bella Bella, V0T 1Z0",
+      "destinationcode": "BEC",
+      "index": "6"
+    },
+    "POB-PSB": {
+      "destination_terminal": "Galiano Island (Sturdies Bay)",
+      "origin_terminal": "Pender Island (Otter Bay)",
+      "origincode": "POB",
+      "destination_location": "2622 Sturdies Bay Road, Galiano Island, V0N 1P0",
+      "mapkmlinternalfilename": "POB-PSB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/pender-island-otter-bay/POB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/hd4/he1/8808377516062.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/galiano-island-sturdies-bay/PSB",
+      "origin_location": "1371 Otter Bay Road, North Pender Island, V0N 2M0",
+      "destinationcode": "PSB",
+      "index": "46"
+    },
+    "SOI-ALR": {
+      "destination_terminal": "Cormorant Island (Alert Bay)",
+      "origin_terminal": "Malcolm Island (Sointula)",
+      "origincode": "SOI",
+      "destinationcode": "ALR",
+      "destination_location": "10 Fir Street, Alert Bay, V0N 1A0",
+      "mapkmlinternalfilename": "SOI-ALR",
+      "coordinates": " -127.018261,50.626807,0 -127.020836,50.622525,0 -127.019119,50.618332,0 -127.007446,50.6088,0 -126.953802,50.583956,0 -126.941957,50.58412,0 -126.935949,50.587171,0 -126.933288,50.588261,0 -126.931486,50.587989,0 ",
+      "index": "0",
+      "origin_location": "1st Street, Malcolm Island, V0N 3E0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/cormorant-island-alert-bay/ALR",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/malcolm-island-sointula/SOI",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h9a/h54/8808361721886.xml"
+    },
+    "TSA-SWB": {
+      "destination_terminal": "Victoria (Swartz Bay)",
+      "origin_terminal": "Vancouver (Tsawwassen)",
+      "origincode": "TSA",
+      "destination_location": "11300 Patricia Bay Hwy, Sidney, V8L 5J4",
+      "mapkmlinternalfilename": "TSA-SWB",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h2d/h86/8808354775070.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/victoria-swartz-bay/SWB",
+      "origin_location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "destinationcode": "SWB",
+      "index": "66"
+    },
+    "THT-CHM": {
+      "destination_terminal": "Chemainus",
+      "origin_terminal": "Thetis Island (Preedy Harbour)",
+      "origincode": "THT",
+      "destinationcode": "CHM",
+      "destination_location": "2830 Oak Street, Chemainus, V0R 1K1",
+      "mapkmlinternalfilename": "THT-CHM",
+      "coordinates": " -123.6786815,48.9804512,0 -123.6812753,48.9766312,0 -123.6826486,48.9731945,0 -123.6847085,48.9706028,0 -123.6883134,48.968349,0 -123.7131185,48.9260154,0 -123.7135691,48.9255642,0 -123.7142604,48.925533,0 ",
+      "index": "8",
+      "origin_location": "Preedy Harbour, Thetis Island, V0R 2Y0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/chemainus/CHM",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/thetis-island-preedy-harbour/THT",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h00/ha3/8808359821342.xml"
+    },
+    "HRB-COR": {
+      "destination_terminal": "Cortes Island (Whaletown)",
+      "origin_terminal": "Quadra Island (Heriot Bay)",
+      "origincode": "HRB",
+      "destination_location": "Whaletown, Cortes Island, V0P 1Z0",
+      "mapkmlinternalfilename": "HRB-COR",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/quadra-island-heriot-bay/HRB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/ha5/h57/8808361066526.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/cortes-island-whaletown/COR",
+      "origin_location": "West Road, Heriot Bay, V9W 5E3",
+      "destinationcode": "COR",
+      "index": "2"
+    },
+    "PPH-KLE": {
+      "destination_terminal": "Klemtu",
+      "origin_terminal": "Port Hardy (Bear Cove)",
+      "origincode": "PPH",
+      "destination_location": "Marine Drive, Swindle Island, V0T 1L0",
+      "mapkmlinternalfilename": "PPH-KLE",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h68/h3a/8808357036062.xml",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/klemtu/KLE",
+      "origin_location": "6800 Highway 19, Port Hardy, V0N 2P0",
+      "destinationcode": "KLE",
+      "index": "55"
+    },
+    "PBB-POF": {
+      "destination_terminal": "Ocean Falls",
+      "origin_terminal": "Bella Bella (McLoughlin Bay)",
+      "origincode": "PBB",
+      "destinationcode": "POF",
+      "destination_location": "Marine Drive, Ocean Falls, V0T 1P0",
+      "mapkmlinternalfilename": "PBB-POF",
+      "coordinates": " -128.143744,52.138831,0 -128.13417,52.137047,0 -128.129707,52.130369,0 -128.124042,52.102119,0 -128.116489,52.087776,0 -128.105631,52.083213,0 -128.058468,52.070475,0 -127.997141,52.079626,0 -127.955814,52.070897,0 -127.937275,52.071952,0 -127.924915,52.077649,0 -127.88612,52.117722,0 -127.85728,52.182395,0 -127.832561,52.212908,0 -127.789303,52.255802,0 -127.763382,52.2912,0 -127.75424,52.316469,0 -127.740036,52.34073,0 -127.730379,52.347939,0 -127.718878,52.353286,0 -127.705532,52.351846,0 -127.693654,52.352576,0 ",
+      "index": "71",
+      "origin_location": "Waglisla , Bella Bella, V0T 1Z0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/ocean-falls/POF",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h88/h2d/8808356773918.xml"
+    },
+    "MCN-SOI": {
+      "destination_terminal": "Malcolm Island (Sointula)",
+      "origin_terminal": "Port McNeill",
+      "origincode": "MCN",
+      "destinationcode": "SOI",
+      "destination_location": "1st Street, Malcolm Island, V0N 3E0",
+      "mapkmlinternalfilename": "MCN-SOI",
+      "coordinates": " -127.085702,50.592623,0 -127.059889,50.601046,0 -127.036199,50.61194,0 -127.027359,50.626099,0 -127.018261,50.626807,0 ",
+      "index": "35",
+      "origin_location": "1626 Beach Drive , Port McNeill, V0N 2R0",
+      "destination_info": "/travel-boarding/terminal-directions-parking-food/malcolm-island-sointula/SOI",
+      "origin_info": "/travel-boarding/terminal-directions-parking-food/port-mcneill/MCN",
+      "mapkmlfile": "https://www.bcferries.com/web_image/h7e/hbb/8808361525278.xml"
+    }
+  },
+  "car_connections": {
+    "NAH-MCN": {
+      "formatted_time": "03:50:51",
+      "duration": 13851,
+      "distance": 351.5661,
+      "fuel": 9.76
+    },
+    "BKY-MIL": {
+      "formatted_time": "01:51:59",
+      "duration": 6719,
+      "distance": 163.1456,
+      "fuel": 4.47
+    },
+    "SWB-MIL": {
+      "formatted_time": "00:49:07",
+      "duration": 2947,
+      "distance": 62.5922,
+      "fuel": 1.65
+    },
+    "PPR-BEC": {
+      "formatted_time": "17:00:15",
+      "duration": 61215,
+      "distance": 1414.2207,
+      "fuel": 37.81
+    },
+    "CAM-PPH": {
+      "formatted_time": "02:37:25",
+      "duration": 9445,
+      "distance": 236.2662,
+      "fuel": 6.29
+    },
+    "PPH-CMX": {
+      "formatted_time": "03:13:35",
+      "duration": 11615,
+      "distance": 292.4741,
+      "fuel": 7.92
+    },
+    "PPH-SWB": {
+      "formatted_time": "05:44:56",
+      "duration": 20696,
+      "distance": 522.6265,
+      "fuel": 14.14
+    },
+    "PPH-MIL": {
+      "formatted_time": "05:00:55",
+      "duration": 18055,
+      "distance": 464.291,
+      "fuel": 12.63
+    },
+    "PLH-VES": {
+      "formatted_time": "00:15:27",
+      "duration": 927,
+      "distance": 10.7633,
+      "fuel": 0.37
+    },
+    "CHM-CMX": {
+      "formatted_time": "01:47:43",
+      "duration": 6463,
+      "distance": 155.0587,
+      "fuel": 4.4
+    },
+    "HSB-BEC": {
+      "formatted_time": "12:05:30",
+      "duration": 43530,
+      "distance": 1021.8578,
+      "fuel": 27.26
+    },
+    "CAM-NAH": {
+      "formatted_time": "01:41:08",
+      "duration": 6068,
+      "distance": 158.5381,
+      "fuel": 4.65
+    },
+    "DUK-CMX": {
+      "formatted_time": "01:31:29",
+      "duration": 5489,
+      "distance": 134.2595,
+      "fuel": 3.83
+    },
+    "CAM-MCN": {
+      "formatted_time": "02:16:28",
+      "duration": 8188,
+      "distance": 198.3871,
+      "fuel": 5.31
+    },
+    "NAH-PPH": {
+      "formatted_time": "04:11:48",
+      "duration": 15108,
+      "distance": 389.4452,
+      "fuel": 10.74
+    },
+    "SWB-NAN": {
+      "formatted_time": "01:45:44",
+      "duration": 6344,
+      "distance": 137.1049,
+      "fuel": 3.6
+    },
+    "BKY-CAM": {
+      "formatted_time": "00:45:51",
+      "duration": 2751,
+      "distance": 73.2348,
+      "fuel": 2.18
+    },
+    "PPH-BKY": {
+      "formatted_time": "03:13:34",
+      "duration": 11614,
+      "distance": 303.7315,
+      "fuel": 8.25
+    },
+    "PLH-FUL": {
+      "formatted_time": "00:25:37",
+      "duration": 1537,
+      "distance": 20.1248,
+      "fuel": 0.67
+    },
+    "CMX-NAH": {
+      "formatted_time": "01:25:04",
+      "duration": 5104,
+      "distance": 120.1955,
+      "fuel": 3.54
+    },
+    "NAN-PPH": {
+      "formatted_time": "04:08:05",
+      "duration": 14885,
+      "distance": 385.6375,
+      "fuel": 10.62
+    },
+    "CMX-CAM": {
+      "formatted_time": "00:44:35",
+      "duration": 2675,
+      "distance": 47.7331,
+      "fuel": 1.32
+    },
+    "NAN-DUK": {
+      "formatted_time": "00:18:55",
+      "duration": 1135,
+      "distance": 19.0997,
+      "fuel": 0.54
+    },
+    "NAN-CHM": {
+      "formatted_time": "00:35:50",
+      "duration": 2150,
+      "distance": 39.7589,
+      "fuel": 1.11
+    },
+    "HSB-TSA": {
+      "formatted_time": "00:52:32",
+      "duration": 3152,
+      "distance": 57.114,
+      "fuel": 1.62
+    },
+    "MIL-DUK": {
+      "formatted_time": "00:59:22",
+      "duration": 3562,
+      "distance": 77.6492,
+      "fuel": 2.04
+    },
+    "MIL-CMX": {
+      "formatted_time": "02:16:01",
+      "duration": 8161,
+      "distance": 195.1104,
+      "fuel": 5.42
+    },
+    "PPH-CHM": {
+      "formatted_time": "04:32:35",
+      "duration": 16355,
+      "distance": 424.0927,
+      "fuel": 11.61
+    },
+    "SWB-CAM": {
+      "formatted_time": "03:15:02",
+      "duration": 11702,
+      "distance": 291.2591,
+      "fuel": 8.01
+    },
+    "MCN-NAN": {
+      "formatted_time": "03:45:12",
+      "duration": 13512,
+      "distance": 347.8903,
+      "fuel": 9.67
+    },
+    "BEC-HSB": {
+      "formatted_time": "12:00:42",
+      "duration": 43242,
+      "distance": 1021.6309,
+      "fuel": 26.93
+    },
+    "BKY-CFT": {
+      "formatted_time": "01:31:41",
+      "duration": 5501,
+      "distance": 131.4126,
+      "fuel": 3.68
+    },
+    "CMX-SWB": {
+      "formatted_time": "03:00:53",
+      "duration": 10853,
+      "distance": 253.734,
+      "fuel": 6.95
+    },
+    "CHM-DUK": {
+      "formatted_time": "00:31:04",
+      "duration": 1864,
+      "distance": 37.5975,
+      "fuel": 1.03
+    },
+    "CMX-DUK": {
+      "formatted_time": "01:31:36",
+      "duration": 5496,
+      "distance": 134.5396,
+      "fuel": 3.85
+    },
+    "MIL-NAN": {
+      "formatted_time": "01:03:29",
+      "duration": 3809,
+      "distance": 79.714,
+      "fuel": 2.13
+    },
+    "BTW-SWB": {
+      "formatted_time": "00:18:53",
+      "duration": 1133,
+      "distance": 18.6748,
+      "fuel": 0.57
+    },
+    "CHM-NAH": {
+      "formatted_time": "00:31:59",
+      "duration": 1919,
+      "distance": 36.347,
+      "fuel": 1.01
+    },
+    "CMX-MCN": {
+      "formatted_time": "02:54:44",
+      "duration": 10484,
+      "distance": 254.8895,
+      "fuel": 6.95
+    },
+    "MCN-BKY": {
+      "formatted_time": "02:53:18",
+      "duration": 10398,
+      "distance": 266.2096,
+      "fuel": 7.3
+    },
+    "BKY-MCN": {
+      "formatted_time": "02:55:15",
+      "duration": 10515,
+      "distance": 265.9989,
+      "fuel": 7.3
+    },
+    "NAH-SWB": {
+      "formatted_time": "01:45:13",
+      "duration": 6313,
+      "distance": 134.9564,
+      "fuel": 3.56
+    },
+    "TSA-BEC": {
+      "formatted_time": "12:00:33",
+      "duration": 43233,
+      "distance": 1004.897,
+      "fuel": 26.86
+    },
+    "MCN-CHM": {
+      "formatted_time": "04:12:20",
+      "duration": 15140,
+      "distance": 386.5709,
+      "fuel": 10.65
+    },
+    "MCN-CAM": {
+      "formatted_time": "02:15:27",
+      "duration": 8127,
+      "distance": 198.9487,
+      "fuel": 5.34
+    },
+    "TSA-HSB": {
+      "formatted_time": "00:55:01",
+      "duration": 3301,
+      "distance": 58.4964,
+      "fuel": 1.67
+    },
+    "CHM-MIL": {
+      "formatted_time": "00:38:13",
+      "duration": 2293,
+      "distance": 45.0729,
+      "fuel": 1.26
+    },
+    "BEC-PPR": {
+      "formatted_time": "16:29:24",
+      "duration": 59364,
+      "distance": 1414.3561,
+      "fuel": 37.48
+    },
+    "DUK-NAN": {
+      "formatted_time": "00:18:56",
+      "duration": 1136,
+      "distance": 18.8631,
+      "fuel": 0.54
+    },
+    "NAN-MCN": {
+      "formatted_time": "03:47:08",
+      "duration": 13628,
+      "distance": 347.7584,
+      "fuel": 9.65
+    },
+    "CHM-CAM": {
+      "formatted_time": "02:04:29",
+      "duration": 7469,
+      "distance": 193.8165,
+      "fuel": 5.53
+    },
+    "PPR-TSA": {
+      "formatted_time": "17:18:51",
+      "duration": 62331,
+      "distance": 1517.5601,
+      "fuel": 40.63
+    },
+    "MIL-CAM": {
+      "formatted_time": "02:32:47",
+      "duration": 9167,
+      "distance": 233.8683,
+      "fuel": 6.54
+    },
+    "CMX-PPH": {
+      "formatted_time": "03:15:41",
+      "duration": 11741,
+      "distance": 292.7686,
+      "fuel": 7.92
+    },
+    "CMX-CHM": {
+      "formatted_time": "01:48:32",
+      "duration": 6512,
+      "distance": 155.2003,
+      "fuel": 4.42
+    },
+    "FUL-VES": {
+      "formatted_time": "00:26:45",
+      "duration": 1605,
+      "distance": 21.224,
+      "fuel": 0.71
+    },
+    "SWB-CHM": {
+      "formatted_time": "01:20:02",
+      "duration": 4802,
+      "distance": 102.2593,
+      "fuel": 2.7
+    },
+    "CAM-DUK": {
+      "formatted_time": "01:47:40",
+      "duration": 6460,
+      "distance": 172.8838,
+      "fuel": 4.96
+    },
+    "MIL-BKY": {
+      "formatted_time": "01:51:00",
+      "duration": 6660,
+      "distance": 162.7948,
+      "fuel": 4.44
+    },
+    "MCN-CFT": {
+      "formatted_time": "04:20:22",
+      "duration": 15622,
+      "distance": 395.036,
+      "fuel": 10.88
+    },
+    "FUL-PLH": {
+      "formatted_time": "00:25:32",
+      "duration": 1532,
+      "distance": 20.1248,
+      "fuel": 0.67
+    },
+    "BKY-CMX": {
+      "formatted_time": "00:29:06",
+      "duration": 1746,
+      "distance": 34.4754,
+      "fuel": 1.05
+    },
+    "CHM-PPH": {
+      "formatted_time": "04:34:49",
+      "duration": 16489,
+      "distance": 424.4613,
+      "fuel": 11.62
+    },
+    "LNG-ERL": {
+      "formatted_time": "01:17:23",
+      "duration": 4643,
+      "distance": 80.7006,
+      "fuel": 2.23
+    },
+    "CHM-BKY": {
+      "formatted_time": "01:22:42",
+      "duration": 4962,
+      "distance": 122.7431,
+      "fuel": 3.43
+    },
+    "NAH-DUK": {
+      "formatted_time": "00:15:56",
+      "duration": 956,
+      "distance": 15.7635,
+      "fuel": 0.46
+    },
+    "NAH-MIL": {
+      "formatted_time": "01:01:12",
+      "duration": 3672,
+      "distance": 76.6209,
+      "fuel": 2.05
+    },
+    "DNM-DNE": {
+      "formatted_time": "00:15:56",
+      "duration": 956,
+      "distance": 11.4006,
+      "fuel": 0.38
+    },
+    "PPH-NAH": {
+      "formatted_time": "04:09:07",
+      "duration": 14947,
+      "distance": 389.0879,
+      "fuel": 10.73
+    },
+    "HSB-PPR": {
+      "formatted_time": "16:55:38",
+      "duration": 60938,
+      "distance": 1526.3824,
+      "fuel": 40.82
+    },
+    "MCN-DUK": {
+      "formatted_time": "03:55:24",
+      "duration": 14124,
+      "distance": 365.9101,
+      "fuel": 10.08
+    },
+    "NAN-CAM": {
+      "formatted_time": "01:37:45",
+      "duration": 5865,
+      "distance": 154.9927,
+      "fuel": 4.53
+    },
+    "SWB-PPH": {
+      "formatted_time": "05:45:22",
+      "duration": 20722,
+      "distance": 521.9038,
+      "fuel": 14.11
+    },
+    "CHM-NAN": {
+      "formatted_time": "00:35:10",
+      "duration": 2110,
+      "distance": 39.6623,
+      "fuel": 1.11
+    },
+    "CFT-CAM": {
+      "formatted_time": "02:12:48",
+      "duration": 7968,
+      "distance": 202.3493,
+      "fuel": 5.75
+    },
+    "MIL-SWB": {
+      "formatted_time": "00:52:03",
+      "duration": 3123,
+      "distance": 64.3866,
+      "fuel": 1.72
+    },
+    "BKY-NAN": {
+      "formatted_time": "00:56:31",
+      "duration": 3391,
+      "distance": 84.2685,
+      "fuel": 2.47
+    },
+    "CFT-NAN": {
+      "formatted_time": "00:43:29",
+      "duration": 2609,
+      "distance": 48.1934,
+      "fuel": 1.33
+    },
+    "NAH-BKY": {
+      "formatted_time": "00:59:41",
+      "duration": 3581,
+      "distance": 87.727,
+      "fuel": 2.54
+    },
+    "SWB-NAH": {
+      "formatted_time": "01:42:32",
+      "duration": 6152,
+      "distance": 133.7896,
+      "fuel": 3.5
+    },
+    "MIL-PPH": {
+      "formatted_time": "05:03:07",
+      "duration": 18187,
+      "distance": 464.513,
+      "fuel": 12.64
+    },
+    "PPH-CFT": {
+      "formatted_time": "04:40:37",
+      "duration": 16837,
+      "distance": 432.5579,
+      "fuel": 11.84
+    },
+    "CHM-SWB": {
+      "formatted_time": "01:22:14",
+      "duration": 4934,
+      "distance": 103.41,
+      "fuel": 2.77
+    },
+    "CFT-SWB": {
+      "formatted_time": "01:21:27",
+      "duration": 4887,
+      "distance": 97.8819,
+      "fuel": 2.65
+    },
+    "PPH-DUK": {
+      "formatted_time": "04:15:39",
+      "duration": 15339,
+      "distance": 403.432,
+      "fuel": 11.04
+    },
+    "ERL-LNG": {
+      "formatted_time": "01:16:56",
+      "duration": 4616,
+      "distance": 80.6716,
+      "fuel": 2.22
+    },
+    "CAM-CHM": {
+      "formatted_time": "02:04:36",
+      "duration": 7476,
+      "distance": 193.5446,
+      "fuel": 5.53
+    },
+    "MCN-MIL": {
+      "formatted_time": "04:40:40",
+      "duration": 16840,
+      "distance": 426.7691,
+      "fuel": 11.67
+    },
+    "CAM-MIL": {
+      "formatted_time": "02:32:56",
+      "duration": 9176,
+      "distance": 233.7427,
+      "fuel": 6.55
+    },
+    "CAM-CMX": {
+      "formatted_time": "00:44:52",
+      "duration": 2692,
+      "distance": 47.7573,
+      "fuel": 1.33
+    },
+    "PPH-NAN": {
+      "formatted_time": "04:05:28",
+      "duration": 14728,
+      "distance": 385.4121,
+      "fuel": 10.63
+    },
+    "VES-PLH": {
+      "formatted_time": "00:15:29",
+      "duration": 929,
+      "distance": 10.7633,
+      "fuel": 0.38
+    },
+    "BKY-DUK": {
+      "formatted_time": "01:06:43",
+      "duration": 4003,
+      "distance": 102.2867,
+      "fuel": 2.88
+    },
+    "DUK-MCN": {
+      "formatted_time": "03:57:38",
+      "duration": 14258,
+      "distance": 365.783,
+      "fuel": 10.08
+    },
+    "DUK-CHM": {
+      "formatted_time": "00:32:39",
+      "duration": 1959,
+      "distance": 38.4054,
+      "fuel": 1.05
+    },
+    "MCN-SWB": {
+      "formatted_time": "05:24:41",
+      "duration": 19481,
+      "distance": 485.1046,
+      "fuel": 13.18
+    },
+    "BKY-NAH": {
+      "formatted_time": "01:00:10",
+      "duration": 3610,
+      "distance": 87.9426,
+      "fuel": 2.57
+    },
+    "SLT-PWR": {
+      "formatted_time": "00:26:49",
+      "duration": 1609,
+      "distance": 30.9155,
+      "fuel": 0.83
+    },
+    "PPR-HSB": {
+      "formatted_time": "17:22:16",
+      "duration": 62536,
+      "distance": 1526.1346,
+      "fuel": 40.84
+    },
+    "CFT-NAH": {
+      "formatted_time": "00:40:17",
+      "duration": 2417,
+      "distance": 44.8798,
+      "fuel": 1.24
+    },
+    "DUK-NAH": {
+      "formatted_time": "00:15:44",
+      "duration": 944,
+      "distance": 15.5479,
+      "fuel": 0.44
+    },
+    "DNE-DNM": {
+      "formatted_time": "00:15:53",
+      "duration": 953,
+      "distance": 11.4006,
+      "fuel": 0.38
+    },
+    "BKY-CHM": {
+      "formatted_time": "01:23:39",
+      "duration": 5019,
+      "distance": 122.9474,
+      "fuel": 3.45
+    },
+    "SWB-BTW": {
+      "formatted_time": "00:18:06",
+      "duration": 1086,
+      "distance": 18.6732,
+      "fuel": 0.55
+    },
+    "CFT-MCN": {
+      "formatted_time": "04:22:11",
+      "duration": 15731,
+      "distance": 395.1149,
+      "fuel": 10.87
+    },
+    "DUK-BKY": {
+      "formatted_time": "01:06:28",
+      "duration": 3988,
+      "distance": 101.9439,
+      "fuel": 2.86
+    },
+    "CAM-BKY": {
+      "formatted_time": "00:45:35",
+      "duration": 2735,
+      "distance": 73.1833,
+      "fuel": 2.18
+    },
+    "DUK-PPH": {
+      "formatted_time": "04:18:34",
+      "duration": 15514,
+      "distance": 403.6605,
+      "fuel": 11.06
+    },
+    "CFT-MIL": {
+      "formatted_time": "00:37:26",
+      "duration": 2246,
+      "distance": 39.5448,
+      "fuel": 1.14
+    },
+    "MCN-CMX": {
+      "formatted_time": "02:53:20",
+      "duration": 10400,
+      "distance": 254.9539,
+      "fuel": 6.97
+    },
+    "NAN-CFT": {
+      "formatted_time": "00:43:52",
+      "duration": 2632,
+      "distance": 48.224,
+      "fuel": 1.34
+    },
+    "SWB-DUK": {
+      "formatted_time": "01:41:37",
+      "duration": 6097,
+      "distance": 135.0401,
+      "fuel": 3.52
+    },
+    "MIL-MCN": {
+      "formatted_time": "04:42:10",
+      "duration": 16930,
+      "distance": 426.6339,
+      "fuel": 11.66
+    },
+    "BKY-SWB": {
+      "formatted_time": "02:36:00",
+      "duration": 9360,
+      "distance": 221.4812,
+      "fuel": 5.98
+    },
+    "NAH-CMX": {
+      "formatted_time": "01:24:42",
+      "duration": 5082,
+      "distance": 120.0426,
+      "fuel": 3.51
+    },
+    "CMX-NAN": {
+      "formatted_time": "01:21:24",
+      "duration": 4884,
+      "distance": 116.5213,
+      "fuel": 3.44
+    },
+    "NAN-MIL": {
+      "formatted_time": "01:04:10",
+      "duration": 3850,
+      "distance": 79.957,
+      "fuel": 2.13
+    },
+    "CMX-BKY": {
+      "formatted_time": "00:29:31",
+      "duration": 1771,
+      "distance": 34.8391,
+      "fuel": 1.06
+    },
+    "BEC-TSA": {
+      "formatted_time": "11:57:17",
+      "duration": 43037,
+      "distance": 1013.0564,
+      "fuel": 26.72
+    },
+    "MCN-PPH": {
+      "formatted_time": "00:32:25",
+      "duration": 1945,
+      "distance": 44.0976,
+      "fuel": 1.23
+    },
+    "PWR-SLT": {
+      "formatted_time": "00:27:43",
+      "duration": 1663,
+      "distance": 30.9155,
+      "fuel": 0.84
+    },
+    "MIL-CHM": {
+      "formatted_time": "00:37:48",
+      "duration": 2268,
+      "distance": 44.8685,
+      "fuel": 1.23
+    },
+    "NAN-SWB": {
+      "formatted_time": "01:48:11",
+      "duration": 6491,
+      "distance": 138.2925,
+      "fuel": 3.64
+    },
+    "NAH-CFT": {
+      "formatted_time": "00:40:54",
+      "duration": 2454,
+      "distance": 44.8894,
+      "fuel": 1.26
+    },
+    "SWB-CMX": {
+      "formatted_time": "02:58:16",
+      "duration": 10696,
+      "distance": 252.5012,
+      "fuel": 6.89
+    },
+    "CAM-SWB": {
+      "formatted_time": "03:16:57",
+      "duration": 11817,
+      "distance": 292.0782,
+      "fuel": 8.06
+    },
+    "NAH-NAN": {
+      "formatted_time": "00:06:01",
+      "duration": 361,
+      "distance": 3.9284,
+      "fuel": 0.13
+    },
+    "NAH-CAM": {
+      "formatted_time": "01:41:28",
+      "duration": 6088,
+      "distance": 158.8004,
+      "fuel": 4.64
+    },
+    "NAH-CHM": {
+      "formatted_time": "00:32:52",
+      "duration": 1972,
+      "distance": 36.4227,
+      "fuel": 1.03
+    },
+    "DUK-CAM": {
+      "formatted_time": "01:48:15",
+      "duration": 6495,
+      "distance": 173.0173,
+      "fuel": 4.96
+    },
+    "DUK-SWB": {
+      "formatted_time": "01:45:00",
+      "duration": 6300,
+      "distance": 136.9391,
+      "fuel": 3.59
+    },
+    "NAN-BKY": {
+      "formatted_time": "00:55:58",
+      "duration": 3358,
+      "distance": 83.9192,
+      "fuel": 2.42
+    },
+    "CHM-MCN": {
+      "formatted_time": "04:13:52",
+      "duration": 15232,
+      "distance": 386.5822,
+      "fuel": 10.65
+    },
+    "MCN-NAH": {
+      "formatted_time": "03:48:51",
+      "duration": 13731,
+      "distance": 351.5661,
+      "fuel": 9.78
+    },
+    "CFT-DUK": {
+      "formatted_time": "00:39:22",
+      "duration": 2362,
+      "distance": 46.1286,
+      "fuel": 1.25
+    },
+    "CFT-CMX": {
+      "formatted_time": "01:56:02",
+      "duration": 6962,
+      "distance": 163.5914,
+      "fuel": 4.63
+    },
+    "DUK-CFT": {
+      "formatted_time": "00:40:41",
+      "duration": 2441,
+      "distance": 46.8721,
+      "fuel": 1.28
+    },
+    "CAM-CFT": {
+      "formatted_time": "02:12:38",
+      "duration": 7958,
+      "distance": 202.0097,
+      "fuel": 5.76
+    },
+    "VES-FUL": {
+      "formatted_time": "00:26:46",
+      "duration": 1606,
+      "distance": 21.224,
+      "fuel": 0.71
+    },
+    "SWB-MCN": {
+      "formatted_time": "05:24:25",
+      "duration": 19465,
+      "distance": 484.0247,
+      "fuel": 13.13
+    },
+    "CFT-CHM": {
+      "formatted_time": "00:14:24",
+      "duration": 864,
+      "distance": 10.4849,
+      "fuel": 0.35
+    },
+    "SWB-BKY": {
+      "formatted_time": "02:33:15",
+      "duration": 9195,
+      "distance": 220.1856,
+      "fuel": 5.91
+    },
+    "NAN-NAH": {
+      "formatted_time": "00:06:15",
+      "duration": 375,
+      "distance": 3.9896,
+      "fuel": 0.14
+    },
+    "BKY-PPH": {
+      "formatted_time": "03:16:11",
+      "duration": 11771,
+      "distance": 303.878,
+      "fuel": 8.27
+    },
+    "CMX-MIL": {
+      "formatted_time": "02:16:52",
+      "duration": 8212,
+      "distance": 195.3985,
+      "fuel": 5.44
+    },
+    "CMX-CFT": {
+      "formatted_time": "01:56:34",
+      "duration": 6994,
+      "distance": 163.6655,
+      "fuel": 4.65
+    },
+    "PPH-MCN": {
+      "formatted_time": "00:31:49",
+      "duration": 1909,
+      "distance": 43.7404,
+      "fuel": 1.21
+    },
+    "HRB-QDR": {
+      "formatted_time": "00:08:50",
+      "duration": 530,
+      "distance": 8.0145,
+      "fuel": 0.24
+    },
+    "SWB-CFT": {
+      "formatted_time": "01:18:59",
+      "duration": 4739,
+      "distance": 96.7087,
+      "fuel": 2.58
+    },
+    "CFT-BKY": {
+      "formatted_time": "01:31:01",
+      "duration": 5461,
+      "distance": 131.2758,
+      "fuel": 3.65
+    },
+    "QDR-HRB": {
+      "formatted_time": "00:08:51",
+      "duration": 531,
+      "distance": 8.0145,
+      "fuel": 0.23
+    },
+    "PPH-CAM": {
+      "formatted_time": "02:35:43",
+      "duration": 9343,
+      "distance": 236.4706,
+      "fuel": 6.29
+    },
+    "CHM-CFT": {
+      "formatted_time": "00:14:15",
+      "duration": 855,
+      "distance": 10.4849,
+      "fuel": 0.36
+    },
+    "DUK-MIL": {
+      "formatted_time": "01:00:59",
+      "duration": 3659,
+      "distance": 78.6036,
+      "fuel": 2.07
+    },
+    "NAN-CMX": {
+      "formatted_time": "01:20:59",
+      "duration": 4859,
+      "distance": 116.2349,
+      "fuel": 3.4
+    },
+    "MIL-NAH": {
+      "formatted_time": "01:00:17",
+      "duration": 3617,
+      "distance": 76.3988,
+      "fuel": 2.03
+    },
+    "CFT-PPH": {
+      "formatted_time": "04:43:08",
+      "duration": 16988,
+      "distance": 432.994,
+      "fuel": 11.85
+    },
+    "TSA-PPR": {
+      "formatted_time": "16:50:41",
+      "duration": 60641,
+      "distance": 1509.4216,
+      "fuel": 40.42
+    },
+    "MIL-CFT": {
+      "formatted_time": "00:36:45",
+      "duration": 2205,
+      "distance": 39.3179,
+      "fuel": 1.11
+    },
+    "CAM-NAN": {
+      "formatted_time": "01:37:29",
+      "duration": 5849,
+      "distance": 154.864,
+      "fuel": 4.55
+    }
+  },
+  "terminals": {
+    "SLT": {
+      "long_id": "powell-river-saltery-bay",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/powell-river-saltery-bay/SLT",
+      "location": "15070 Highway 101, Powell River, V8A 0N2",
+      "land_group": "Sunshine Coast (PR)",
+      "coordinates": "-124.178702,49.782998",
+      "veh_close": 5,
+      "name": "Powell River (Saltery Bay)",
+      "foot_close": 5
+    },
+    "NAH": {
+      "long_id": "nanaimo-nanaimo-harbour",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/nanaimo-nanaimo-harbour/NAH",
+      "location": "160 Front Street, Nanaimo, V9S 5R1",
+      "land_group": "Vancouver Island",
+      "coordinates": "-123.930666,49.166065",
+      "veh_close": 3,
+      "name": "Nanaimo (Nanaimo Harbour)",
+      "foot_close": 3
+    },
+    "COR": {
+      "name": "Cortes Island (Whaletown)",
+      "long_id": "cortes-island-whaletown",
+      "coordinates": "-125.0538472,50.1098086",
+      "veh_close": 5,
+      "foot_close": 5,
+      "location": "Whaletown, Cortes Island, V0P 1Z0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/cortes-island-whaletown/COR"
+    },
+    "TSA": {
+      "assured_close": 20,
+      "assured_open": 60,
+      "location": "1 Ferry Causeway, Delta, V4M 4G6",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+      "land_group": "Mainland",
+      "long_id": "vancouver-tsawwassen",
+      "coordinates": "-123.130335,49.006875",
+      "veh_close": 5,
+      "name": "Vancouver (Tsawwassen)",
+      "res_open": 60,
+      "foot_close": 10,
+      "res_close": 30
+    },
+    "SHW": {
+      "name": "Shearwater",
+      "long_id": "shearwater",
+      "coordinates": "-128.092939,52.151677",
+      "veh_close": 0,
+      "foot_close": 0,
+      "location": "Denny Island, Shearwater, V0T 1B0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/shearwater/SHW"
+    },
+    "POB": {
+      "res_close": 30,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/pender-island-otter-bay/POB",
+      "long_id": "pender-island-otter-bay",
+      "coordinates": "-123.315678,48.800571",
+      "veh_close": 3,
+      "name": "Pender Island (Otter Bay)",
+      "res_open": 60,
+      "location": "1371 Otter Bay Road, North Pender Island, V0N 2M0",
+      "foot_close": 5
+    },
+    "SWB": {
+      "assured_close": 20,
+      "assured_open": 60,
+      "location": "11300 Patricia Bay Hwy, Sidney, V8L 5J4",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/victoria-swartz-bay/SWB",
+      "land_group": "Vancouver Island",
+      "long_id": "victoria-swartz-bay",
+      "coordinates": "-123.411593,48.688701",
+      "veh_close": 5,
+      "name": "Victoria (Swartz Bay)",
+      "res_open": 60,
+      "foot_close": 10,
+      "res_close": 30
+    },
+    "PSK": {
+      "hostled_close": 240,
+      "res_close": 90,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/graham-island-skidegate/PSK",
+      "long_id": "graham-island-skidegate",
+      "coordinates": "-132.010209,53.246738",
+      "veh_close": 20,
+      "name": "Graham Island (Skidegate)",
+      "res_open": 120,
+      "location": "#1 Hwy 16 Skidegate Landing, Haida Gwaii, V0T 1S1",
+      "foot_close": 20
+    },
+    "FUL": {
+      "long_id": "salt-spring-island-fulford-harbour",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-fulford-harbour/FUL",
+      "location": "2920 Fulford-Ganges Road, Salt Spring Island, V8K 1Z2",
+      "land_group": "Salt Spring Island",
+      "coordinates": "-123.450679,48.769241",
+      "veh_close": 3,
+      "name": "Salt Spring Island (Fulford Harbour)",
+      "foot_close": 3
+    },
+    "NBN": {
+      "long_id": "gambier-island-new-brighton",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/gambier-island-new-brighton/NBN",
+      "coordinates": "-123.43952505617942,49.45012285367904",
+      "name": "Gambier Island (New Brighton)",
+      "location": "Austin Road, New Brighton, Gambier Island, V0N 1V0"
+    },
+    "DNE": {
+      "long_id": "denman-island-east-gravelly-bay",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/denman-island-east-gravelly-bay/DNE",
+      "location": "Gravelly Bay, East Road, Denman Island, V0R 1T0",
+      "land_group": "Denman Island",
+      "coordinates": "-124.7089274,49.4939201",
+      "veh_close": 3,
+      "name": "Denman Island East (Gravelly Bay)",
+      "foot_close": 3
+    },
+    "ALF": {
+      "name": "Moresby Island (Alliford Bay)",
+      "long_id": "moresby-island-alliford-bay",
+      "coordinates": "-131.988724,53.211536",
+      "veh_close": 3,
+      "foot_close": 5,
+      "location": "Beach Road, Moresby Island Haida Gwaii, V0T 1T0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/moresby-island-alliford-bay/ALF"
+    },
+    "DNM": {
+      "long_id": "denman-island-west",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/denman-island-west/DNM",
+      "location": "3661 Denman Road, Denman Island , V0R 1T0",
+      "land_group": "Denman Island",
+      "coordinates": "-124.823145,49.5346836",
+      "veh_close": 3,
+      "name": "Denman Island West",
+      "foot_close": 3
+    },
+    "CAM": {
+      "long_id": "campbell-river",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/campbell-river/CAM",
+      "location": "1001 Island Highway, Campbell River, V9W 8C7",
+      "land_group": "Vancouver Island",
+      "coordinates": "-125.2423617,50.0282632",
+      "veh_close": 3,
+      "name": "Campbell River",
+      "foot_close": 3
+    },
+    "BTW": {
+      "long_id": "brentwood-bay",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/brentwood-bay/BTW",
+      "location": "809 Verdier Avenue, Brentwood Bay, V8M 1C5",
+      "land_group": "Vancouver Island",
+      "coordinates": "-123.466773,48.577373",
+      "veh_close": 5,
+      "name": "Brentwood Bay",
+      "foot_close": 3
+    },
+    "DUK": {
+      "assured_close": 20,
+      "assured_open": 60,
+      "location": "400 Duke Point Highway, Nanaimo, V9X 1H6",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/nanaimo-duke-point/DUK",
+      "land_group": "Vancouver Island",
+      "long_id": "nanaimo-duke-point",
+      "coordinates": "-123.891932,49.161978",
+      "veh_close": 5,
+      "name": "Nanaimo (Duke Point)",
+      "res_open": 60,
+      "foot_close": 10,
+      "res_close": 30
+    },
+    "PVB": {
+      "res_close": 30,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/mayne-island-village-bay/PVB",
+      "long_id": "mayne-island-village-bay",
+      "coordinates": "-123.3245468,48.8446865",
+      "veh_close": 5,
+      "name": "Mayne Island (Village Bay)",
+      "res_open": 60,
+      "location": "Village Bay Road, Mayne Island , V0N 2J0",
+      "foot_close": 5
+    },
+    "PLH": {
+      "res_close": 30,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-long-harbour/PLH",
+      "land_group": "Salt Spring Island",
+      "long_id": "salt-spring-island-long-harbour",
+      "coordinates": "-123.4457799,48.8520946",
+      "veh_close": 5,
+      "name": "Salt Spring Island (Long Harbour)",
+      "res_open": 60,
+      "location": "1000 Long Harbour Rd, Salt Spring Island, V8K 2L8",
+      "foot_close": 5
+    },
+    "BKY": {
+      "long_id": "buckley-bay",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/buckley-bay/BKY",
+      "location": "6866 Island Highway, Fanny Bay, V0R 1W0",
+      "land_group": "Vancouver Island",
+      "coordinates": "-124.8473922,49.526216",
+      "veh_close": 3,
+      "name": "Buckley Bay",
+      "foot_close": 3
+    },
+    "KLE": {
+      "res_close": 60,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/klemtu/KLE",
+      "long_id": "klemtu",
+      "coordinates": "-128.5218805,52.5925224",
+      "veh_close": 60,
+      "name": "Klemtu",
+      "res_open": 90,
+      "location": "Marine Drive, Swindle Island, V0T 1L0",
+      "foot_close": 20
+    },
+    "HRN": {
+      "name": "Hornby Island (Shingle Spit)",
+      "long_id": "hornby-island-shingle-spit",
+      "coordinates": "-124.7046356,49.5119601",
+      "veh_close": 3,
+      "foot_close": 3,
+      "location": "Shingle Spit, 4000 Central Rd, Hornby Island, V0R 1Z0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/hornby-island-shingle-spit/HRN"
+    },
+    "THT": {
+      "name": "Thetis Island (Preedy Harbour)",
+      "long_id": "thetis-island-preedy-harbour",
+      "coordinates": "-123.67824,48.981002",
+      "veh_close": 3,
+      "foot_close": 3,
+      "location": "Preedy Harbour, Thetis Island, V0R 2Y0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/thetis-island-preedy-harbour/THT"
+    },
+    "MIL": {
+      "long_id": "mill-bay",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/mill-bay/MIL",
+      "location": "Ferry Road, Mill Bay, V0R 2P4",
+      "land_group": "Vancouver Island",
+      "coordinates": "-123.518683,48.614156",
+      "veh_close": 3,
+      "name": "Mill Bay",
+      "foot_close": 5
+    },
+    "GAB": {
+      "name": "Gabriola Island (Descanso Bay)",
+      "long_id": "gabriola-island-descanso-bay",
+      "coordinates": "-123.858368,49.17775",
+      "veh_close": 10,
+      "foot_close": 10,
+      "location": "350 North Road, Descanso Bay, Gabriola, V0R 1X2",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/gabriola-island-descanso-bay/GAB"
+    },
+    "HRB": {
+      "long_id": "quadra-island-heriot-bay",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/quadra-island-heriot-bay/HRB",
+      "location": "West Road, Heriot Bay, V9W 5E3",
+      "land_group": "Quadra Island",
+      "coordinates": "-125.2106828,50.1035537",
+      "veh_close": 3,
+      "name": "Quadra Island (Heriot Bay)",
+      "foot_close": 3
+    },
+    "NAN": {
+      "assured_close": 20,
+      "assured_open": 60,
+      "location": "680 Trans-Canada Highway, Nanaimo, V9S 5R1",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/nanaimo-departure-bay/NAN",
+      "land_group": "Vancouver Island",
+      "long_id": "nanaimo-departure-bay",
+      "coordinates": "-123.954748,49.19368",
+      "veh_close": 5,
+      "name": "Nanaimo (Departure Bay)",
+      "res_open": 120,
+      "foot_close": 10,
+      "res_close": 30
+    },
+    "SOI": {
+      "name": "Malcolm Island (Sointula)",
+      "long_id": "malcolm-island-sointula",
+      "coordinates": "-127.017664,50.626908",
+      "veh_close": 5,
+      "foot_close": 5,
+      "location": "1st Street, Malcolm Island, V0N 3E0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/malcolm-island-sointula/SOI"
+    },
+    "PEN": {
+      "name": "Penelakut Island (Telegraph Harbour)",
+      "long_id": "penelakut-island-telegraph-harbour",
+      "coordinates": "-123.661069,48.971101",
+      "veh_close": 5,
+      "foot_close": 3,
+      "location": "Clam Bay Rd N, Penelakut Island, V0R 1K6",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/penelakut-island-telegraph-harbour/PEN"
+    },
+    "KTS": {
+      "long_id": "keats-island-keats-landing",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/keats-island-keats-landing/KTS",
+      "coordinates": "-123.48349002336576,49.39411503073624",
+      "name": "Keats Island (Keats Landing)",
+      "location": "Keats Road, Keats Island, Keats Island, V0N 1V0"
+    },
+    "ALR": {
+      "name": "Cormorant Island (Alert Bay)",
+      "long_id": "cormorant-island-alert-bay",
+      "coordinates": "-126.930741,50.587819",
+      "veh_close": 5,
+      "foot_close": 5,
+      "location": "10 Fir Street, Alert Bay, V0N 1A0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/cormorant-island-alert-bay/ALR"
+    },
+    "POF": {
+      "name": "Ocean Falls",
+      "long_id": "ocean-falls",
+      "coordinates": "-127.693616,52.352585",
+      "veh_close": 0,
+      "foot_close": 0,
+      "location": "Marine Drive, Ocean Falls, V0T 1P0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/ocean-falls/POF"
+    },
+    "HSB": {
+      "assured_close": 20,
+      "assured_open": 60,
+      "location": "6750 Keith Rd , West Vancouver, V7W 2V1",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/vancouver-horseshoe-bay/HSB",
+      "land_group": "Mainland",
+      "long_id": "vancouver-horseshoe-bay",
+      "coordinates": "-123.271447,49.375841",
+      "veh_close": 10,
+      "name": "Vancouver (Horseshoe Bay)",
+      "res_open": 120,
+      "foot_close": 10,
+      "res_close": 30
+    },
+    "BEC": {
+      "res_peak_extra": 30,
+      "res_close": 60,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/bella-coola/BEC",
+      "land_group": "Mainland",
+      "name": "Bella Coola",
+      "coordinates": "-126.795027,52.375967",
+      "veh_close": 20,
+      "res_open": 90,
+      "location": "Chilcotin-Bella Coola Hwy, Bella Coola, V0T 1C0",
+      "long_id": "bella-coola",
+      "foot_close": 20
+    },
+    "EAS": {
+      "long_id": "keats-island-eastbourne",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/keats-island-eastbourne/EAS",
+      "coordinates": "-123.43348693294867,49.395699989334275",
+      "name": "Keats Island (Eastbourne)",
+      "location": "Esplanade Road, Keats Island, Keats Island, V0N 1V0"
+    },
+    "QDR": {
+      "long_id": "quadra-island-quathiaski-cove",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/quadra-island-quathiaski-cove/QDR",
+      "location": "Quathiaski Cove Road, Quathiaski Cove, V0P 1N0",
+      "land_group": "Quadra Island",
+      "coordinates": "-125.2153679,50.0423766",
+      "veh_close": 3,
+      "name": "Quadra Island (Quathiaski Cove)",
+      "foot_close": 3
+    },
+    "PPH": {
+      "hostled_close": 240,
+      "res_close": 90,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+      "land_group": "Vancouver Island",
+      "long_id": "port-hardy-bear-cove",
+      "coordinates": "-127.4556276,50.7255163",
+      "veh_close": 20,
+      "name": "Port Hardy (Bear Cove)",
+      "res_open": 120,
+      "location": "6800 Highway 19, Port Hardy, V0N 2P0",
+      "foot_close": 20
+    },
+    "PSB": {
+      "res_close": 30,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/galiano-island-sturdies-bay/PSB",
+      "long_id": "galiano-island-sturdies-bay",
+      "coordinates": "-123.315125,48.876703",
+      "veh_close": 5,
+      "name": "Galiano Island (Sturdies Bay)",
+      "res_open": 60,
+      "location": "2622 Sturdies Bay Road, Galiano Island, V0N 1P0",
+      "foot_close": 5
+    },
+    "PBB": {
+      "hostled_close": 180,
+      "res_close": 60,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/bella-bella-mcloughlin-bay/PBB",
+      "long_id": "bella-bella-mcloughlin-bay",
+      "coordinates": "-128.143744,52.138831",
+      "veh_close": 20,
+      "name": "Bella Bella (McLoughlin Bay)",
+      "res_open": 120,
+      "location": "Waglisla , Bella Bella, V0T 1Z0",
+      "foot_close": 20
+    },
+    "PPR": {
+      "hostled_close": 240,
+      "res_close": 90,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/prince-rupert/PPR",
+      "land_group": "Mainland",
+      "long_id": "prince-rupert",
+      "coordinates": "-130.3528432,54.2966125",
+      "veh_close": 20,
+      "name": "Prince Rupert",
+      "res_open": 120,
+      "location": "2000 Park Avenue, Prince Rupert, V8J 3S1",
+      "foot_close": 20
+    },
+    "PST": {
+      "res_close": 30,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/saturna-island-lyall-harbour/PST",
+      "long_id": "saturna-island-lyall-harbour",
+      "coordinates": "-123.2013489,48.798102",
+      "veh_close": 5,
+      "name": "Saturna Island (Lyall Harbour)",
+      "res_open": 60,
+      "location": "100 East Point Rd, Saturna Island, V0N 2Y0",
+      "foot_close": 5
+    },
+    "PWR": {
+      "res_close": 30,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/powell-river-westview/PWR",
+      "land_group": "Sunshine Coast (PR)",
+      "long_id": "powell-river-westview",
+      "coordinates": "-124.530658,49.835132",
+      "veh_close": 5,
+      "name": "Powell River (Westview)",
+      "res_open": 60,
+      "location": "4465 Willingdon Avenue, Powell River, V8A 2M7",
+      "foot_close": 5
+    },
+    "BOW": {
+      "name": "Bowen Island (Snug Cove)",
+      "long_id": "bowen-island-snug-cove",
+      "coordinates": "-123.3322931,49.3795382",
+      "veh_close": 2,
+      "foot_close": 2,
+      "location": "Snug Cove,  Bowen Island, V0N 1G0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/bowen-island-snug-cove/BOW"
+    },
+    "CMX": {
+      "res_close": 30,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/comox-little-river/CMX",
+      "land_group": "Vancouver Island",
+      "long_id": "comox-little-river",
+      "coordinates": "-124.925036,49.740313",
+      "veh_close": 5,
+      "name": "Comox (Little River)",
+      "res_open": 60,
+      "location": "1300 Ellenor Rd, Comox, V9M 4B3",
+      "foot_close": 5
+    },
+    "CHM": {
+      "long_id": "chemainus",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/chemainus/CHM",
+      "location": "2830 Oak Street, Chemainus, V0R 1K1",
+      "land_group": "Vancouver Island",
+      "coordinates": "-123.715136,48.92534",
+      "veh_close": 5,
+      "name": "Chemainus",
+      "foot_close": 5
+    },
+    "MCN": {
+      "long_id": "port-mcneill",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/port-mcneill/MCN",
+      "location": "1626 Beach Drive , Port McNeill, V0N 2R0",
+      "land_group": "Vancouver Island",
+      "coordinates": "-127.085702,50.592623",
+      "veh_close": 5,
+      "name": "Port McNeill",
+      "foot_close": 5
+    },
+    "VES": {
+      "long_id": "salt-spring-island-vesuvius-bay",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/salt-spring-island-vesuvius-bay/VES",
+      "location": "Vesuvius Bay Road, Salt Spring Island, V8K 1L6",
+      "land_group": "Salt Spring Island",
+      "coordinates": "-123.5735051,48.881266",
+      "veh_close": 5,
+      "name": "Salt Spring Island (Vesuvius Bay)",
+      "foot_close": 3
+    },
+    "LNG": {
+      "res_close": 30,
+      "info_url": "/travel-boarding/terminal-directions-parking-food/sunshine-coast-langdale/LNG",
+      "land_group": "Sunshine Coast",
+      "long_id": "sunshine-coast-langdale",
+      "coordinates": "-123.472111,49.433099",
+      "veh_close": 5,
+      "name": "Sunshine Coast (Langdale)",
+      "res_open": 60,
+      "location": "1376 Port Mellon Highway, Langdale, V0N 1V0",
+      "foot_close": 5
+    },
+    "ERL": {
+      "long_id": "sunshine-coast-earls-cove",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/sunshine-coast-earls-cove/ERL",
+      "location": "16550 Sunshine Coast Highway, Madeira Park, V0N 2H4",
+      "land_group": "Sunshine Coast",
+      "coordinates": "-124.009413,49.752831",
+      "veh_close": 5,
+      "name": "Sunshine Coast (Earls Cove)",
+      "foot_close": 5
+    },
+    "TEX": {
+      "name": "Texada Island (Blubber Bay)",
+      "long_id": "texada-island-blubber-bay",
+      "coordinates": "-124.6204304,49.7948117",
+      "land_group": "Sunshine Coast (Texada)",
+      "veh_close": 5,
+      "foot_close": 5,
+      "location": "1000 Blubber Bay Road, Texada Island, V0N 3K0",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/texada-island-blubber-bay/TEX"
+    },
+    "CFT": {
+      "long_id": "crofton",
+      "info_url": "/travel-boarding/terminal-directions-parking-food/crofton/CFT",
+      "location": "1499 Chaplin Street, Crofton, V0R 1R0",
+      "land_group": "Vancouver Island",
+      "coordinates": "-123.6378005,48.8657134",
+      "veh_close": 5,
+      "name": "Crofton",
+      "foot_close": 5
+    }
+  }
+}

@@ -1,1 +1,1 @@
-from .bcferries import get_schedule, find_routes, locations, connections
+from .bcferries import load_data, get_schedule, find_routes
