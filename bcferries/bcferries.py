@@ -16,7 +16,7 @@ from .classes import (
     FerryConnection,
     Location,
     LocationId,
-    # LocationType,
+    LocationType,
     Terminal,
     City,
     FerrySailing,
@@ -38,7 +38,9 @@ def load_data(path: str = 'data/data.json'):
         info = json.load(file)
     add_locations(info.get('terminals'), Terminal)
     add_locations(info.get('cities'), City)
-    add_connections(info.get('car_connections'), CarConnection)
+    add_connections(info.get('car_connections_terminal_terminal'), CarConnection)
+    add_connections(info.get('car_connections_city_terminal'), CarConnection)
+    add_connections(info.get('car_connections_city_city'), CarConnection)
     add_connections(info.get('ferry_connections'), FerryConnection)
     add_connections(info.get('air_connections'), AirConnection)
     add_connections(info.get('bus_connections'), BusConnection)
@@ -46,18 +48,19 @@ def load_data(path: str = 'data/data.json'):
 
 def add_locations(new_locations: dict, obj: Location):
     if not new_locations:
-        new_locations = {}
+        return
     for location_id, location_info in new_locations.items():
         location_info['id'] = location_id
         location = obj.from_dict(location_info)
         location.connections = {}
+        location.city_connections = {}
         locations[location_id] = location
     # print(f'Added {new_locations.__len__()} {obj.type.name.lower()} locations')
 
 
 def add_connections(new_connections: dict[ConnectionId, dict], obj: Connection):
     if not new_connections:
-        new_connections = {}
+        return
     for connection_id, connection_info in new_connections.items():
         connection_info['id'] = connection_id
         add_connection(connection_id, connection_info, obj)
@@ -79,7 +82,10 @@ def add_connection(connection_id: ConnectionId, connection_info: dict, obj: Base
     connection_info['location_to'] = location_to
     connection = obj.from_dict(connection_info)
     connections[connection_id] = connection
-    location_from.connections[id_to] = connection
+    if location_to.type == LocationType.CITY:
+        location_from.city_connections[id_to] = connection
+    else:
+        location_from.connections[id_to] = connection
 
 
 def find_routes(
@@ -88,29 +94,45 @@ def find_routes(
     routes: list[Route],
     current_route: list[LocationId] = None,
     dead_ends: list[ConnectionId] = None,
+    lands: list[str] = None,
     last_connection_type: ConnectionType = ConnectionType.NONE
 ):
     if current_route is None:
         current_route = []
     if dead_ends is None:
         dead_ends = []
+    if lands is None:
+        lands = []
     current_route.append(next_point)
     if next_point == end_point:
         routes.append(current_route.copy())
         del current_route[-1]
         return True
     next_location = locations[next_point]
+    if end_point in next_location.city_connections:
+        current_route.append(end_point)
+        routes.append(current_route.copy())
+        del current_route[-2:]
+        return True
     res = False
     for c in next_location.connections.values():
         connection: Connection = c
         if connection.location_to.id in current_route or connection.id in dead_ends:
             continue
-        if connection.type == ConnectionType.CAR and connection.type == last_connection_type:
+        if connection.type == ConnectionType.CAR and last_connection_type == ConnectionType.CAR:
             continue  # drive only shortest way between terminals
-        if find_routes(connection.location_to.id, end_point, routes, current_route, dead_ends, connection.type):
+        if connection.type == ConnectionType.FERRY:
+            if connection.location_to.land_group and connection.location_to.land_group in lands:
+                continue
+        if connection.type == ConnectionType.FERRY and connection.location_from.land_group:
+            lands.append(connection.location_from.land_group)
+        else:
+            lands.append('')
+        if find_routes(connection.location_to.id, end_point, routes, current_route, dead_ends, lands, connection.type):
             res = True
         else:
             dead_ends.append(connection.id)
+        del lands[-1]
     del current_route[-1]
     return res
 
@@ -133,19 +155,21 @@ def make_route_plans(route: Route, opt: RoutePlanOptions):
 
 def add_plan_segment(route: Route, destination_index: int, segments: list[RoutePlanSegment], start_time: datetime, plans: list[RoutePlan], options: RoutePlanOptions) -> bool:
     res = False
-    if (destination_index == len(route)):
-        slen = len(segments)
-        if slen == 0:
-            return False  # can we be here?
-        plan = RoutePlan(segments)
-        plans.append(plan)
-        return True
-    id_from = route[destination_index - 1]
-    id_to = route[destination_index]
-    connection_id = f"{id_from}-{id_to}"
-    connection = connections[connection_id]
-    match connection.type:
-        case ConnectionType.FERRY:
+    try:
+        if destination_index == len(route):
+            if not segments:  # empty list?
+                return False  # can we be here?
+            plan = RoutePlan(segments)
+            plans.append(plan)
+            return True
+        id_from = route[destination_index - 1]
+        id_to = route[destination_index]
+        connection_id = f"{id_from}-{id_to}"
+        try:
+            connection = connections[connection_id]
+        except KeyError:
+            pass
+        if connection.type == ConnectionType.FERRY:
             depature_terminal: Terminal = connection.location_from
             day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
             schedule = get_schedule(id_from, id_to, day)
@@ -154,6 +178,8 @@ def add_plan_segment(route: Route, destination_index: int, segments: list[RouteP
                 arrive_time = day + datetime_to_timedelta(datetime.strptime(sailing.arrive_time, '%H:%M:%S'))
                 if (arrive_time < depart_time):
                     arrive_time += timedelta(days=1)
+                if options.only_closest_ferry and start_time.date() != arrive_time.date():
+                    break  # overnight
                 if (depart_time < start_time):
                     continue
                 deadline_name = "departure"
@@ -164,7 +190,7 @@ def add_plan_segment(route: Route, destination_index: int, segments: list[RouteP
                 if options.assured_load and depature_terminal.assured_close and depature_terminal.assured_close > 0:
                     deadline_name = "assured loading checkin close"
                     wait_minutes = depature_terminal.assured_close
-                elif depature_terminal.res_close and depature_terminal.res_close > 0:
+                elif depature_terminal.res_close and depature_terminal.res_close > 0 and connection.bookable:
                     # FIXME: depature_terminal.res_peak_extra
                     deadline_name = "booking checkin close"
                     wait_minutes = depature_terminal.res_close
@@ -178,7 +204,6 @@ def add_plan_segment(route: Route, destination_index: int, segments: list[RouteP
                 deadline_time = deadline_time - timedelta(minutes=options.buffer_time_minutes)
                 if (deadline_time < start_time):
                     continue
-                new_segments = segments.copy()
                 s = RoutePlanSegment(connection)
                 if deadline_time < depart_time:
                     description = f"Arrive at {connection.location_from.name} terminal "
@@ -188,23 +213,31 @@ def add_plan_segment(route: Route, destination_index: int, segments: list[RouteP
                     s.times.append(TimeInterval(TimeIntervalType.WAIT, deadline_time, depart_time, description))
                 s.times.append(TimeInterval(TimeIntervalType.TRAVEL, depart_time, arrive_time, f"Ferry sailing from {connection.location_from.name} to {connection.location_to.name}"))
                 # print(s.times[0].description)
-                new_segments.append(s)
-                if add_plan_segment(route, destination_index + 1, new_segments, arrive_time, plans, options) is False:
+                segments.append(s)
+                if add_plan_segment(route, destination_index + 1, segments, arrive_time, plans, options) is False:
                     break
+                del segments[destination_index - 1:]
                 res = True
                 if options.only_closest_ferry and sum([1 for s in segments if s.connection.type == ConnectionType.FERRY]) > 0:
                     break
-        case ConnectionType.CAR:
+        elif connection.type == ConnectionType.CAR:
+            if options.only_closest_ferry and connection.duration > 6 * 60 * 60:
+                return False
             s = RoutePlanSegment(connection)
             arrive_time = start_time + timedelta(seconds=connection.duration)
+            if options.only_closest_ferry and start_time.date() != arrive_time.date():
+                return False  # overnight
             s.times.append(
                 TimeInterval(TimeIntervalType.TRAVEL,
                              start_time,
                              arrive_time,
-                             f"Driving {round(connection.distance)} km to {connection.location_to.name}"))
+                             f"Drive {round(connection.distance)} km to {connection.location_to.name}"))
             # print(s.times[0].start.strftime("%H:%M") + " " + s.times[0].description)
             segments.append(s)
             res = add_plan_segment(route, destination_index + 1, segments, arrive_time, plans, options)
+    finally:
+        del segments[destination_index - 1:]
+
     return res
 
 
@@ -241,7 +274,6 @@ def get_schedule(depart_terminal_id: str, arrive_terminal_id: str, date: typing.
                 return schedule
     # print(f"Requesting schedule {depart_terminal_id}-{arrive_terminal_id}...")
     url = f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
-    print(url)
     doc = requests.get(url).text.replace('\u2060', '')
     # print("Parsing schedule...")
     soup = BeautifulSoup(markup=doc, features='html.parser')
@@ -250,5 +282,4 @@ def get_schedule(depart_terminal_id: str, arrive_terminal_id: str, date: typing.
     os.makedirs(cache_dir, mode=0o666, exist_ok=True)
     with open(filepath, 'w') as file:
         json.dump(dataclasses.asdict(schedule), file, indent=4)
-    # print("OK")
     return schedule

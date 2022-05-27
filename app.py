@@ -3,6 +3,7 @@ from bcferries.bcferries import load_data, find_routes, make_routes_plans, get_s
 from datetime import datetime
 from bcferries.classes import JSONEncoderEx, RoutePlanOptions
 import json
+import time
 
 app = Flask(__name__)
 
@@ -52,10 +53,12 @@ def routeplans():
     opt.only_closest_ferry = request.args.get('show-all') == 'false'
     opt.buffer_time_minutes = (int)(request.args.get('buff-min'))
     routes = []
+    start = time.perf_counter()
     find_routes(id_from, id_to, routes)
-    for route in routes:
-        print(route)
+    print(f'Generated {len(routes)} routes for {id_from}-{id_to} in {time.perf_counter() - start} s')
+    start = time.perf_counter()
     plans = make_routes_plans(routes, opt)
+    print(f'Generated {len(plans)} plans for {id_from}-{id_to} in {time.perf_counter() - start} s')
     plans.sort(key=lambda x: x.duration)
     return json.dumps(plans, indent=4, cls=JSONEncoderEx)
 

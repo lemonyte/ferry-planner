@@ -3,8 +3,7 @@ from datetime import datetime
 from dataclasses import dataclass, fields, is_dataclass, asdict, field
 from enum import Enum
 import json
-# from multiprocessing import connection
-# import re
+from urllib.parse import quote
 
 ConnectionId = str
 LocationId = str
@@ -97,6 +96,7 @@ class Location(BaseDataClass):
     type: LocationType
     land_group: str = None
     # connections: dict[str, Connection] = {}
+    # city_connections: dict[str, Connection] = {}
 
 
 @dataclass
@@ -116,6 +116,9 @@ class Terminal(Location):
     hostled_open: int = None  # hostled vehicles check-in open time in minutes
     hostled_close: int = None  # hostled vehicles check-in close time in minutes
 
+    def map_parameter(self) -> str:
+        return ','.join(self.coordinates.split(',')[::-1])
+
 
 @dataclass
 class City(Location):
@@ -123,6 +126,9 @@ class City(Location):
     province: str = None
     country: str = None
     type: LocationType = LocationType.CITY
+
+    def map_parameter(self) -> str:
+        return ','.join([self.name, self.province, self.country])
 
 
 @dataclass
@@ -143,6 +149,7 @@ class FerryConnection(Connection):
     distance: float = 0.2
     fuel: float = 0.2
     type: ConnectionType = ConnectionType.FERRY
+    bookable: bool = False
 
 
 @dataclass
@@ -181,10 +188,17 @@ class RoutePlanSegment(BaseDataClass):
 class RoutePlan(BaseDataClass):
     segments: list[RoutePlanSegment] = field(default_factory=list[RoutePlanSegment])
     duration: int = 0  # time in seconds from start to end
-    distance: float = 0  # total driving distance
+    driving_distance: float = 0  # total driving distance
+    depart_time: int = 0
+    arrive_time: int = 0
+    driving_time: int = 0
+    maps_url: str = ''
 
-    def __init__(self, segments: list[RoutePlanSegment]):
-        segments = deepcopy(segments)
+    def __init__(self, _segments: list[RoutePlanSegment]):
+        new_segments: list[RoutePlanSegment] = []
+        for segment in _segments:
+            new_segments.append(RoutePlanSegment(segment.connection, deepcopy(segment.times)))
+        segments = new_segments
         slen = len(segments)
         if slen == 0:
             return  # can we be here?
@@ -195,24 +209,35 @@ class RoutePlan(BaseDataClass):
             for t in first_segment.times:
                 t.start += free_time
                 t.end += free_time
-        print(first_segment.times[0])
         # add free time to segments
-        for i in range(0, slen - 1):
+        for i in range(slen - 1):
             free_start = segments[i].times[-1].end
             free_end = segments[i + 1].times[0].start
             free_time = free_end - free_start
             if free_time.total_seconds() > 0:
                 segments[i].times.append(TimeInterval(TimeIntervalType.FREE, free_start, free_end, "Free time"))
         # add Arrival
+        depart_time = first_segment.times[0].start
+        self.depart_time = depart_time
+        first_segment.times.insert(0, TimeInterval(TimeIntervalType.TRAVEL, depart_time, depart_time, f"Depart from {first_segment.connection.location_from.name}"))
         last_segment = segments[-1]
-        arrive_time = segments[-1].times[-1].end
-        last_segment.times.append(TimeInterval(TimeIntervalType.TRAVEL, arrive_time, arrive_time, f"Arrive to {last_segment.connection.location_to.name}"))
+        arrive_time = last_segment.times[-1].end
+        self.arrive_time = arrive_time
+        last_segment.times.append(TimeInterval(TimeIntervalType.TRAVEL, arrive_time, arrive_time, f"Arrive at {last_segment.connection.location_to.name}"))
         # calc duration/distance
-        self.duration = int((last_segment.times[-1].end - first_segment.times[0].start).total_seconds())
-        self.distance = 0
+        self.duration = int((arrive_time - depart_time).total_seconds())
+        self.driving_distance = 0
         for s in segments:
-            self.distance += s.connection.distance
+            self.driving_distance += s.connection.distance
+            for t in s.times:
+                if t.type == TimeIntervalType.TRAVEL and s.connection.type == ConnectionType.CAR:
+                    self.driving_time += (t.end - t.start).total_seconds()
         self.segments = segments
+        url = 'https://www.google.com/maps/dir/?api=1&origin={origin}&destination={destination}&waypoints={waypoints}'
+        waypoints = []
+        for s in segments[1:]:
+            waypoints.append(s.connection.location_from.map_parameter())
+        self.maps_url = url.format(origin=quote(first_segment.connection.location_from.map_parameter()), destination=quote(last_segment.connection.location_to.map_parameter()), waypoints=quote('|'.join(waypoints)))
 
 
 class RoutePlanOptions:
