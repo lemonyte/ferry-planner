@@ -1,0 +1,23 @@
+.timeline-tooltip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+}
+
+.hover-underline:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.routes-table-row:hover {
+    background-color: skyblue !important;
+    cursor: pointer;
+}
+
+.selected-row {
+    background-color: deepskyblue !important;
+}

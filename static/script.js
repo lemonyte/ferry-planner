@@ -3,12 +3,13 @@ var input_from = document.querySelector('#from');
 var input_to = document.querySelector('#to');
 var loading_spinner = document.querySelector('#loading-spinner');
 var message_card = document.querySelector('#message-card');
-var timeline_card = document.querySelector('#timeline-card')
+var tab_routes_timelines = document.querySelector('#tab-routes-timeline')
 var schedule_card = document.querySelector('#schedule-card')
 var schedule = document.querySelector('#schedule');
 var schedule_table = document.querySelector('#schedule-table');
-var routes_card = document.querySelector('#routes-card');
+var tab_routes_table = document.querySelector('#tab-routes-table');
 var routes_table = document.querySelector('#routes-table');
+var routes_card = document.querySelector('#routes-card')
 makeTableSortable(routes_table.parentNode);
 var button_submit = document.querySelector('#submit');
 var input_date = document.querySelector('#date');
@@ -20,11 +21,13 @@ d3.select('body')
     .append('div')
     .attr('id', 'tooltip')
     .attr('style', 'position: absolute; opacity: 0;')
-    .attr('class', 'd3-tip');
+    .attr('class', 'timeline-tooltip');
 var tooltip = d3.select('#tooltip');
 
 // globals
 var plans;
+var timelinesFilled;
+var routesTableFilled;
 var selectedRow = null;
 var colors_map = {
     'FREE': 'lightgreen',
@@ -35,6 +38,7 @@ var colors_map = {
     'AIR': 'aqua'
 }
 
+resetState();
 
 // initialize input controls
 input_date.setAttribute("value", new Date().toJSON().slice(0, 10));
@@ -94,7 +98,6 @@ async function getRoutePlans() {
                 break;
         }
         url_params[input.id] = value;
-        //console.log(input.id + ": " + value);
     }
     url = new URL(window.location);
     for (var [key, value] in url_params) {
@@ -192,7 +195,6 @@ async function submit() {
                 showMessage("", "No itineraries found. Try select another date and/or locations.", "yellow");
             }
             else {
-                timeline_card.hidden = false;
                 for (var plan of plans) {
                     var via = new Set();
                     for (var s of plan.segments) {
@@ -206,8 +208,16 @@ async function submit() {
                     }
                     plan.via = Array.from(via);
                 }
-                fillRoutesTable(plans);
-                drawChart(plans);
+
+                
+                // force sort
+                var sort = current_sort;
+                current_sort = null;
+                sortPlans(sort);
+
+                // show routes
+                routes_card.hidden = false;
+                showTab('tab-routes-table');
             }
         }
         catch (e) {
@@ -223,10 +233,15 @@ async function submit() {
 
 function resetState() {
     debug.textContent = "";
-    timeline_card.hidden = true;
     routes_card.hidden = true;
+    tab_routes_table.hidden = true;
+    tab_routes_timelines.hidden = true;
+    current_tab = null;
+    tabs_state = {}
     schedule_card.hidden = true;
     plans = null;
+    routesTableFilled = false;
+    timelinesFilled = false;
 }
 
 function secondsToString(seconds) {
@@ -276,22 +291,27 @@ function durationToString(time) {
     return timeString;
 }
 
-function onRowSelected(row, i) {
-    console.log("clicked: " + i)
+function onRowSelected(row, id) {
     $(routes_table).children().removeClass('selected-row');
     $(row).addClass('selected-row');
-    onPlanSelected(i);
+    onPlanSelected(id);
 }
 
-function fillRoutesTable(data) {
+function updateRoutesTable() {
+    if (tab_routes_table.hidden)
+        return;
+    if (tabs_state.routes_table_sort == current_sort)
+        return;
+    tabs_state.routes_table_sort = current_sort;
+
     // clear table
     while (routes_table.firstChild)
         routes_table.removeChild(routes_table.firstChild);
 
-    for (var i = 0; i < data.length; i++) {
-        plan = data[i];
-        var tr = $('<tr/>').attr('onclick', `javascript:onRowSelected(this,${i});`);
-        $('<td/>').html(`<a href="javascript:onPlanSelected(${i});">Route ${plan.id}</a> ${plan.segments.length}`).appendTo(tr);
+    for (var i = 0; i < plans.length; i++) {
+        plan = plans[i];
+        var tr = $('<tr/>').attr('onclick', `javascript:onRowSelected(this,${plan.id});`).addClass('routes-table-row');
+        $('<td/>').text(`Route ${plan.id}`).appendTo(tr);
         $('<td/>').addClass("w3-center").text(timeToString(plan.depart_time)).appendTo(tr);
         $('<td/>').addClass("w3-center").text(timeToString(plan.arrive_time)).appendTo(tr);
         $('<td/>').addClass("w3-center").text(durationToString(plan.duration * 1000)).appendTo(tr);
@@ -312,16 +332,22 @@ function fillRoutesTable(data) {
         $('<td/>').addClass("w3-center").text(Array.from(via).splice(1, 1).join(',')).appendTo(tr);
         $(routes_table).append(tr);
     }
-    routes_card.hidden = false;
 }
 
-function drawChart(data) {
-    debug.textContent = JSON.stringify(data, null, 2);
+function updateTimelines() {
+    if (tab_routes_timelines.hidden)
+        return;
+    if (tabs_state.timelines_sort == current_sort)
+        return;
+    tabs_state.timelines_sort = current_sort;
+
+    d3.select("#timeline").select("svg").remove();
+
+    //debug.textContent = JSON.stringify(plans, null, 2);
     var chartRows = [];
-    for (var i = 0; i < data.length; i++) {
-        var plan = data[i];
+    for (var plan of plans) {
         chartRow = {
-            label: `Itinerary ${plan.id}`,
+            label: `Route ${plan.id}`,
             times: []
         }
         var text;
@@ -362,7 +388,6 @@ function drawChart(data) {
         })
         .stack();
 
-    d3.select("#timeline").select("svg").remove();
 
     var w = $("#timeline").width();
     var svg = d3.select("#timeline").append("svg").attr('width', w)
@@ -392,23 +417,19 @@ function drawChart(data) {
     var c = svg
         .selectAll('.timeline-label')
         .html((d, i) => {
-            return `<a href="javascript:onPlanSelected(${i});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plan.id}</a>`;
+            return `<a href="javascript:onPlanSelected(${plans[i].id});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
         });
     svg.on('mouseleave', () => tooltip.style('opacity', 0));
-
 }
 
-function onPlanSelected(i) {
+function onPlanSelected(id) {
     schedule_card.hidden = false;
-    //schedule_card.height = 1000;
-    var plan = plans[i];
+    var plan = plans.find(p => p.id == id);
 
     // clear table
     while (schedule_table.firstChild)
         schedule_table.removeChild(schedule_table.firstChild);
 
-
-    // var node;
     // schedule.appendChild(node = document.createElement('div').className('schedule-header'));
     document.getElementById('schedule-header').textContent = `${plan.segments[0].connection.location_from.name} to ${plan.segments.slice(-1)[0].connection.location_to.name}`
     // schedule.appendChild(node = document.createElement('div').className('schedule-via'));
@@ -428,27 +449,54 @@ function onPlanSelected(i) {
             $('<td/>').addClass("w3-center").text(duration > 0 ? durationToString(duration) : "--").appendTo(tr);
         }
     }
+    schedule_card.scrollIntoView({block: "start", inline: "nearest", behavior: "smooth"});
 }
 
-function sortTable(sortBy) {
+function sortPlans(sortBy) {
+    if (sortBy == current_sort)
+        return;
     plans.sort((a, b) => {
         if (a[sortBy] > b[sortBy])
             return 1;
         return -1;
-    })
-    fillRoutesTable(plans);
-    drawChart(plans);
+    });
+    current_sort = sortBy;
+    updateTabsData();
 }
 
 function makeTableSortable(table) {
     table.querySelectorAll('th') // get all the table header elements
         .forEach((element, columnNo) => { // add a click handler for each 
-            element.addEventListener('click', event => {
-                var sortBy = element.getAttribute('sort');
-                if (!sortBy)
-                    showMessage('', 'No sort property on ' + element.innerText, 'yellow')
-                else
-                    sortTable(sortBy);
-            })
+            var sortBy = element.getAttribute('sort');
+            if (sortBy)
+                element.addEventListener('click', event => sortPlans(sortBy));
         });
+}
+
+var current_tab;
+var current_sort = "duration";
+var tabs_state = {}
+
+function updateTabsData()
+{
+    updateRoutesTable();
+    updateTimelines();
+}
+
+function showTab(id) {
+    if (current_tab)
+    {
+        if (current_tab.id == id)
+            return; // already
+        current_tab.hidden = true;
+    }
+    current_tab = document.getElementById(id);
+    current_tab.hidden = false; // .style.display = "block"/"none";
+    updateTabsData();
+}
+
+function toggleShow(id)
+{
+    var e = document.getElementById(id);
+    e.hidden = !e.hidden;
 }
