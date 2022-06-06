@@ -7,3 +7,4 @@ cache*
 nicepage/
 raw*/
 scripts/
+*.sock

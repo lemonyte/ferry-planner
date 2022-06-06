@@ -4,9 +4,9 @@ By [LemonPi314](https://github.com/LemonPi314)
 Short description.
 ## Requirements
 - [Python 3.9](https://www.python.org/downloads/) or higher
-- [`flask`]
-- [`requests`]
-- [`BeautifulSoup`]
+- [`flask`](https://pypi.org/project/Flask/)
+- [`requests`](https://pypi.org/project/requests/)
+- [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)
 ## Usage
 Usage instructions.
 ## Disclaimer

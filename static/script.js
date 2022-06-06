@@ -51,7 +51,7 @@ function initInput(input) {
     input.setAttribute('temp', '');
     input.setAttribute('onmouseover', 'this.temp=this.value; this.value="";');
     input.setAttribute('onmouseout', 'this.value=this.temp;');
-    input.setAttribute('onfocusin', 'on_input();');
+    input.setAttribute('onfocusin', 'onInput();');
     input.setAttribute('onfocusout', 'autoComplete(this);');
 }
 
