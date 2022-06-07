@@ -12,7 +12,7 @@ jobs:
     steps:
     - name: Send request to update endpoint
       run: |
-        STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" ${{ format("{0}/api/update", secrets.WEBSITE_URL) }})
+        STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" ${{ format('{0}/api/update', secrets.WEBSITE_URL) }})
         echo "$STATUS_CODE" >> $GITHUB_ENV
         echo "Server responded with status code: $STATUS_CODE"
     - name: Fail if response status code is not 200
