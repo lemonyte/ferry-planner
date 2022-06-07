@@ -421,9 +421,8 @@ function updateTimelines() {
         })
         .stack();
 
-    var w = document.querySelector('#timeline').width();
-    // var w = $('#timeline').width();
-    var svg = d3.select('#timeline').append('svg').attr('width', w)
+    var width = document.querySelector('#timeline').clientWidth - 40; // FIXME: magic number
+    var svg = d3.select('#timeline').append('svg').attr('width', width)
         .datum(chartRows)
         .call(chart);
 
