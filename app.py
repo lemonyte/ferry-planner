@@ -83,9 +83,9 @@ def routeplans():
 
 @app.route('/api/update')
 def update():
-    p = subprocess.run(['sh', 'update.sh'])
+    p = subprocess.run(['/bin/sh', 'update.sh'], shell=True)
     if p.returncode == 0:
-        return 200
+        return "Update successful"
     else:
         abort(500)
 
