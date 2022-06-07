@@ -438,7 +438,7 @@ function onPlanSelected(id) {
     document.getElementById('schedule-details').innerHTML =
         `Route ${plan.id}.` +
         ` Total time: <strong>${durationToString(plan.duration * 1000)}</strong>,` +
-        ` driving distance ${plan.driving_distance.toFixed(1)} km. <a href="${plan.maps_url}" target="_blank">View on Google Maps</a>`;
+        ` driving distance ${plan.driving_distance.toFixed(1)} km. <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
 
     for (var s of plan.segments) {
         for (var t of s.times) {

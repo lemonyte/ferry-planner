@@ -1,12 +1,13 @@
+import json
 from copy import deepcopy
 from datetime import datetime
 from dataclasses import dataclass, fields, is_dataclass, asdict, field
 from enum import Enum
-import json
 from urllib.parse import quote
 
 ConnectionId = str
 LocationId = str
+Route = list[str]
 
 
 class ConnectionType(Enum):
@@ -36,7 +37,11 @@ class BaseDataClass:
             if isinstance(value, dict) and is_dataclass(f.type):
                 setattr(self, f.name, f.type(**value))
             elif isinstance(value, (list, tuple)) and is_dataclass(f.type.__args__[0]):
-                setattr(self, f.name, [f.type.__args__[0](**v) if isinstance(v, dict) else v for v in value])
+                setattr(
+                    self,
+                    f.name,
+                    [f.type.__args__[0](**v) if isinstance(v, dict) else v for v in value],
+                )
 
     @classmethod
     def from_dict(cls, obj):
@@ -65,7 +70,14 @@ class BaseDataClass:
             elif is_dataclass(value):
                 value = asdict(value)
             elif isinstance(value, (list, tuple)):
-                value = [v.to_dict() if isinstance(v, BaseDataClass) else asdict(v) if is_dataclass(v) else v for v in value]
+                value = [
+                    v.to_dict()
+                    if isinstance(v, BaseDataClass)
+                    else asdict(v)
+                    if is_dataclass(v)
+                    else v
+                    for v in value
+                ]
             result[f.name] = value
         return result
 
@@ -110,7 +122,7 @@ class Terminal(Location):
     foot_close: int = None  # foot passangers check-in close time in minutes
     res_open: int = None  # booking check-in open time in minutes
     res_close: int = None  # booking check-in close time in minutes
-    res_peak_extra: int = None  # booking check-in extra time required at peak season (add to res_open/res_close)
+    res_peak_extra: int = None  # booking check-in extra time required at peak season
     assured_open: int = None  # assured loading check-in open time in minutes
     assured_close: int = None  # assured loading check-in close time in minutes
     hostled_open: int = None  # hostled vehicles check-in open time in minutes
@@ -175,7 +187,17 @@ class TimeInterval(BaseDataClass):
     description: str
 
     def __str__(self):
-        return self.start.strftime('%H:%M') + " " + self.description
+        return f"{self.start.strftime('%H:%M')} {self.description}"
+
+
+@dataclass
+class RoutePlanOptions:
+    start_time: datetime = datetime.now()  # start time to calculate plan
+    buffer_time_minutes: int = 15  # extra time to arrive before deadline
+    assured_load: bool = False
+    hostled: bool = False
+    only_closest_ferry: bool = True
+    reservation: bool = True
 
 
 @dataclass
@@ -192,7 +214,7 @@ class RoutePlan(BaseDataClass):
     depart_time: int = 0
     arrive_time: int = 0
     driving_time: int = 0
-    maps_url: str = ''
+    map_url: str = ''
 
     def __init__(self, _segments: list[RoutePlanSegment]):
         new_segments: list[RoutePlanSegment] = []
@@ -215,16 +237,33 @@ class RoutePlan(BaseDataClass):
             free_end = segments[i + 1].times[0].start
             free_time = free_end - free_start
             if free_time.total_seconds() > 0:
-                segments[i].times.append(TimeInterval(TimeIntervalType.FREE, free_start, free_end, "Free time"))
-        # add Arrival
+                segments[i].times.append(
+                    TimeInterval(TimeIntervalType.FREE, free_start, free_end, "Free time")
+                )
+        # add arrival
         depart_time = first_segment.times[0].start
         self.depart_time = depart_time
-        first_segment.times.insert(0, TimeInterval(TimeIntervalType.TRAVEL, depart_time, depart_time, f"Depart from {first_segment.connection.location_from.name}"))
+        first_segment.times.insert(
+            0,
+            TimeInterval(
+                TimeIntervalType.TRAVEL,
+                depart_time,
+                depart_time,
+                f"Depart from {first_segment.connection.location_from.name}",
+            ),
+        )
         last_segment = segments[-1]
         arrive_time = last_segment.times[-1].end
         self.arrive_time = arrive_time
-        last_segment.times.append(TimeInterval(TimeIntervalType.TRAVEL, arrive_time, arrive_time, f"Arrive at {last_segment.connection.location_to.name}"))
-        # calc duration/distance
+        last_segment.times.append(
+            TimeInterval(
+                TimeIntervalType.TRAVEL,
+                arrive_time,
+                arrive_time,
+                f"Arrive at {last_segment.connection.location_to.name}",
+            )
+        )
+        # calculate duration and distance
         self.duration = int((arrive_time - depart_time).total_seconds())
         self.driving_distance = 0
         for s in segments:
@@ -237,27 +276,20 @@ class RoutePlan(BaseDataClass):
         waypoints = []
         for s in segments[1:]:
             waypoints.append(s.connection.location_from.map_parameter())
-        self.maps_url = url.format(origin=quote(first_segment.connection.location_from.map_parameter()), destination=quote(last_segment.connection.location_to.map_parameter()), waypoints=quote('|'.join(waypoints)))
-
-
-class RoutePlanOptions:
-    start_time: datetime  # start time to calculate plane
-    buffer_time_minutes: int = 15  # extra time to arrive before deadline
-    assured_load: bool = False
-    hostled: bool = False
-    only_closest_ferry: bool = True
-    reservation: bool = True
-
-
-Route = list[LocationId]
+        self.map_url = url.format(
+            origin=quote(first_segment.connection.location_from.map_parameter()),
+            destination=quote(last_segment.connection.location_to.map_parameter()),
+            waypoints=quote('|'.join(waypoints)),
+        )
 
 
 class JSONEncoderEx(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, datetime):
             return o.isoformat()
-        if is_dataclass(o):
+        elif is_dataclass(o):
             return asdict(o)
-        if isinstance(o, Enum):
+        elif isinstance(o, Enum):
             return o.name
-        return json.JSONEncoder.default(self, o)
+        else:
+            return json.JSONEncoder.default(self, o)

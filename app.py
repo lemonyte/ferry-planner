@@ -1,9 +1,11 @@
-from flask import Flask, request, render_template, abort, jsonify
-from bcferries.bcferries import load_data, find_routes, make_routes_plans, get_schedule, locations
-from datetime import datetime
-from bcferries.classes import JSONEncoderEx, RoutePlanOptions
-import json
 import time
+import json
+from datetime import datetime
+from flask import Flask, request, render_template, abort, jsonify
+
+from bcferries import load_data, find_routes, make_routes_plans, get_schedule
+from bcferries.bcferries import locations
+from bcferries.classes import JSONEncoderEx, RoutePlanOptions
 
 app = Flask(__name__)
 
@@ -75,4 +77,4 @@ def routeplans():
 
 if __name__ == '__main__':
     load_data('data/data.json')
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0')
