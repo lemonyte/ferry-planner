@@ -55,7 +55,6 @@ def add_locations(new_locations: dict, obj: Location):
         location.connections = {}
         location.city_connections = {}
         locations[location_id] = location
-    # print(f'Added {new_locations.__len__()} {obj.type.name.lower()} locations')
 
 
 def add_connections(new_connections: dict[ConnectionId, dict], obj: Connection):
@@ -71,7 +70,6 @@ def add_connections(new_connections: dict[ConnectionId, dict], obj: Connection):
         if not connections.get(connection_id):
             connection_info['id'] = connection_id
             add_connection(connection_id, connection_info, obj)
-    # print(f'Added {new_connections.__len__()} {obj.type.name.lower()} connections')
 
 
 def add_connection(connection_id: ConnectionId, connection_info: dict, obj: BaseDataClass):
@@ -205,6 +203,7 @@ def add_plan_segment(route: Route, destination_index: int, segments: list[RouteP
                 if (deadline_time < start_time):
                     continue
                 s = RoutePlanSegment(connection)
+                s.schedule_url = schedule.
                 if deadline_time < depart_time:
                     description = f"Arrive at {connection.location_from.name} terminal "
                     if options.buffer_time_minutes > 0:
@@ -245,8 +244,8 @@ def datetime_to_timedelta(dt):
     return timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second)
 
 
-def parse_table(table: BeautifulSoup) -> list:
-    sailings: list[FerrySailing] = []
+def parse_table(table: BeautifulSoup) -> list[FerrySailing]:
+    sailings = []
     if table:
         for row in table.tbody.find_all('tr'):
             depart_time = datetime.strptime(row.find_all('td')[1].text, '%I:%M %p').strftime('%H:%M:%S')
@@ -278,7 +277,7 @@ def get_schedule(depart_terminal_id: str, arrive_terminal_id: str, date: typing.
     # print("Parsing schedule...")
     soup = BeautifulSoup(markup=doc, features='html.parser')
     table = soup.find('table', id='dailyScheduleTableOnward')
-    schedule = FerrySchedule(date.isoformat(), depart_terminal_id, arrive_terminal_id, parse_table(table))
+    schedule = FerrySchedule(date.isoformat(), depart_terminal_id, arrive_terminal_id, parse_table(table), url)
     os.makedirs(cache_dir, mode=0o666, exist_ok=True)
     with open(filepath, 'w') as file:
         json.dump(dataclasses.asdict(schedule), file, indent=4)

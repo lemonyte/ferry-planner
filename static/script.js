@@ -10,11 +10,26 @@ var schedule_table = document.querySelector('#schedule-table');
 var tab_routes_table = document.querySelector('#tab-routes-table');
 var routes_table = document.querySelector('#routes-table');
 var routes_card = document.querySelector('#routes-card')
-makeTableSortable(routes_table.parentNode);
 var button_submit = document.querySelector('#submit');
 var input_date = document.querySelector('#date');
 var timeline = document.querySelector('#timeline');
 var debug = document.querySelector('#debug');
+var sort_option = document.getElementById('sort-option');
+
+sort_option.setAttribute("onchange", "sortPlans(this.value);");
+// init sort options
+routes_table.parentNode.querySelectorAll('th') // get all the table header elements
+    .forEach((element, columnNo) => { // add a click handler for each 
+        var sortBy = element.getAttribute('sort');
+        if (sortBy)
+        {
+            element.addEventListener('click', event => sortPlans(sortBy));
+            var opt = document.createElement("option");
+            opt.text = element.textContent;
+            opt.value = sortBy;
+            sort_option.add(opt, null);
+        }
+    });
 
 // add tooltip
 d3.select('body')
@@ -209,7 +224,7 @@ async function submit() {
                     plan.via = Array.from(via);
                 }
 
-                
+
                 // force sort
                 var sort = current_sort;
                 current_sort = null;
@@ -438,18 +453,21 @@ function onPlanSelected(id) {
     document.getElementById('schedule-details').innerHTML =
         `Route ${plan.id}.` +
         ` Total time: <strong>${durationToString(plan.duration * 1000)}</strong>,` +
-        ` driving distance ${plan.driving_distance.toFixed(1)} km. <a href="${plan.maps_url}" target="_blank">View on Google Maps</a>`;
+        ` driving distance ${plan.driving_distance.toFixed(1)} km. <a href="${plan.maps_url}" class="w3-btn w3-small" target="_blank">View on Google Maps</a>`;
 
     for (var s of plan.segments) {
         for (var t of s.times) {
             var tr = $('<tr/>').appendTo(schedule_table);
             $('<td/>').addClass("w3-center").text(timeToString(t.start)).appendTo(tr);
-            $('<td/>').text(t.description).appendTo(tr);
+            var desc = t.description
+            if (s.schedule_url)
+                desc += ` <a href="${s.schedule_url}" target="_blank">View sailing schedule.</a>`
+            $('<td/>').html(desc).appendTo(tr);
             var duration = new Date(t.end) - new Date(t.start);
             $('<td/>').addClass("w3-center").text(duration > 0 ? durationToString(duration) : "--").appendTo(tr);
         }
     }
-    schedule_card.scrollIntoView({block: "start", inline: "nearest", behavior: "smooth"});
+    schedule_card.scrollIntoView({ block: "start", inline: "nearest", behavior: "smooth" });
 }
 
 function sortPlans(sortBy) {
@@ -461,31 +479,22 @@ function sortPlans(sortBy) {
         return -1;
     });
     current_sort = sortBy;
+    sort_option.value = sortBy;
     updateTabsData();
 }
 
-function makeTableSortable(table) {
-    table.querySelectorAll('th') // get all the table header elements
-        .forEach((element, columnNo) => { // add a click handler for each 
-            var sortBy = element.getAttribute('sort');
-            if (sortBy)
-                element.addEventListener('click', event => sortPlans(sortBy));
-        });
-}
 
 var current_tab;
 var current_sort = "duration";
 var tabs_state = {}
 
-function updateTabsData()
-{
+function updateTabsData() {
     updateRoutesTable();
     updateTimelines();
 }
 
 function showTab(id) {
-    if (current_tab)
-    {
+    if (current_tab) {
         if (current_tab.id == id)
             return; // already
         current_tab.hidden = true;
@@ -495,8 +504,7 @@ function showTab(id) {
     updateTabsData();
 }
 
-function toggleShow(id)
-{
+function toggleShow(id) {
     var e = document.getElementById(id);
     e.hidden = !e.hidden;
 }

@@ -87,6 +87,7 @@ class FerrySchedule(BaseDataClass):
     depart_terminal: str
     arrive_terminal: str
     sailings: list[FerrySailing]
+    url: str = ''
 
 
 @dataclass
@@ -182,6 +183,7 @@ class TimeInterval(BaseDataClass):
 class RoutePlanSegment(BaseDataClass):
     connection: Connection
     times: list[TimeInterval] = field(default_factory=list[TimeInterval])
+    schedule_url: str = ''
 
 
 @dataclass
@@ -197,7 +199,7 @@ class RoutePlan(BaseDataClass):
     def __init__(self, _segments: list[RoutePlanSegment]):
         new_segments: list[RoutePlanSegment] = []
         for segment in _segments:
-            new_segments.append(RoutePlanSegment(segment.connection, deepcopy(segment.times)))
+            new_segments.append(RoutePlanSegment(segment.connection, deepcopy(segment.times), segment.schedule_url))
         segments = new_segments
         slen = len(segments)
         if slen == 0:
