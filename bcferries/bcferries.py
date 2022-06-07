@@ -353,7 +353,7 @@ def get_schedule(
         arrive_terminal_id,
         parse_table(table),
     )
-    os.makedirs(cache_dir, mode=0o666, exist_ok=True)
+    os.makedirs(cache_dir, mode=0o755, exist_ok=True)
     with open(filepath, 'w') as file:
         json.dump(dataclasses.asdict(schedule), file, indent=4)
     return schedule
