@@ -1,0 +1,16 @@
+name: Update Server
+
+on:
+  push:
+    branches:
+      - deploy
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send request to update endpoint
+      run: |
+        echo -n 'Server responded with status code: '
+        curl -s -o /dev/null -w '%{http_code}\n' ${{ format('{0}/api/update', secrets.WEBSITE_URL) }}

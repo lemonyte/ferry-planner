@@ -1,5 +1,6 @@
 import time
 import json
+import subprocess
 from datetime import datetime
 from flask import Flask, request, render_template, abort, jsonify
 
@@ -78,6 +79,15 @@ def routeplans():
     print(f'Generated {len(plans)} plans for {id_from}-{id_to} in {time.perf_counter() - start} s')
     plans.sort(key=lambda x: x.duration)
     return json.dumps(plans, indent=4, cls=JSONEncoderEx)
+
+
+@app.route('/api/update')
+def update():
+    p = subprocess.run(['sh', 'update.sh'])
+    if p.returncode == 0:
+        return 200
+    else:
+        abort(500)
 
 
 if __name__ == '__main__':
