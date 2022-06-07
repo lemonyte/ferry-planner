@@ -235,7 +235,7 @@ def add_plan_segment(
                 if deadline_time < start_time:
                     continue
                 s = RoutePlanSegment(connection)
-                s.schedule_url = schedule.
+                s.schedule_url = schedule.url
                 if deadline_time < depart_time:
                     description = f"Arrive at {connection.location_from.name} terminal "
                     if options.buffer_time_minutes > 0:

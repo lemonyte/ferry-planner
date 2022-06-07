@@ -61,7 +61,6 @@ var colors_map = {
 
 resetState();
 loadLocations();
-makeTableSortable(routes_table.parentNode);
 
 // initialize input controls
 input_date.setAttribute('value', new Date().toJSON().slice(0, 10));
