@@ -10,7 +10,6 @@ var schedule_table = document.querySelector('#schedule-table');
 var tab_routes_table = document.querySelector('#tab-routes-table');
 var routes_table = document.querySelector('#routes-table');
 var routes_card = document.querySelector('#routes-card')
-makeTableSortable(routes_table.parentNode);
 var button_submit = document.querySelector('#submit');
 var input_date = document.querySelector('#date');
 var timeline = document.querySelector('#timeline');
@@ -29,6 +28,12 @@ var plans;
 var timelinesFilled;
 var routesTableFilled;
 var selectedRow = null;
+var current_tab;
+var current_sort = 'duration';
+var tabs_state = {};
+var locations = {};
+var locations_names = {};
+var message_hidden = true;
 var colors_map = {
     'FREE': 'lightgreen',
     'WAIT': 'lightgray',
@@ -36,15 +41,31 @@ var colors_map = {
     'FERRY': 'lightblue',
     'BUS': 'darkblue',
     'AIR': 'aqua'
-}
+};
 
 resetState();
+loadLocations();
+makeTableSortable(routes_table.parentNode);
 
 // initialize input controls
-input_date.setAttribute("value", new Date().toJSON().slice(0, 10));
-input_date.setAttribute("min", new Date().toJSON().slice(0, 10));
+input_date.setAttribute('value', new Date().toJSON().slice(0, 10));
+input_date.setAttribute('min', new Date().toJSON().slice(0, 10));
 initInput(input_from);
 initInput(input_to);
+
+// load locations list
+async function loadLocations() {
+    locations = await getData('/locations');
+    var list = document.getElementById('locations');
+    for (var id in locations) {
+        var location_name = locations[id];
+        locations_names[location_name] = id;
+        var option = document.createElement('option');
+        option.value = location_name;
+        list.appendChild(option);
+    }
+    await parseParams();
+}
 
 function initInput(input) {
     input.addEventListener('input', onInput);
@@ -57,12 +78,12 @@ function initInput(input) {
 
 function onInput() {
     hideMessage();
-};
+}
 
 function autoComplete(input) {
     var value = input.value.trim();
-    if (value != " " && !isValidLocation(value)) {
-        var r = new RegExp(value, "i");
+    if (value != ' ' && !isValidLocation(value)) {
+        var r = new RegExp(value, 'i');
         for (var name in locations_names) {
             if (name.search(r) >= 0) {
                 input.value = name;
@@ -90,10 +111,10 @@ async function getRoutePlans() {
     for (var input of document.getElementsByTagName('input')) {
         var value = input.value;
         switch (input.type) {
-            case "text":
+            case 'text':
                 value = locations_names[value];
                 break;
-            case "checkbox":
+            case 'checkbox':
                 value = input.checked;
                 break;
         }
@@ -107,34 +128,17 @@ async function getRoutePlans() {
             url.searchParams.append(key, value);
     }
     // window.location = url
-    plans = await getData("/routeplans", url_params);
+    plans = await getData('/routeplans', url_params);
     for (var i = 0; i < plans.length; i++) {
         plans[i].id = i + 1;
     }
     return plans
 }
 
-// load locations list
-var locations = {};
-var locations_names = {};
-(async () => {
-    locations = await getData("/locations");
-    var list = document.getElementById('locations');
-    for (var id in locations) {
-        location_name = locations[id];
-        locations_names[location_name] = id;
-        var option = document.createElement('option');
-        option.value = location_name;
-        list.appendChild(option);
-    };
-    await parseParams();
-})();
-
 function isValidLocation(name) {
     name = name.trim();
-    return name != " " && name in locations_names;
+    return name != ' ' && name in locations_names;
 }
-
 
 async function parseParams() {
     var params = new URLSearchParams(window.location.search);
@@ -151,7 +155,6 @@ async function parseParams() {
     }
 }
 
-var message_hidden = true;
 function showMessage(heading, text, color) {
     message_card.hidden = false;
     message_hidden = false;
@@ -159,11 +162,12 @@ function showMessage(heading, text, color) {
         heading = '';
     if (heading.length > 0)
         heading += ' : ';
-    message_card.querySelector("#message-heading").textContent = heading;
-    message_card.querySelector("#message-content").textContent = text;
-    message_card.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
-    // message_card.querySelector("#message-heading").setAttribute("class", `w3-container w3-${color}`);
+    message_card.querySelector('#message-heading').textContent = heading;
+    message_card.querySelector('#message-content').textContent = text;
+    message_card.setAttribute('class', `w3-panel w3-card-4 w3-${color}`);
+    // message_card.querySelector('#message-heading').setAttribute('class', `w3-container w3-${color}`);
 }
+
 function hideMessage() {
     if (message_hidden == true)
         return;
@@ -172,17 +176,17 @@ function hideMessage() {
 }
 
 function showError(message) {
-    showMessage('Error', message, 'red');
+    showMessage("Error", message, 'red');
 }
 
 async function submit() {
     resetState();
     if (!isValidLocation(input_from.value))
-        showError('Please select start location');
+        showError("Please select start location");
     else if (!isValidLocation(input_to.value))
-        showError('Please select destination location');
+        showError("Please select destination location");
     else if (input_from.value == input_to.value)
-        showError('Start and destination location cannot be the same');
+        showError("Start and destination location cannot be the same");
     else {
         try {
             loading_spinner.hidden = false;
@@ -208,13 +212,10 @@ async function submit() {
                     }
                     plan.via = Array.from(via);
                 }
-
-                
                 // force sort
                 var sort = current_sort;
                 current_sort = null;
                 sortPlans(sort);
-
                 // show routes
                 routes_card.hidden = false;
                 showTab('tab-routes-table');
@@ -230,14 +231,13 @@ async function submit() {
     }
 }
 
-
 function resetState() {
-    debug.textContent = "";
+    debug.textContent = '';
     routes_card.hidden = true;
     tab_routes_table.hidden = true;
     tab_routes_timelines.hidden = true;
     current_tab = null;
-    tabs_state = {}
+    tabs_state = {};
     schedule_card.hidden = true;
     plans = null;
     routesTableFilled = false;
@@ -260,7 +260,7 @@ function timeToString(time) {
     hours = dateObj.getHours();
     minutes = dateObj.getMinutes();
     seconds = dateObj.getSeconds();
-    ampm = 'am'
+    ampm = 'am';
     if (hours >= 12) {
         hours -= 12;
         ampm = 'pm';
@@ -285,15 +285,17 @@ function durationToString(time) {
     else if (days >= 2)
         timeString = `${days} days `;
     else
-        timeString = '1 day '
+        timeString = '1 day ';
     timeString += hours.toString().padStart(2, '0')
         + ':' + minutes.toString().padStart(2, '0');
     return timeString;
 }
 
 function onRowSelected(row, id) {
-    $(routes_table).children().removeClass('selected-row');
-    $(row).addClass('selected-row');
+    for (var child of routes_table.children) {
+        child.classList.remove('selected-row');
+    }
+    row.classList.add('selected-row')
     onPlanSelected(id);
 }
 
@@ -310,11 +312,30 @@ function updateRoutesTable() {
 
     for (var i = 0; i < plans.length; i++) {
         plan = plans[i];
-        var tr = $('<tr/>').attr('onclick', `javascript:onRowSelected(this,${plan.id});`).addClass('routes-table-row');
-        $('<td/>').text(`Route ${plan.id}`).appendTo(tr);
-        $('<td/>').addClass("w3-center").text(timeToString(plan.depart_time)).appendTo(tr);
-        $('<td/>').addClass("w3-center").text(timeToString(plan.arrive_time)).appendTo(tr);
-        $('<td/>').addClass("w3-center").text(durationToString(plan.duration * 1000)).appendTo(tr);
+
+        var tr = document.createElement('tr');
+        tr.setAttribute('onclick', `javascript:onRowSelected(this,${plan.id});`);
+        tr.classList.add('routes-table-row');
+
+        var td = document.createElement('td');
+        td.textContent = `Route ${plan.id}`
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.classList.add('w3-center');
+        td.textContent = timeToString(plan.depart_time);
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.classList.add('w3-center')
+        td.textContent = timeToString(plan.arrive_time)
+        tr.appendChild(td)
+
+        var td = document.createElement('td');
+        td.classList.add('w3-center');
+        td.textContent = durationToString(plan.duration * 1000);
+        tr.appendChild(td)
+
         // var drive_time = 0;
         var via = new Set();
         for (var s of plan.segments) {
@@ -327,10 +348,24 @@ function updateRoutesTable() {
             }
         }
 
-        $('<td/>').addClass("w3-center").text(durationToString(plan.driving_time * 1000)).appendTo(tr);
-        $('<td/>').addClass("w3-center").text(`${plan.driving_distance.toFixed(1)} km`).appendTo(tr);
-        $('<td/>').addClass("w3-center").text(Array.from(via).splice(1, 1).join(',')).appendTo(tr);
-        $(routes_table).append(tr);
+        var td = document.createElement('td');
+        td.classList.add('w3-center');
+        td.textContent = durationToString(plan.driving_time * 1000);
+        tr.appendChild(td)
+
+
+        var td = document.createElement('td');
+        td.classList.add('w3-center');
+        td.textContent = `${plan.driving_distance.toFixed(1)} km`;
+        tr.appendChild(td)
+
+
+        var td = document.createElement('td');
+        td.classList.add('w3-center');
+        td.textContent = Array.from(via).splice(1, 1).join(',');
+        tr.appendChild(td)
+
+        routes_table.appendChild(tr);
     }
 }
 
@@ -340,9 +375,7 @@ function updateTimelines() {
     if (tabs_state.timelines_sort == current_sort)
         return;
     tabs_state.timelines_sort = current_sort;
-
-    d3.select("#timeline").select("svg").remove();
-
+    d3.select('#timeline').select('svg').remove();
     //debug.textContent = JSON.stringify(plans, null, 2);
     var chartRows = [];
     for (var plan of plans) {
@@ -372,7 +405,7 @@ function updateTimelines() {
     }
     var chart = d3.timeline();
 
-    var colorScale = d3.scale.ordinal()
+    //var colorScale = d3.scale.ordinal()
     // .range(Object.values(colors_map))
     // .domain(Object.keys(colors_map));
     var chart = d3.timeline()
@@ -381,16 +414,16 @@ function updateTimelines() {
         .showAxisTop()
         .margin({ left: 90, right: 10, top: 10, bottom: 10 })
         .tickFormat({
-            format: d3.time.format("%I %p"),
+            format: d3.time.format('%I %p'),
             tickTime: d3.time.hours,
             tickInterval: 3,
             tickSize: 1
         })
         .stack();
 
-
-    var w = $("#timeline").width();
-    var svg = d3.select("#timeline").append("svg").attr('width', w)
+    var w = document.querySelector('#timeline').width();
+    // var w = $('#timeline').width();
+    var svg = d3.select('#timeline').append('svg').attr('width', w)
         .datum(chartRows)
         .call(chart);
 
@@ -408,17 +441,17 @@ function updateTimelines() {
         })
         .mouseover((o, i, d) => {
             tooltip
-                .html(timeToString(o.starting_time) + " " + o.description)
+                .html(timeToString(o.starting_time) + ' ' + o.description)
                 .transition()
                 .duration(100)
                 .style('opacity', 1);
         });
 
-    var c = svg
-        .selectAll('.timeline-label')
+    svg.selectAll('.timeline-label')
         .html((d, i) => {
             return `<a href="javascript:onPlanSelected(${plans[i].id});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
         });
+
     svg.on('mouseleave', () => tooltip.style('opacity', 0));
 }
 
@@ -433,7 +466,7 @@ function onPlanSelected(id) {
     // schedule.appendChild(node = document.createElement('div').className('schedule-header'));
     document.getElementById('schedule-header').textContent = `${plan.segments[0].connection.location_from.name} to ${plan.segments.slice(-1)[0].connection.location_to.name}`
     // schedule.appendChild(node = document.createElement('div').className('schedule-via'));
-    document.getElementById('schedule-via').textContent = 'via ' + [...new Set(plan.segments.slice(0, -1).map(s => s.connection.location_to.name))].join(", ");
+    document.getElementById('schedule-via').textContent = 'via ' + [...new Set(plan.segments.slice(0, -1).map(s => s.connection.location_to.name))].join(', ');
 
     document.getElementById('schedule-details').innerHTML =
         `Route ${plan.id}.` +
@@ -442,14 +475,27 @@ function onPlanSelected(id) {
 
     for (var s of plan.segments) {
         for (var t of s.times) {
-            var tr = $('<tr/>').appendTo(schedule_table);
-            $('<td/>').addClass("w3-center").text(timeToString(t.start)).appendTo(tr);
-            $('<td/>').text(t.description).appendTo(tr);
+            var tr = document.createElement('tr');
+            schedule_table.appendChild(tr);
+
+            var td = document.createElement('td');
+            td.classList.add('w3-center');
+            td.textContent = timeToString(t.start);
+            tr.appendChild(td);
+
+            var td = document.createElement('td');
+            td.textContent = t.description;
+            tr.appendChild(td);
+
             var duration = new Date(t.end) - new Date(t.start);
-            $('<td/>').addClass("w3-center").text(duration > 0 ? durationToString(duration) : "--").appendTo(tr);
+
+            var td = document.createElement('td');
+            td.classList.add('w3-center');
+            td.textContent = duration > 0 ? durationToString(duration) : '--';
+            tr.appendChild(td);
         }
     }
-    schedule_card.scrollIntoView({block: "start", inline: "nearest", behavior: "smooth"});
+    schedule_card.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' });
 }
 
 function sortPlans(sortBy) {
@@ -473,30 +519,23 @@ function makeTableSortable(table) {
         });
 }
 
-var current_tab;
-var current_sort = "duration";
-var tabs_state = {}
-
-function updateTabsData()
-{
+function updateTabsData() {
     updateRoutesTable();
     updateTimelines();
 }
 
 function showTab(id) {
-    if (current_tab)
-    {
+    if (current_tab) {
         if (current_tab.id == id)
-            return; // already
+            return;
         current_tab.hidden = true;
     }
     current_tab = document.getElementById(id);
-    current_tab.hidden = false; // .style.display = "block"/"none";
+    current_tab.hidden = false; // .style.display = 'block'/'none';
     updateTabsData();
 }
 
-function toggleShow(id)
-{
+function toggleShow(id) {
     var e = document.getElementById(id);
     e.hidden = !e.hidden;
 }
