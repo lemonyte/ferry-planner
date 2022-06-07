@@ -10,6 +10,11 @@ from bcferries.classes import JSONEncoderEx, RoutePlanOptions
 app = Flask(__name__)
 
 
+@app.before_request
+def init():
+    load_data('data/data.json')
+
+
 @app.route('/')
 def root():
     return render_template('index.html')
@@ -76,5 +81,4 @@ def routeplans():
 
 
 if __name__ == '__main__':
-    load_data('data/data.json')
     app.run(debug=True, host='0.0.0.0')
