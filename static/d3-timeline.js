@@ -244,6 +244,7 @@
         chartData = d;
         d.forEach( function(datum, index){
           var data = datum.times;
+          //data = data.sort((a,b) => {return b.ending_time-a.ending_time;})
           var hasLabel = (typeof(datum.label) != "undefined");
 
           // issue warning about using id per data set. Ids should be individual to data elements
@@ -253,8 +254,10 @@
 
           if (backgroundColor) { appendBackgroundBar(yAxisMapping, index, g, data, datum); }
 
-          g.selectAll("svg").data(data).enter()
-            .append(function(d, i) {
+          var groups = g.selectAll("svg").data(data).enter()
+            .append('g');
+
+          groups.append(function(d, i) {
                 return document.createElementNS(d3.ns.prefix.svg, "display" in d? d.display:display);
             })
             .attr("x", getXPos)
@@ -304,9 +307,8 @@
 
               return d.id ? d.id : "timelineItem_"+index+"_"+i;
             })
-          ;
-
-          g.selectAll("svg").data(data).enter()
+            ;
+            groups
             .append("text")
             .attr("x", getXTextPos)
             .attr("y", getStackTextPosition)
@@ -314,6 +316,15 @@
               return d.label;
             })
           ;
+
+          // g.selectAll("svg").data(data).enter()
+          //   .append("text")
+          //   .attr("x", getXTextPos)
+          //   .attr("y", getStackTextPosition)
+          //   .text(function(d) {
+          //     return d.label;
+          //   })
+          // ;
 
           if (rowSeparatorsColor) {
             var lineYAxis = ( itemHeight + itemMargin / 2 + margin.top + (itemHeight + itemMargin) * yAxisMapping[index]);

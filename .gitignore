@@ -8,3 +8,4 @@ nicepage/
 raw*/
 scripts/
 *.sock
+*.bak

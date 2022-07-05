@@ -1,4 +1,5 @@
 import json
+import hashlib
 from copy import deepcopy
 from datetime import datetime
 from dataclasses import dataclass, fields, is_dataclass, asdict, field
@@ -217,6 +218,7 @@ class RoutePlan(BaseDataClass):
     arrive_time: int = 0
     driving_time: int = 0
     map_url: str = ''
+    hash: str = ''
 
     def __init__(self, _segments: list[RoutePlanSegment]):
         new_segments: list[RoutePlanSegment] = []
@@ -268,12 +270,16 @@ class RoutePlan(BaseDataClass):
         # calculate duration and distance
         self.duration = int((arrive_time - depart_time).total_seconds())
         self.driving_distance = 0
+        hash = hashlib.md5()
         for s in segments:
             self.driving_distance += s.connection.distance
+            hash.update(s.connection.location_to.id.encode('utf-8'))
             for t in s.times:
+                hash.update(t.start.isoformat().encode('utf-8'))
                 if t.type == TimeIntervalType.TRAVEL and s.connection.type == ConnectionType.CAR:
                     self.driving_time += (t.end - t.start).total_seconds()
         self.segments = segments
+        self.hash = hash.hexdigest()
         url = 'https://www.google.com/maps/dir/?api=1&origin={origin}&destination={destination}&waypoints={waypoints}'
         waypoints = []
         for s in segments[1:]:

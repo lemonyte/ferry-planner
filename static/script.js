@@ -50,14 +50,49 @@ var tabs_state = {};
 var locations = {};
 var locations_names = {};
 var message_hidden = true;
-var colors_map = {
+
+var activity_colors_map = {
     'FREE': 'lightgreen',
     'WAIT': 'lightgray',
-    'CAR': 'yellow',
-    'FERRY': 'lightblue',
+    'CAR': 'orange',
+    'FERRY': 'aqua  ',
     'BUS': 'darkblue',
     'AIR': 'aqua'
 };
+
+var activities_info = {
+    'FREE': {
+        color: 'lightgreen',
+        icon: '\uf118', // far fa-smile
+        icon_class: 'fa',
+    },
+    'WAIT': {
+        color: 'lightgray',
+        icon: '\uf017', // fa fa-clock-o, far fa-clock, fas fa-clock
+        icon_class: 'fa',
+    },
+    'CAR': {
+        color: 'orange',
+        icon: '\uf1b9', // fa/fas fa-car, fas fa-car-alt:f5de, fas fa-car-side:f5e4 directions_car:e531
+        icon_class: 'fa',
+    },
+    'FERRY': {
+        color: 'aqua',
+        icon: '\uf21a', // fa/fas fa-ship
+        icon_class: 'fa', 
+    },
+    'BUS': {
+        color: 'darkblue',
+        icon: '\uf207', // fa/fas fa-bus
+        icon_class: 'fa',
+    },
+    'AIR': {
+        color: 'lightblue',
+        icon: '\uf072', // fa/fas fa-plane
+        icon_class: 'fa',
+    },
+};
+
 
 resetState();
 loadLocations();
@@ -221,11 +256,11 @@ async function submit() {
                         if (lg) {
                             var pos = lg.indexOf(' (');
                             if (pos > 0)
-                                lg = lg.substring(0, pos);
+                                lg = lg.substring(0, pos).trim();
                             via.add(lg);
                         }
                     }
-                    plan.via = Array.from(via);
+                    plan.via = Array.from(via).splice(1, 1);
                 }
                 // force sort
                 var sort = current_sort;
@@ -351,18 +386,6 @@ function updateRoutesTable() {
         td.textContent = durationToString(plan.duration * 1000);
         tr.appendChild(td)
 
-        // var drive_time = 0;
-        var via = new Set();
-        for (var s of plan.segments) {
-            var lg = s.connection.location_from.land_group;
-            if (lg) {
-                var pos = lg.indexOf(' (');
-                if (pos > 0)
-                    lg = lg.substring(0, pos);
-                via.add(lg);
-            }
-        }
-
         var td = document.createElement('td');
         td.classList.add('w3-center');
         td.textContent = durationToString(plan.driving_time * 1000);
@@ -377,7 +400,7 @@ function updateRoutesTable() {
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
-        td.textContent = Array.from(via).splice(1, 1).join(',');
+        td.textContent = plan.via.join(',');
         tr.appendChild(td)
 
         routes_table.appendChild(tr);
@@ -387,45 +410,93 @@ function updateRoutesTable() {
 function updateTimelines() {
     if (tab_routes_timelines.hidden)
         return;
-    if (tabs_state.timelines_sort == current_sort)
+    var current_coloring = document.getElementById('color-option').value;
+    if (tabs_state.timelines_sort == current_sort && tabs_state.timelines_coloring == current_coloring)
         return;
     tabs_state.timelines_sort = current_sort;
+    tabs_state.timelines_coloring = current_coloring;
     d3.select('#timeline').select('svg').remove();
     //debug.textContent = JSON.stringify(plans, null, 2);
     var chartRows = [];
+    var coloring_keys = new Set();
     for (var plan of plans) {
         chartRow = {
             label: `Route ${plan.id}`,
             times: []
         }
-        var text;
+        var location;
+        var land_group;
         for (var s of plan.segments) {
             for (var t of s.times) {
-                s_name = s.connection.location_from.id.length == 3 ? s.connection.location_from.id : s.connection.location_from.name;
-                chartRow.times.push({
+                var label = '';
+                var segment_type = t.type == 'TRAVEL' ? s.connection.type : t.type;
+                var activity_info = activities_info[segment_type]; 
+                if (location == null || t.type == 'TRAVEL')
+                {
+                    if (location != s.connection.location_to)
+                    {
+                        location =  s.connection.location_to;
+                        land_group = location.land_group;
+                        if (land_group == undefined)
+                        {
+                            land_group = null;
+                            if (location.location.indexOf('Island') > 0
+                                || location.name.indexOf('Island') > 0)
+                            land_group = 'Islands';
+                        }
+                        if (land_group && land_group.indexOf('(') > 0)
+                            land_group = land_group.substring(0, land_group.indexOf('(')).trim();
+                        
+                        //label = location.id.length == 3 ? location.id : location.name;
+                    }
+                }
+                if (activity_info.icon)
+                    label = `<tspan class="${activity_info.icon_class}">${activity_info.icon}<tspan>` + label;
+
+                var t2 = {
                     description: t.description,
-                    label: s_name != text ? s_name : null,
-                    name: s.connection.location_from.land_group,
-                    segment_type: t.type == 'TRAVEL' ? s.connection.type : t.type,
+                    segment_type: segment_type,
                     starting_time: new Date(t.start).getTime(),
                     ending_time: new Date(t.end).getTime()
-                });
-                text = s_name;
+                };
+                if (label.length > 0)
+                {
+                    t2.label = ''; // just a placeholder now, will be replaced with _label later
+                    t2._label = label;
+                }
+                var color_key = current_coloring == 'activity' ? segment_type : land_group;
+                if (color_key != null)
+                {
+                    coloring_keys.add(color_key);
+                    t2._color = color_key;
+                }
                 if (t.end == t.start)
-                    chartRow.times[chartRow.times.length - 1].display = 'circle';
-                //table.push([rowName, s.connection.location_from.name, style, t.description, new Date(t.start), new Date(t.end)])
+                {
+                    t2.display = 'circle';
+                    t2._label = ''; // don't show labels for start/finish 
+                    chartRow.times.splice(0,0,t2);
+                }
+                else
+                {
+                   chartRow.times.push(t2);
+                }
             }
         }
         chartRows.push(chartRow);
     }
+
+
     var chart = d3.timeline();
 
-    //var colorScale = d3.scale.ordinal()
-    // .range(Object.values(colors_map))
-    // .domain(Object.keys(colors_map));
+    var colorScale;
+    if (current_coloring == 'activity')
+        colorScale = d3.scale.ordinal().range(Object.values(activity_colors_map)).domain(Object.keys(activity_colors_map));
+    else 
+        colorScale = d3.scale.ordinal().range(d3.scale.category20().range()).domain(Array.from(coloring_keys));
+
     var chart = d3.timeline()
-        // .colors(colorScale)
-        .colorProperty('name')
+        .colors(colorScale)
+        .colorProperty('_color')
         .showAxisTop()
         .margin({ left: 90, right: 10, top: 10, bottom: 10 })
         .tickFormat({
@@ -441,37 +512,90 @@ function updateTimelines() {
         .datum(chartRows)
         .call(chart);
 
-    chart
-        .hover((o, i, d) => {
-            tooltip
-                .style('left', (d3.event.pageX - 30) + 'px')
-                .style('top', (d3.event.pageY + 10) + 'px');
-        })
-        .mouseout((o, i, d) => {
-            tooltip
-                .transition()
-                .duration(100)
-                .style('opacity', 0);
-        })
-        .mouseover((o, i, d) => {
-            tooltip
-                .html(timeToString(o.starting_time) + ' ' + o.description)
-                .transition()
-                .duration(100)
-                .style('opacity', 1);
-        });
+    updateLegend(chart, coloring_keys, current_coloring, document.getElementById('timeline-legend'));
 
     svg.selectAll('.timeline-label')
         .html((d, i) => {
             return `<a href="javascript:onPlanSelected(${plans[i].id});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
         });
 
-    svg.on('mouseleave', () => tooltip.style('opacity', 0));
+    svg.selectAll('text')
+        .style('cursor', 'default')
+        [0].forEach((e) => {
+            assignTooltip(e);
+            var d = e.__data__;
+            if (d && d._label)
+                e.innerHTML = d._label;
+        
+            //if (e.getClientRects()[0].width < e.textLength.baseVal.value)
+            //    e.innerHTML = '';
+        });
+    svg.selectAll('rect')
+        [0].forEach((e) => assignTooltip(e));
+    svg.selectAll('tspan')
+        [0].forEach((e) => assignTooltip(e));
+}
+
+function updateLegend(chart, coloring_keys, current_coloring, legend_element) {
+    coloring_keys = Array.from(coloring_keys);
+    var colorsRange = chart.colors().range();
+    var colorsDomain = chart.colors().domain();
+    var legend = "Legend: ";
+    for (var i = 0; i < colorsRange.length && i < coloring_keys.length; i++) {
+        n = colorsDomain.indexOf(coloring_keys[i]);
+        c = colorsRange[n];
+        legend += `<span>&nbsp;&nbsp;`;
+        legend += `<div style="display:inline-block;height:1em;width:1em;vertical-align:middle;background-color:${c}">&nbsp;</div>&nbsp;`;
+        if (current_coloring == 'activity') {
+            var activity_info = activities_info[coloring_keys[i]];
+            legend += `<span class="${activity_info.icon_class}">${activity_info.icon}</span>`;
+        }
+        legend += `&nbsp;${coloring_keys[i]}</span>`;
+    }
+    legend_element.innerHTML = legend;
+}
+
+function assignTooltip(e)
+{
+    e.onmousemove = (e) => {
+        var n = e.target;
+        if (n.nodeName == 'tspan')
+            n = n.parentNode;
+        if (n.nodeName == 'text')
+            n = n.parentNode;
+        var r = n.getBoundingClientRect();
+        console.log(r);
+        tooltip
+            .style('left', (r.x + window.scrollX) + 'px')
+            .style('top', (r.bottom + + window.scrollY + 3) + 'px');
+    };
+    e.onmouseout = (e) => {
+        tooltip
+            .transition()
+            .duration(100)
+            .style('opacity', 0);
+    };
+    e.onmouseover = (e) => {
+        var o = e.target.__data__;
+        if (!o)
+            o = e.target.parentNode.__data__;
+        if (!o || !o.description)
+            return;
+        //var r = n.getBoundingClientRect();
+        tooltip
+            .html(timeToString(o.starting_time) + ' ' + o.description)
+            .transition()
+            .duration(100)
+            //.style('left', (r.x) + 'px')
+            //.style('top', (r.bottom + 3) + 'px')
+            .style('opacity', 1);
+    };
 }
 
 function onPlanSelected(id) {
     schedule_card.hidden = false;
     var plan = plans.find(p => p.id == id);
+    document.getElementById('rid').value = plan.hash;
 
     // clear table
     while (schedule_table.firstChild)
@@ -485,7 +609,18 @@ function onPlanSelected(id) {
     document.getElementById('schedule-details').innerHTML =
         `Route ${plan.id}.` +
         ` Total time: <strong>${durationToString(plan.duration * 1000)}</strong>,` +
-        ` driving distance ${plan.driving_distance.toFixed(1)} km. <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
+        ` driving distance ${plan.driving_distance.toFixed(1)} km.`;
+        // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
+    var schedule_map = document.getElementById('schedule-map');
+    if (plan.map_url && plan.map_url.length > 0)
+    {
+        schedule_map.href = plan.map_url;
+        schedule_map.hidden = false;
+    }
+    else
+    {
+        schedule_map.hidden = true;
+    }
 
     for (var s of plan.segments) {
         for (var t of s.times) {
@@ -494,12 +629,12 @@ function onPlanSelected(id) {
 
             var td = document.createElement('td');
             td.classList.add('w3-center');
-            td.textContent = timeToString(t.start);
+            td.innerHTML = timeToString(t.start).replace(' ', '&nbsp;');
             tr.appendChild(td);
 
-            var desc = t.description
-            if (s.schedule_url)
-                desc += ` <a href="${s.schedule_url}" target="_blank">View sailing schedule.</a>`
+            var desc = t.description;
+            if (s.schedule_url && t.type == 'TRAVEL')
+                desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 8px!important" href="${s.schedule_url}" target="_blank"><i class="fa fa-list-alt"></i>&nbsp;Schedule</a>`;
             var td = document.createElement('td');
             td.innerHTML = desc;
             tr.appendChild(td);
@@ -548,4 +683,12 @@ function showTab(id) {
 function toggleShow(id) {
     var e = document.getElementById(id);
     e.hidden = !e.hidden;
+}
+
+function onPrint(card)
+{
+    routes_card.classList.add('no-print');
+    schedule_card.classList.add('no-print');
+    document.getElementById(card).classList.remove('no-print');
+    print();
 }

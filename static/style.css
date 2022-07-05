@@ -21,3 +21,9 @@
 .selected-row {
     background-color: deepskyblue !important;
 }
+
+@media print {
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
