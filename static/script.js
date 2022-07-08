@@ -1,28 +1,27 @@
 // find elements
-var input_from = document.querySelector('#from');
-var input_to = document.querySelector('#to');
-var loading_spinner = document.querySelector('#loading-spinner');
-var message_card = document.querySelector('#message-card');
-var tab_routes_timelines = document.querySelector('#tab-routes-timeline')
-var schedule_card = document.querySelector('#schedule-card')
-var schedule = document.querySelector('#schedule');
-var schedule_table = document.querySelector('#schedule-table');
-var tab_routes_table = document.querySelector('#tab-routes-table');
-var routes_table = document.querySelector('#routes-table');
-var routes_card = document.querySelector('#routes-card')
-var button_submit = document.querySelector('#submit');
-var input_date = document.querySelector('#date');
-var timeline = document.querySelector('#timeline');
-var debug = document.querySelector('#debug');
-var sort_option = document.getElementById('sort-option');
+const input_origin = document.querySelector('#origin');
+const input_destination = document.querySelector('#destination');
+const loading_spinner = document.querySelector('#loading-spinner');
+const message_card = document.querySelector('#message-card');
+const tab_routes_timelines = document.querySelector('#tab-routes-timeline')
+const schedule_card = document.querySelector('#schedule-card')
+const schedule = document.querySelector('#schedule');
+const schedule_table = document.querySelector('#schedule-table');
+const tab_routes_table = document.querySelector('#tab-routes-table');
+const routes_table = document.querySelector('#routes-table');
+const routes_card = document.querySelector('#routes-card')
+const button_submit = document.querySelector('#submit');
+const input_date = document.querySelector('#date');
+const timeline = document.querySelector('#timeline');
+const debug = document.querySelector('#debug');
+const sort_option = document.getElementById('sort-option');
 
 sort_option.setAttribute("onchange", "sortPlans(this.value);");
 // init sort options
 routes_table.parentNode.querySelectorAll('th') // get all the table header elements
     .forEach((element, columnNo) => { // add a click handler for each 
-        var sortBy = element.getAttribute('sort');
-        if (sortBy)
-        {
+        const sortBy = element.getAttribute('sort');
+        if (sortBy) {
             element.addEventListener('click', event => sortPlans(sortBy));
             var opt = document.createElement("option");
             opt.text = element.textContent;
@@ -37,7 +36,7 @@ d3.select('body')
     .attr('id', 'tooltip')
     .attr('style', 'position: absolute; opacity: 0;')
     .attr('class', 'timeline-tooltip');
-var tooltip = d3.select('#tooltip');
+const tooltip = d3.select('#tooltip');
 
 // globals
 var plans;
@@ -48,15 +47,50 @@ var current_tab;
 var current_sort = 'duration';
 var tabs_state = {};
 var locations = {};
-var locations_names = {};
+var locations_to_id = {};
+var location_names = [];
 var message_hidden = true;
-var colors_map = {
-    'FREE': 'lightgreen',
-    'WAIT': 'lightgray',
-    'CAR': 'yellow',
-    'FERRY': 'lightblue',
-    'BUS': 'darkblue',
-    'AIR': 'aqua'
+
+const activity_colors_map = {
+    FREE: 'lightgreen',
+    WAIT: 'lightgray',
+    CAR: 'orange',
+    FERRY: 'aqua  ',
+    BUS: 'darkblue',
+    AIR: 'aqua'
+};
+
+const activities_info = {
+    FREE: {
+        color: 'lightgreen',
+        icon: '\uf118', // far fa-smile
+        icon_class: 'fa',
+    },
+    WAIT: {
+        color: 'lightgray',
+        icon: '\uf017', // fa fa-clock-o, far fa-clock, fas fa-clock
+        icon_class: 'fa',
+    },
+    CAR: {
+        color: 'orange',
+        icon: '\uf1b9', // fa/fas fa-car, fas fa-car-alt:f5de, fas fa-car-side:f5e4 directions_car:e531
+        icon_class: 'fa',
+    },
+    FERRY: {
+        color: 'aqua',
+        icon: '\uf21a', // fa/fas fa-ship
+        icon_class: 'fa',
+    },
+    BUS: {
+        color: 'darkblue',
+        icon: '\uf207', // fa/fas fa-bus
+        icon_class: 'fa',
+    },
+    AIR: {
+        color: 'lightblue',
+        icon: '\uf072', // fa/fas fa-plane
+        icon_class: 'fa',
+    },
 };
 
 resetState();
@@ -65,41 +99,63 @@ loadLocations();
 // initialize input controls
 input_date.setAttribute('value', new Date().toJSON().slice(0, 10));
 input_date.setAttribute('min', new Date().toJSON().slice(0, 10));
-initInput(input_from);
-initInput(input_to);
+initInput(input_origin);
+initInput(input_destination);
+
+async function fetchApiData(request, body, method = 'GET') {
+    try {
+        // if (url_params)
+        // request += '?' + new URLSearchParams(url_params)
+        const fetchOptions = {
+            method: method,
+            body: JSON.stringify(body),
+            headers: { 'Content-Type': 'application/json' }
+        }
+        const response = await fetch('/api' + request, fetchOptions);
+        return await response.json();
+    } catch (error) {
+        console.warn("Fetch error: " + error);
+    }
+}
 
 // load locations list
 async function loadLocations() {
-    locations = await getData('/locations');
-    var list = document.getElementById('locations');
-    for (var id in locations) {
-        var location_name = locations[id];
-        locations_names[location_name] = id;
+    locations = await fetchApiData('/locations');
+    for (const id in locations) {
+        locations_to_id[locations[id]] = id;
+    }
+
+    location_names = Object.values(locations);
+    location_names.sort((a, b) => a.localeCompare(b));
+
+    var locations_list = document.getElementById('locations');
+    for (const name of location_names) {
         var option = document.createElement('option');
-        option.value = location_name;
-        list.appendChild(option);
+        option.value = name;
+        locations_list.appendChild(option);
     }
     await parseParams();
 }
 
 function initInput(input) {
     input.addEventListener('input', onInput);
-    input.setAttribute('temp', '');
-    input.setAttribute('onmouseover', 'this.temp=this.value; this.value="";');
-    input.setAttribute('onmouseout', 'this.value=this.temp;');
-    input.setAttribute('onfocusin', 'onInput();');
-    input.setAttribute('onfocusout', 'autoComplete(this);');
+    // input.setAttribute('temp', '');
+    // input.setAttribute('onmouseover', 'this.temp=this.value; this.value="";');
+    // input.setAttribute('onmouseout', 'this.value=this.temp;');
+    input.addEventListener('input', onInput);
+    input.addEventListener('focusout', autoComplete);
 }
 
 function onInput() {
     hideMessage();
 }
 
-function autoComplete(input) {
+function autoComplete(event) {
+    var input = event.target;
     var value = input.value.trim();
-    if (value != ' ' && !isValidLocation(value)) {
+    if (value != '' && !isValidLocation(value)) {
         var r = new RegExp(value, 'i');
-        for (var name in locations_names) {
+        for (var name of location_names) {
             if (name.search(r) >= 0) {
                 input.value = name;
                 input.temp = name;
@@ -110,40 +166,35 @@ function autoComplete(input) {
     }
 }
 
-async function getData(request, url_params) {
-    try {
-        if (url_params)
-            request += '?' + new URLSearchParams(url_params)
-        var response = await fetch('/api' + request);
-        return await response.json();
-    } catch (error) {
-        console.warn("Fetch error: " + error);
-    }
-}
-
 async function getRoutePlans() {
-    url_params = {}
+    var options = {}
     for (var input of document.getElementsByTagName('input')) {
         var value = input.value;
         switch (input.type) {
             case 'text':
-                value = locations_names[value];
+                value = locations_to_id[value];
+                break;
+            case 'number':
+                value = parseInt(value);
                 break;
             case 'checkbox':
                 value = input.checked;
                 break;
+            case 'radio':
+                value = input.checked;
+                break;
         }
-        url_params[input.id] = value;
+        options[input.id] = value;
     }
-    url = new URL(window.location);
-    for (var [key, value] in url_params) {
-        if (url.searchParams.has(key))
-            url.searchParams.set(key, value);
-        else
-            url.searchParams.append(key, value);
-    }
+    // url = new URL(window.location);
+    // for (var [key, value] in options) {
+    //     if (url.searchParams.has(key))
+    //         url.searchParams.set(key, value);
+    //     else
+    //         url.searchParams.append(key, value);
+    // }
     // window.location = url
-    plans = await getData('/routeplans', url_params);
+    plans = await fetchApiData('/routeplans', options, 'POST');
     for (var i = 0; i < plans.length; i++) {
         plans[i].id = i + 1;
     }
@@ -152,7 +203,7 @@ async function getRoutePlans() {
 
 function isValidLocation(name) {
     name = name.trim();
-    return name != ' ' && name in locations_names;
+    return name != ' ' && name in locations_to_id;
 }
 
 async function parseParams() {
@@ -161,11 +212,12 @@ async function parseParams() {
     for (var param of params.entries()) {
         has_params = true;
         var e = document.getElementById(param[0]);
-        if (e) e.value = param[1];
+        if (e)
+            e.value = param[1];
     }
     if (has_params) {
-        autoComplete(input_from);
-        autoComplete(input_to);
+        autoComplete(input_origin);
+        autoComplete(input_destination);
         await submit();
     }
 }
@@ -195,37 +247,36 @@ function showError(message) {
 }
 
 async function submit() {
+    hideMessage();
     resetState();
-    if (!isValidLocation(input_from.value))
+    if (!isValidLocation(input_origin.value))
         showError("Please select start location");
-    else if (!isValidLocation(input_to.value))
+    else if (!isValidLocation(input_destination.value))
         showError("Please select destination location");
-    else if (input_from.value == input_to.value)
+    else if (input_origin.value == input_destination.value)
         showError("Start and destination location cannot be the same");
     else {
         try {
             loading_spinner.hidden = false;
             button_submit.disabled = true;
             plans = await getRoutePlans();
-            if (!plans) {
+            if (!plans)
                 showError("Failed to fetch schedule information");
-            }
-            else if (plans.length == 0) {
+            else if (plans.length == 0)
                 showMessage("", "No itineraries found. Try select another date and/or locations.", "yellow");
-            }
             else {
                 for (var plan of plans) {
                     var via = new Set();
                     for (var s of plan.segments) {
-                        var lg = s.connection.location_from.land_group;
+                        var lg = s.connection.origin.land_group;
                         if (lg) {
                             var pos = lg.indexOf(' (');
                             if (pos > 0)
-                                lg = lg.substring(0, pos);
+                                lg = lg.substring(0, pos).trim();
                             via.add(lg);
                         }
                     }
-                    plan.via = Array.from(via);
+                    plan.via = Array.from(via).splice(1, 1);
                 }
                 // force sort
                 var sort = current_sort;
@@ -351,21 +402,9 @@ function updateRoutesTable() {
         td.textContent = durationToString(plan.duration * 1000);
         tr.appendChild(td)
 
-        // var drive_time = 0;
-        var via = new Set();
-        for (var s of plan.segments) {
-            var lg = s.connection.location_from.land_group;
-            if (lg) {
-                var pos = lg.indexOf(' (');
-                if (pos > 0)
-                    lg = lg.substring(0, pos);
-                via.add(lg);
-            }
-        }
-
         var td = document.createElement('td');
         td.classList.add('w3-center');
-        td.textContent = durationToString(plan.driving_time * 1000);
+        td.textContent = durationToString(plan.driving_duration * 1000);
         tr.appendChild(td)
 
 
@@ -377,7 +416,7 @@ function updateRoutesTable() {
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
-        td.textContent = Array.from(via).splice(1, 1).join(',');
+        td.textContent = plan.via.join(',');
         tr.appendChild(td)
 
         routes_table.appendChild(tr);
@@ -387,45 +426,85 @@ function updateRoutesTable() {
 function updateTimelines() {
     if (tab_routes_timelines.hidden)
         return;
-    if (tabs_state.timelines_sort == current_sort)
+    var current_coloring = document.getElementById('color-option').value;
+    if (tabs_state.timelines_sort == current_sort && tabs_state.timelines_coloring == current_coloring)
         return;
     tabs_state.timelines_sort = current_sort;
+    tabs_state.timelines_coloring = current_coloring;
     d3.select('#timeline').select('svg').remove();
     //debug.textContent = JSON.stringify(plans, null, 2);
     var chartRows = [];
+    var coloring_keys = new Set();
     for (var plan of plans) {
         chartRow = {
             label: `Route ${plan.id}`,
             times: []
         }
-        var text;
+        var location;
+        var land_group;
         for (var s of plan.segments) {
             for (var t of s.times) {
-                s_name = s.connection.location_from.id.length == 3 ? s.connection.location_from.id : s.connection.location_from.name;
-                chartRow.times.push({
+                var label = '';
+                var segment_type = t.type == 'TRAVEL' ? s.connection.type : t.type;
+                var activity_info = activities_info[segment_type];
+                if (location == null || t.type == 'TRAVEL') {
+                    if (location != s.connection.destination) {
+                        location = s.connection.destination;
+                        land_group = location.land_group;
+                        if (land_group == undefined) {
+                            land_group = null;
+                            if (location.address.indexOf('Island') > 0 || location.name.indexOf('Island') > 0)
+                                land_group = 'Islands';
+                        }
+                        if (land_group && land_group.indexOf('(') > 0)
+                            land_group = land_group.substring(0, land_group.indexOf('(')).trim();
+
+                        //label = location.id.length == 3 ? location.id : location.name;
+                    }
+                }
+                if (activity_info.icon)
+                    label = `<tspan class="${activity_info.icon_class}">${activity_info.icon}<tspan>` + label;
+
+                var t2 = {
                     description: t.description,
-                    label: s_name != text ? s_name : null,
-                    name: s.connection.location_from.land_group,
-                    segment_type: t.type == 'TRAVEL' ? s.connection.type : t.type,
+                    segment_type: segment_type,
                     starting_time: new Date(t.start).getTime(),
                     ending_time: new Date(t.end).getTime()
-                });
-                text = s_name;
-                if (t.end == t.start)
-                    chartRow.times[chartRow.times.length - 1].display = 'circle';
-                //table.push([rowName, s.connection.location_from.name, style, t.description, new Date(t.start), new Date(t.end)])
+                };
+                if (label.length > 0) {
+                    t2.label = ''; // just a placeholder now, will be replaced with _label later
+                    t2._label = label;
+                }
+                var color_key = current_coloring == 'activity' ? segment_type : land_group;
+                if (color_key != null) {
+                    coloring_keys.add(color_key);
+                    t2._color = color_key;
+                }
+                if (t.end == t.start) {
+                    t2.display = 'circle';
+                    t2._label = ''; // don't show labels for start/finish 
+                    chartRow.times.splice(0, 0, t2);
+                }
+                else {
+                    chartRow.times.push(t2);
+                }
             }
         }
         chartRows.push(chartRow);
     }
+
+
     var chart = d3.timeline();
 
-    //var colorScale = d3.scale.ordinal()
-    // .range(Object.values(colors_map))
-    // .domain(Object.keys(colors_map));
+    var colorScale;
+    if (current_coloring == 'activity')
+        colorScale = d3.scale.ordinal().range(Object.values(activity_colors_map)).domain(Object.keys(activity_colors_map));
+    else
+        colorScale = d3.scale.ordinal().range(d3.scale.category20().range()).domain(Array.from(coloring_keys));
+
     var chart = d3.timeline()
-        // .colors(colorScale)
-        .colorProperty('name')
+        .colors(colorScale)
+        .colorProperty('_color')
         .showAxisTop()
         .margin({ left: 90, right: 10, top: 10, bottom: 10 })
         .tickFormat({
@@ -441,51 +520,112 @@ function updateTimelines() {
         .datum(chartRows)
         .call(chart);
 
-    chart
-        .hover((o, i, d) => {
-            tooltip
-                .style('left', (d3.event.pageX - 30) + 'px')
-                .style('top', (d3.event.pageY + 10) + 'px');
-        })
-        .mouseout((o, i, d) => {
-            tooltip
-                .transition()
-                .duration(100)
-                .style('opacity', 0);
-        })
-        .mouseover((o, i, d) => {
-            tooltip
-                .html(timeToString(o.starting_time) + ' ' + o.description)
-                .transition()
-                .duration(100)
-                .style('opacity', 1);
-        });
+    updateLegend(chart, coloring_keys, current_coloring, document.getElementById('timeline-legend'));
 
     svg.selectAll('.timeline-label')
         .html((d, i) => {
             return `<a href="javascript:onPlanSelected(${plans[i].id});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
         });
 
-    svg.on('mouseleave', () => tooltip.style('opacity', 0));
+    svg.selectAll('text')
+        .style('cursor', 'default')
+    [0].forEach((e) => {
+        assignTooltip(e);
+        var d = e.__data__;
+        if (d && d._label)
+            e.innerHTML = d._label;
+
+        //if (e.getClientRects()[0].width < e.textLength.baseVal.value)
+        //    e.innerHTML = '';
+    });
+    svg.selectAll('rect')
+    [0].forEach((e) => assignTooltip(e));
+    svg.selectAll('tspan')
+    [0].forEach((e) => assignTooltip(e));
+}
+
+function updateLegend(chart, coloring_keys, current_coloring, legend_element) {
+    coloring_keys = Array.from(coloring_keys);
+    var colorsRange = chart.colors().range();
+    var colorsDomain = chart.colors().domain();
+    var legend = "Legend: ";
+    for (var i = 0; i < colorsRange.length && i < coloring_keys.length; i++) {
+        n = colorsDomain.indexOf(coloring_keys[i]);
+        c = colorsRange[n];
+        legend += `<span>&nbsp;&nbsp;`;
+        legend += `<div style="display:inline-block;height:1em;width:1em;vertical-align:middle;background-color:${c}">&nbsp;</div>&nbsp;`;
+        if (current_coloring == 'activity') {
+            var activity_info = activities_info[coloring_keys[i]];
+            legend += `<span class="${activity_info.icon_class}">${activity_info.icon}</span>`;
+        }
+        legend += `&nbsp;${coloring_keys[i]}</span>`;
+    }
+    legend_element.innerHTML = legend;
+}
+
+function assignTooltip(e) {
+    e.onmousemove = (e) => {
+        var n = e.target;
+        if (n.nodeName == 'tspan')
+            n = n.parentNode;
+        if (n.nodeName == 'text')
+            n = n.parentNode;
+        var r = n.getBoundingClientRect();
+        console.log(r);
+        tooltip
+            .style('left', (r.x + window.scrollX) + 'px')
+            .style('top', (r.bottom + + window.scrollY + 3) + 'px');
+    };
+    e.onmouseout = (e) => {
+        tooltip
+            .transition()
+            .duration(100)
+            .style('opacity', 0);
+    };
+    e.onmouseover = (e) => {
+        var o = e.target.__data__;
+        if (!o)
+            o = e.target.parentNode.__data__;
+        if (!o || !o.description)
+            return;
+        //var r = n.getBoundingClientRect();
+        tooltip
+            .html(timeToString(o.starting_time) + ' ' + o.description)
+            .transition()
+            .duration(100)
+            //.style('left', (r.x) + 'px')
+            //.style('top', (r.bottom + 3) + 'px')
+            .style('opacity', 1);
+    };
 }
 
 function onPlanSelected(id) {
     schedule_card.hidden = false;
     var plan = plans.find(p => p.id == id);
+    document.getElementById('rid').value = plan.hash;
 
     // clear table
     while (schedule_table.firstChild)
         schedule_table.removeChild(schedule_table.firstChild);
 
     // schedule.appendChild(node = document.createElement('div').className('schedule-header'));
-    document.getElementById('schedule-header').textContent = `${plan.segments[0].connection.location_from.name} to ${plan.segments.slice(-1)[0].connection.location_to.name}`
+    document.getElementById('schedule-header').textContent = `${plan.segments[0].connection.origin.name} to ${plan.segments.slice(-1)[0].connection.destination.name}`
     // schedule.appendChild(node = document.createElement('div').className('schedule-via'));
-    document.getElementById('schedule-via').textContent = 'via ' + [...new Set(plan.segments.slice(0, -1).map(s => s.connection.location_to.name))].join(', ');
+    document.getElementById('schedule-via').textContent = 'via ' + [...new Set(plan.segments.slice(0, -1).map(s => s.connection.destination.name))].join(', ');
 
     document.getElementById('schedule-details').innerHTML =
         `Route ${plan.id}.` +
         ` Total time: <strong>${durationToString(plan.duration * 1000)}</strong>,` +
-        ` driving distance ${plan.driving_distance.toFixed(1)} km. <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
+        ` driving distance ${plan.driving_distance.toFixed(1)} km.`;
+    // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
+    var schedule_map = document.getElementById('schedule-map');
+    if (plan.map_url && plan.map_url.length > 0) {
+        schedule_map.href = plan.map_url;
+        schedule_map.hidden = false;
+    }
+    else {
+        schedule_map.hidden = true;
+    }
 
     for (var s of plan.segments) {
         for (var t of s.times) {
@@ -494,12 +634,12 @@ function onPlanSelected(id) {
 
             var td = document.createElement('td');
             td.classList.add('w3-center');
-            td.textContent = timeToString(t.start);
+            td.innerHTML = timeToString(t.start).replace(' ', '&nbsp;');
             tr.appendChild(td);
 
-            var desc = t.description
-            if (s.schedule_url)
-                desc += ` <a href="${s.schedule_url}" target="_blank">View sailing schedule.</a>`
+            var desc = t.description;
+            if (s.schedule_url && t.type == 'TRAVEL')
+                desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 8px!important" href="${s.schedule_url}" target="_blank"><i class="fa fa-list-alt"></i>&nbsp;Schedule</a>`;
             var td = document.createElement('td');
             td.innerHTML = desc;
             tr.appendChild(td);
@@ -528,7 +668,6 @@ function sortPlans(sortBy) {
     updateTabsData();
 }
 
-
 function updateTabsData() {
     updateRoutesTable();
     updateTimelines();
@@ -548,4 +687,11 @@ function showTab(id) {
 function toggleShow(id) {
     var e = document.getElementById(id);
     e.hidden = !e.hidden;
+}
+
+function onPrint(card) {
+    routes_card.classList.add('no-print');
+    schedule_card.classList.add('no-print');
+    document.getElementById(card).classList.remove('no-print');
+    print();
 }
