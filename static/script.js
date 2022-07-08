@@ -1,28 +1,27 @@
 // find elements
-var input_from = document.querySelector('#from');
-var input_to = document.querySelector('#to');
-var loading_spinner = document.querySelector('#loading-spinner');
-var message_card = document.querySelector('#message-card');
-var tab_routes_timelines = document.querySelector('#tab-routes-timeline')
-var schedule_card = document.querySelector('#schedule-card')
-var schedule = document.querySelector('#schedule');
-var schedule_table = document.querySelector('#schedule-table');
-var tab_routes_table = document.querySelector('#tab-routes-table');
-var routes_table = document.querySelector('#routes-table');
-var routes_card = document.querySelector('#routes-card')
-var button_submit = document.querySelector('#submit');
-var input_date = document.querySelector('#date');
-var timeline = document.querySelector('#timeline');
-var debug = document.querySelector('#debug');
-var sort_option = document.getElementById('sort-option');
+const input_origin = document.querySelector('#origin');
+const input_destination = document.querySelector('#destination');
+const loading_spinner = document.querySelector('#loading-spinner');
+const message_card = document.querySelector('#message-card');
+const tab_routes_timelines = document.querySelector('#tab-routes-timeline')
+const schedule_card = document.querySelector('#schedule-card')
+const schedule = document.querySelector('#schedule');
+const schedule_table = document.querySelector('#schedule-table');
+const tab_routes_table = document.querySelector('#tab-routes-table');
+const routes_table = document.querySelector('#routes-table');
+const routes_card = document.querySelector('#routes-card')
+const button_submit = document.querySelector('#submit');
+const input_date = document.querySelector('#date');
+const timeline = document.querySelector('#timeline');
+const debug = document.querySelector('#debug');
+const sort_option = document.getElementById('sort-option');
 
 sort_option.setAttribute("onchange", "sortPlans(this.value);");
 // init sort options
 routes_table.parentNode.querySelectorAll('th') // get all the table header elements
     .forEach((element, columnNo) => { // add a click handler for each 
-        var sortBy = element.getAttribute('sort');
-        if (sortBy)
-        {
+        const sortBy = element.getAttribute('sort');
+        if (sortBy) {
             element.addEventListener('click', event => sortPlans(sortBy));
             var opt = document.createElement("option");
             opt.text = element.textContent;
@@ -37,7 +36,7 @@ d3.select('body')
     .attr('id', 'tooltip')
     .attr('style', 'position: absolute; opacity: 0;')
     .attr('class', 'timeline-tooltip');
-var tooltip = d3.select('#tooltip');
+const tooltip = d3.select('#tooltip');
 
 // globals
 var plans;
@@ -48,51 +47,51 @@ var current_tab;
 var current_sort = 'duration';
 var tabs_state = {};
 var locations = {};
-var locations_names = {};
+var locations_to_id = {};
+var location_names = [];
 var message_hidden = true;
 
-var activity_colors_map = {
-    'FREE': 'lightgreen',
-    'WAIT': 'lightgray',
-    'CAR': 'orange',
-    'FERRY': 'aqua  ',
-    'BUS': 'darkblue',
-    'AIR': 'aqua'
+const activity_colors_map = {
+    FREE: 'lightgreen',
+    WAIT: 'lightgray',
+    CAR: 'orange',
+    FERRY: 'aqua  ',
+    BUS: 'darkblue',
+    AIR: 'aqua'
 };
 
-var activities_info = {
-    'FREE': {
+const activities_info = {
+    FREE: {
         color: 'lightgreen',
         icon: '\uf118', // far fa-smile
         icon_class: 'fa',
     },
-    'WAIT': {
+    WAIT: {
         color: 'lightgray',
         icon: '\uf017', // fa fa-clock-o, far fa-clock, fas fa-clock
         icon_class: 'fa',
     },
-    'CAR': {
+    CAR: {
         color: 'orange',
         icon: '\uf1b9', // fa/fas fa-car, fas fa-car-alt:f5de, fas fa-car-side:f5e4 directions_car:e531
         icon_class: 'fa',
     },
-    'FERRY': {
+    FERRY: {
         color: 'aqua',
         icon: '\uf21a', // fa/fas fa-ship
-        icon_class: 'fa', 
+        icon_class: 'fa',
     },
-    'BUS': {
+    BUS: {
         color: 'darkblue',
         icon: '\uf207', // fa/fas fa-bus
         icon_class: 'fa',
     },
-    'AIR': {
+    AIR: {
         color: 'lightblue',
         icon: '\uf072', // fa/fas fa-plane
         icon_class: 'fa',
     },
 };
-
 
 resetState();
 loadLocations();
@@ -100,41 +99,63 @@ loadLocations();
 // initialize input controls
 input_date.setAttribute('value', new Date().toJSON().slice(0, 10));
 input_date.setAttribute('min', new Date().toJSON().slice(0, 10));
-initInput(input_from);
-initInput(input_to);
+initInput(input_origin);
+initInput(input_destination);
+
+async function fetchApiData(request, body, method = 'GET') {
+    try {
+        // if (url_params)
+        // request += '?' + new URLSearchParams(url_params)
+        const fetchOptions = {
+            method: method,
+            body: JSON.stringify(body),
+            headers: { 'Content-Type': 'application/json' }
+        }
+        const response = await fetch('/api' + request, fetchOptions);
+        return await response.json();
+    } catch (error) {
+        console.warn("Fetch error: " + error);
+    }
+}
 
 // load locations list
 async function loadLocations() {
-    locations = await getData('/locations');
-    var list = document.getElementById('locations');
-    for (var id in locations) {
-        var location_name = locations[id];
-        locations_names[location_name] = id;
+    locations = await fetchApiData('/locations');
+    for (const id in locations) {
+        locations_to_id[locations[id]] = id;
+    }
+
+    location_names = Object.values(locations);
+    location_names.sort((a, b) => a.localeCompare(b));
+
+    var locations_list = document.getElementById('locations');
+    for (const name of location_names) {
         var option = document.createElement('option');
-        option.value = location_name;
-        list.appendChild(option);
+        option.value = name;
+        locations_list.appendChild(option);
     }
     await parseParams();
 }
 
 function initInput(input) {
     input.addEventListener('input', onInput);
-    input.setAttribute('temp', '');
-    input.setAttribute('onmouseover', 'this.temp=this.value; this.value="";');
-    input.setAttribute('onmouseout', 'this.value=this.temp;');
-    input.setAttribute('onfocusin', 'onInput();');
-    input.setAttribute('onfocusout', 'autoComplete(this);');
+    // input.setAttribute('temp', '');
+    // input.setAttribute('onmouseover', 'this.temp=this.value; this.value="";');
+    // input.setAttribute('onmouseout', 'this.value=this.temp;');
+    input.addEventListener('input', onInput);
+    input.addEventListener('focusout', autoComplete);
 }
 
 function onInput() {
     hideMessage();
 }
 
-function autoComplete(input) {
+function autoComplete(event) {
+    var input = event.target;
     var value = input.value.trim();
-    if (value != ' ' && !isValidLocation(value)) {
+    if (value != '' && !isValidLocation(value)) {
         var r = new RegExp(value, 'i');
-        for (var name in locations_names) {
+        for (var name of location_names) {
             if (name.search(r) >= 0) {
                 input.value = name;
                 input.temp = name;
@@ -145,40 +166,35 @@ function autoComplete(input) {
     }
 }
 
-async function getData(request, url_params) {
-    try {
-        if (url_params)
-            request += '?' + new URLSearchParams(url_params)
-        var response = await fetch('/api' + request);
-        return await response.json();
-    } catch (error) {
-        console.warn("Fetch error: " + error);
-    }
-}
-
 async function getRoutePlans() {
-    url_params = {}
+    var options = {}
     for (var input of document.getElementsByTagName('input')) {
         var value = input.value;
         switch (input.type) {
             case 'text':
-                value = locations_names[value];
+                value = locations_to_id[value];
+                break;
+            case 'number':
+                value = parseInt(value);
                 break;
             case 'checkbox':
                 value = input.checked;
                 break;
+            case 'radio':
+                value = input.checked;
+                break;
         }
-        url_params[input.id] = value;
+        options[input.id] = value;
     }
-    url = new URL(window.location);
-    for (var [key, value] in url_params) {
-        if (url.searchParams.has(key))
-            url.searchParams.set(key, value);
-        else
-            url.searchParams.append(key, value);
-    }
+    // url = new URL(window.location);
+    // for (var [key, value] in options) {
+    //     if (url.searchParams.has(key))
+    //         url.searchParams.set(key, value);
+    //     else
+    //         url.searchParams.append(key, value);
+    // }
     // window.location = url
-    plans = await getData('/routeplans', url_params);
+    plans = await fetchApiData('/routeplans', options, 'POST');
     for (var i = 0; i < plans.length; i++) {
         plans[i].id = i + 1;
     }
@@ -187,7 +203,7 @@ async function getRoutePlans() {
 
 function isValidLocation(name) {
     name = name.trim();
-    return name != ' ' && name in locations_names;
+    return name != ' ' && name in locations_to_id;
 }
 
 async function parseParams() {
@@ -196,11 +212,12 @@ async function parseParams() {
     for (var param of params.entries()) {
         has_params = true;
         var e = document.getElementById(param[0]);
-        if (e) e.value = param[1];
+        if (e)
+            e.value = param[1];
     }
     if (has_params) {
-        autoComplete(input_from);
-        autoComplete(input_to);
+        autoComplete(input_origin);
+        autoComplete(input_destination);
         await submit();
     }
 }
@@ -230,29 +247,28 @@ function showError(message) {
 }
 
 async function submit() {
+    hideMessage();
     resetState();
-    if (!isValidLocation(input_from.value))
+    if (!isValidLocation(input_origin.value))
         showError("Please select start location");
-    else if (!isValidLocation(input_to.value))
+    else if (!isValidLocation(input_destination.value))
         showError("Please select destination location");
-    else if (input_from.value == input_to.value)
+    else if (input_origin.value == input_destination.value)
         showError("Start and destination location cannot be the same");
     else {
         try {
             loading_spinner.hidden = false;
             button_submit.disabled = true;
             plans = await getRoutePlans();
-            if (!plans) {
+            if (!plans)
                 showError("Failed to fetch schedule information");
-            }
-            else if (plans.length == 0) {
+            else if (plans.length == 0)
                 showMessage("", "No itineraries found. Try select another date and/or locations.", "yellow");
-            }
             else {
                 for (var plan of plans) {
                     var via = new Set();
                     for (var s of plan.segments) {
-                        var lg = s.connection.location_from.land_group;
+                        var lg = s.connection.origin.land_group;
                         if (lg) {
                             var pos = lg.indexOf(' (');
                             if (pos > 0)
@@ -388,7 +404,7 @@ function updateRoutesTable() {
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
-        td.textContent = durationToString(plan.driving_time * 1000);
+        td.textContent = durationToString(plan.driving_duration * 1000);
         tr.appendChild(td)
 
 
@@ -430,23 +446,19 @@ function updateTimelines() {
             for (var t of s.times) {
                 var label = '';
                 var segment_type = t.type == 'TRAVEL' ? s.connection.type : t.type;
-                var activity_info = activities_info[segment_type]; 
-                if (location == null || t.type == 'TRAVEL')
-                {
-                    if (location != s.connection.location_to)
-                    {
-                        location =  s.connection.location_to;
+                var activity_info = activities_info[segment_type];
+                if (location == null || t.type == 'TRAVEL') {
+                    if (location != s.connection.destination) {
+                        location = s.connection.destination;
                         land_group = location.land_group;
-                        if (land_group == undefined)
-                        {
+                        if (land_group == undefined) {
                             land_group = null;
-                            if (location.location.indexOf('Island') > 0
-                                || location.name.indexOf('Island') > 0)
-                            land_group = 'Islands';
+                            if (location.address.indexOf('Island') > 0 || location.name.indexOf('Island') > 0)
+                                land_group = 'Islands';
                         }
                         if (land_group && land_group.indexOf('(') > 0)
                             land_group = land_group.substring(0, land_group.indexOf('(')).trim();
-                        
+
                         //label = location.id.length == 3 ? location.id : location.name;
                     }
                 }
@@ -459,26 +471,22 @@ function updateTimelines() {
                     starting_time: new Date(t.start).getTime(),
                     ending_time: new Date(t.end).getTime()
                 };
-                if (label.length > 0)
-                {
+                if (label.length > 0) {
                     t2.label = ''; // just a placeholder now, will be replaced with _label later
                     t2._label = label;
                 }
                 var color_key = current_coloring == 'activity' ? segment_type : land_group;
-                if (color_key != null)
-                {
+                if (color_key != null) {
                     coloring_keys.add(color_key);
                     t2._color = color_key;
                 }
-                if (t.end == t.start)
-                {
+                if (t.end == t.start) {
                     t2.display = 'circle';
                     t2._label = ''; // don't show labels for start/finish 
-                    chartRow.times.splice(0,0,t2);
+                    chartRow.times.splice(0, 0, t2);
                 }
-                else
-                {
-                   chartRow.times.push(t2);
+                else {
+                    chartRow.times.push(t2);
                 }
             }
         }
@@ -491,7 +499,7 @@ function updateTimelines() {
     var colorScale;
     if (current_coloring == 'activity')
         colorScale = d3.scale.ordinal().range(Object.values(activity_colors_map)).domain(Object.keys(activity_colors_map));
-    else 
+    else
         colorScale = d3.scale.ordinal().range(d3.scale.category20().range()).domain(Array.from(coloring_keys));
 
     var chart = d3.timeline()
@@ -521,19 +529,19 @@ function updateTimelines() {
 
     svg.selectAll('text')
         .style('cursor', 'default')
-        [0].forEach((e) => {
-            assignTooltip(e);
-            var d = e.__data__;
-            if (d && d._label)
-                e.innerHTML = d._label;
-        
-            //if (e.getClientRects()[0].width < e.textLength.baseVal.value)
-            //    e.innerHTML = '';
-        });
+    [0].forEach((e) => {
+        assignTooltip(e);
+        var d = e.__data__;
+        if (d && d._label)
+            e.innerHTML = d._label;
+
+        //if (e.getClientRects()[0].width < e.textLength.baseVal.value)
+        //    e.innerHTML = '';
+    });
     svg.selectAll('rect')
-        [0].forEach((e) => assignTooltip(e));
+    [0].forEach((e) => assignTooltip(e));
     svg.selectAll('tspan')
-        [0].forEach((e) => assignTooltip(e));
+    [0].forEach((e) => assignTooltip(e));
 }
 
 function updateLegend(chart, coloring_keys, current_coloring, legend_element) {
@@ -555,8 +563,7 @@ function updateLegend(chart, coloring_keys, current_coloring, legend_element) {
     legend_element.innerHTML = legend;
 }
 
-function assignTooltip(e)
-{
+function assignTooltip(e) {
     e.onmousemove = (e) => {
         var n = e.target;
         if (n.nodeName == 'tspan')
@@ -602,23 +609,21 @@ function onPlanSelected(id) {
         schedule_table.removeChild(schedule_table.firstChild);
 
     // schedule.appendChild(node = document.createElement('div').className('schedule-header'));
-    document.getElementById('schedule-header').textContent = `${plan.segments[0].connection.location_from.name} to ${plan.segments.slice(-1)[0].connection.location_to.name}`
+    document.getElementById('schedule-header').textContent = `${plan.segments[0].connection.origin.name} to ${plan.segments.slice(-1)[0].connection.destination.name}`
     // schedule.appendChild(node = document.createElement('div').className('schedule-via'));
-    document.getElementById('schedule-via').textContent = 'via ' + [...new Set(plan.segments.slice(0, -1).map(s => s.connection.location_to.name))].join(', ');
+    document.getElementById('schedule-via').textContent = 'via ' + [...new Set(plan.segments.slice(0, -1).map(s => s.connection.destination.name))].join(', ');
 
     document.getElementById('schedule-details').innerHTML =
         `Route ${plan.id}.` +
         ` Total time: <strong>${durationToString(plan.duration * 1000)}</strong>,` +
         ` driving distance ${plan.driving_distance.toFixed(1)} km.`;
-        // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
+    // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
     var schedule_map = document.getElementById('schedule-map');
-    if (plan.map_url && plan.map_url.length > 0)
-    {
+    if (plan.map_url && plan.map_url.length > 0) {
         schedule_map.href = plan.map_url;
         schedule_map.hidden = false;
     }
-    else
-    {
+    else {
         schedule_map.hidden = true;
     }
 
@@ -663,7 +668,6 @@ function sortPlans(sortBy) {
     updateTabsData();
 }
 
-
 function updateTabsData() {
     updateRoutesTable();
     updateTimelines();
@@ -685,8 +689,7 @@ function toggleShow(id) {
     e.hidden = !e.hidden;
 }
 
-function onPrint(card)
-{
+function onPrint(card) {
     routes_card.classList.add('no-print');
     schedule_card.classList.add('no-print');
     document.getElementById(card).classList.remove('no-print');
