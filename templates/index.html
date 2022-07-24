@@ -8,21 +8,31 @@
   <link rel="stylesheet" href="../static/style.css">
   <link rel="stylesheet" href="../static/w3.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    @media (max-width: 512px) { 
+      .m-font75 { font-size: 75%;}
+      .m-hide-c { visibility: hidden;}
+    }
+    .font120 { font-size: 120%; }
+    .font150 { font-size: 150%; }
+    .font200 { font-size: 200%; }
+  </style>
 </head>
 
-<body
-  style="background-image: url(static/bc-ferries-1920.jpg); background-attachment: fixed; background-size: 100%; background-repeat: no-repeat; background-position: center;">
-  <div class="w3-bar w3-card w3-white w3-large no-print">
+
+<body class="m-font100"
+  style="background-image: url(static/bc-ferries-1920.jpg); background-attachment: local; background-size: 100%; background-repeat: no-repeat; background-position: center; min-width: 700px;">
+  
+  <div class="w3-bar w3-card w3-white font100 no-print ">
     <a href="." class="w3-bar-item w3-button w3-blue"><span class="fa fa-home"></span>&nbsp;Home</a>
     <a href="about" class="w3-bar-item w3-button"><span class="fa fa-info-circle"></span>&nbsp;About</a>
     <a href="docs" class="w3-bar-item w3-button"><span class="fa fa-code"></span>&nbsp;API</a>
-    <a href="https://github.com/LemonPi314/ferry-planner" class="w3-bar-item w3-button"><span
-        class="fa fa-github"></span>&nbsp;GitHub</a>
+    <a href="https://github.com/LemonPi314/ferry-planner" class="w3-bar-item w3-button"><span class="fa fa-github"></span>&nbsp;GitHub</a>
   </div>
 
-  <div class="w3-container w3-padding" style="max-width: 1200px; margin-left:auto; margin-right: auto;">
+  <div class="w3-container w3-padding-small" style="max-width: 1200px; margin-left:auto; margin-right:auto;">
     <div id="input-form" class="w3-card-4 w3-white no-print">
-      <div class="w3-row w3-padding">
+      <div class="w3-row w3-padding-small">
         <div class="w3-third w3-padding-small">
           <input class="w3-input w3-border" type="text" id="origin" list="locations"
             placeholder="Select start location" required>
@@ -33,7 +43,7 @@
         </div>
         <div class="w3-third w3-right w3-bar">
           <div class="w3-bar-item w3-padding-small w3-cell-middle">
-            <input class="w3-input w3-border" style="min-width:9em;" type="date" id="date">
+            <input class="w3-input w3-border" style="width:10em;" type="date" id="date">
           </div>
           <div class="w3-bar-item w3-padding-small w3-cell-middle">
             <button class="w3-button w3-blue w3-border w3-round-medium" id="submit" onclick="submit();">Submit</button>
@@ -43,7 +53,7 @@
           </div>
         </div>
       </div>
-      <div class="w3-row w3-padding" id="options" hidden>
+      <div class="w3-row w3-padding-small" id="options" hidden>
         <div class="w3-cell-middle">
           <input class="w3-check" type="radio" id="reservation" name="res-type" checked="true">
           <label>Assume ferry reservation</label>
@@ -75,36 +85,38 @@
     <datalist id="locations"></datalist>
 
     <div id="message-card" class="w3-center w3-card-4 w3-white" hidden>
-      <div class="w3-container w3-padding">
-        <span class="w3-large" id="message-heading"></span><span class="" id="message-content"></span>
+      <div class="w3-container w3-padding-small">
+        <span class="font120" id="message-heading"></span><span class="" id="message-content"></span>
       </div>
     </div>
 
     <div id="routes-card" class="w3-card-4 w3-white" hidden>
-      <h3 class="w3-center w3-indigo">Available Routes</h3>
+      <h3 class="w3-center w3-indigo font200">Available Routes</h3>
 
-      <div class="w3-container w3-padding">
+      <div class="w3-container w3-padding-small">
         <div class="w3-bar w3-blue">
           <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-table');">Table</button>
           <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-timeline');">Timeline</button>
         </div>
 
         <div id="tab-routes-table" class="tab-content">
-          <div id="routes" class="">
-            <div id="routes-header-container" class="w3-center w3-padding">
+          <div id="routes" class="" >
+            <div id="routes-header-container" class="w3-center w3-padding-small">
               <div id="routes-details" class=""></div>
               <div id="routes-via" class="w3-small"></div>
             </div>
-            <table class="w3-table w3-striped">
-              <tr class="w3-light-grey w3-large w3-center">
-                <th class="w3-center">Route</th>
-                <th class="w3-center hover-underline" sort="depart_time">Depart Time</th>
-                <th class="w3-center hover-underline" sort="arrive_time">Arrival Time</th>
-                <th class="w3-center hover-underline" sort="duration">Total Time</th>
-                <th class="w3-center hover-underline" sort="driving_time">Driving Time</th>
-                <th class="w3-center hover-underline" sort="driving_distance">Driving Distance</th>
-                <th class="w3-center hover-underline" sort="via">Via</th>
-              </tr>
+            <table class="w3-table w3-striped" >
+              <thead>
+                <tr class="w3-light-grey font120 w3-center">
+                  <th class="w3-center" sort="id">Route</th>
+                  <th class="w3-center hover-underline" sort="depart_time">Depart Time</th>
+                  <th class="w3-center hover-underline" sort="arrive_time">Arrival Time</th>
+                  <th class="w3-center hover-underline" sort="duration">Total Time</th>
+                  <th class="w3-center hover-underline" sort="driving_time">Driving Time</th>
+                  <th class="w3-center hover-underline" sort="driving_distance">Driving Distance</th>
+                  <th class="w3-center hover-underline" sort="via">Via</th>
+                </tr>
+              </thead>
               <tbody id="routes-table">
 
               </tbody>
@@ -123,7 +135,7 @@
               </select>
           </div>
           <div id="timeline-legend" class="w3-right"></div>
-          <div id="timeline" class="w3-padding"></div>
+          <div id="timeline" class="w3-padding-small"></div>
         </div>
       </div>
     </div>
@@ -131,7 +143,7 @@
     <div id="schedule-card" class="w3-card-4 w3-white" hidden>
       <div id="schedule-print">
         <h3 id="schedule-header" class="w3-center w3-indigo">Itinerary</h3>
-        <div id="schedule" class="w3-container w3-padding">
+        <div id="schedule" class="w3-container w3-padding-small">
           <div id="schedule-header-container" class="w3-center">
             <div id="schedule-details" class=""></div>
             <div id="schedule-via" class="w3-small"></div>
@@ -145,7 +157,7 @@
             </div>
           </div>
           <table class="w3-table w3-striped">
-            <tr class="w3-light-grey w3-large w3-center">
+            <tr class="w3-light-grey font120 w3-center">
               <th class="w3-center">Time</th>
               <th class="w3-center">Description</th>
               <th class="w3-center">Duration</th>
