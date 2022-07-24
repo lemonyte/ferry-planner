@@ -143,15 +143,19 @@ function initInput(input) {
     // input.setAttribute('onmouseover', 'this.temp=this.value; this.value="";');
     // input.setAttribute('onmouseout', 'this.value=this.temp;');
     input.addEventListener('input', onInput);
-    input.addEventListener('focusout', autoComplete);
+    input.addEventListener('focusout', autoCompleteEv);
 }
 
 function onInput() {
     hideMessage();
 }
 
-function autoComplete(event) {
-    var input = event.target;
+function autoCompleteEv(event)
+{
+    autoComplete(event.target)
+}
+
+function autoComplete(input) {
     var value = input.value.trim();
     if (value != '' && !isValidLocation(value)) {
         var r = new RegExp(value, 'i');
@@ -389,33 +393,36 @@ function updateRoutesTable() {
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
-        td.textContent = timeToString(plan.depart_time);
+        td.innerHTML = timeToString(plan.depart_time);
         tr.appendChild(td);
 
         var td = document.createElement('td');
         td.classList.add('w3-center')
-        td.textContent = timeToString(plan.arrive_time)
+        td.innerHTML = timeToString(plan.arrive_time)
         tr.appendChild(td)
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
-        td.textContent = durationToString(plan.duration * 1000);
+        td.innerHTML = durationToString(plan.duration * 1000);
         tr.appendChild(td)
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
-        td.textContent = durationToString(plan.driving_duration * 1000);
+        //td.classList.add('m-hide-c');
+        td.innerHTML = durationToString(plan.driving_duration * 1000);
         tr.appendChild(td)
 
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
+        //td.classList.add('m-hide-c');
         td.textContent = `${plan.driving_distance.toFixed(1)} km`;
         tr.appendChild(td)
 
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
+        //td.classList.add('m-hide-c');
         td.textContent = plan.via.join(',');
         tr.appendChild(td)
 
