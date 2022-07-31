@@ -11,7 +11,7 @@
   <style>
     @media (max-width: 512px) { 
       .m-font75 { font-size: 75%;}
-      .m-hide-c { visibility: hidden;}
+      .m-hide-c { display: none;}
     }
     .font120 { font-size: 120%; }
     .font150 { font-size: 150%; }
@@ -21,7 +21,7 @@
 
 
 <body class="m-font100"
-  style="background-image: url(static/bc-ferries-1920.jpg); background-attachment: local; background-size: 100%; background-repeat: no-repeat; background-position: center; min-width: 700px;">
+  style="background-image: url(static/bc-ferries-1920.jpg); background-attachment: local; background-size: 100%; background-repeat: no-repeat; background-position: center; min-width: 350px;">
   
   <div class="w3-bar w3-card w3-white font100 no-print ">
     <a href="." class="w3-bar-item w3-button w3-blue"><span class="fa fa-home"></span>&nbsp;Home</a>
@@ -43,7 +43,7 @@
         </div>
         <div class="w3-third w3-right w3-bar">
           <div class="w3-bar-item w3-padding-small w3-cell-middle">
-            <input class="w3-input w3-border" style="width:10em;" type="date" id="date">
+            <input class="w3-input w3-border" style="width:9em;" type="date" id="date">
           </div>
           <div class="w3-bar-item w3-padding-small w3-cell-middle">
             <button class="w3-button w3-blue w3-border w3-round-medium" id="submit" onclick="submit();">Submit</button>
@@ -107,14 +107,14 @@
             </div>
             <table class="w3-table w3-striped" >
               <thead>
-                <tr class="w3-light-grey font120 w3-center">
-                  <th class="w3-center" sort="id">Route</th>
+                <tr id="tab-routes-table-header-row" class="w3-light-grey font100 w3-center">
+                  <!-- <th class="w3-center" sort="id">Route</th>
                   <th class="w3-center hover-underline" sort="depart_time">Depart Time</th>
                   <th class="w3-center hover-underline" sort="arrive_time">Arrival Time</th>
                   <th class="w3-center hover-underline" sort="duration">Total Time</th>
-                  <th class="w3-center hover-underline" sort="driving_time">Driving Time</th>
-                  <th class="w3-center hover-underline" sort="driving_distance">Driving Distance</th>
-                  <th class="w3-center hover-underline" sort="via">Via</th>
+                  <th class="w3-center hover-underline" sort="driving_time" hidden>Driving Time</th>
+                  <th class="w3-center hover-underline" sort="driving_distance" hidden>Driving Distance</th>
+                  <th class="w3-center hover-underline" sort="via" hidden>Via</th> -->
                 </tr>
               </thead>
               <tbody id="routes-table">
@@ -157,9 +157,9 @@
             </div>
           </div>
           <table class="w3-table w3-striped">
-            <tr class="w3-light-grey font120 w3-center">
+            <tr class="w3-light-grey font100 w3-center">
               <th class="w3-center">Time</th>
-              <th class="w3-center">Description</th>
+              <th class="w3-center" style="width:95%">Description</th>
               <th class="w3-center">Duration</th>
             </tr>
             <tbody id="schedule-table"></tbody>
