@@ -178,7 +178,7 @@ class RoutePlansOptions(ScheduleOptions):
     def _validate_date(cls, value: Optional[datetime]) -> datetime:
         if not value:
             value = datetime.now()
-        if value < datetime.now():
+        if value.date() < datetime.now().date():
             raise ValueError("date cannot be in the past")
         return value
 

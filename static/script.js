@@ -16,19 +16,36 @@ const timeline = document.querySelector('#timeline');
 const debug = document.querySelector('#debug');
 const sort_option = document.getElementById('sort-option');
 
-sort_option.setAttribute("onchange", "sortPlans(this.value);");
+var columns = { 
+    "Route" : "id",
+    "Depart Time" : "depart_time",
+    "Arrival Time" : "arrive_time",
+    "Total Time" : "duration", 
+    "Driving Time" : "driving_time",
+    "Driving Distance" : "driving_distance",  
+    "Via" : "via"
+};
+
 // init sort options
-routes_table.parentNode.querySelectorAll('th') // get all the table header elements
-    .forEach((element, columnNo) => { // add a click handler for each 
-        const sortBy = element.getAttribute('sort');
-        if (sortBy) {
-            element.addEventListener('click', event => sortPlans(sortBy));
-            var opt = document.createElement("option");
-            opt.text = element.textContent;
-            opt.value = sortBy;
-            sort_option.add(opt, null);
-        }
-    });
+sort_option.setAttribute("onchange", "sortPlans(this.value);");
+for (var k in columns)
+{
+    var opt = document.createElement("option");
+    opt.text = k;
+    opt.value = columns[k];
+    sort_option.add(opt, null);
+}
+// routes_table.parentNode.querySelectorAll('th') // get all the table header elements
+//     .forEach((element, columnNo) => { // add a click handler for each 
+//         const sortBy = element.getAttribute('sort');
+//         if (sortBy) {
+//             element.addEventListener('click', event => sortPlans(sortBy));
+//             var opt = document.createElement("option");
+//             opt.text = element.textContent;
+//             opt.value = sortBy;
+//             sort_option.add(opt, null);
+//         }
+//     });
 
 // add tooltip
 d3.select('body')
@@ -143,15 +160,19 @@ function initInput(input) {
     // input.setAttribute('onmouseover', 'this.temp=this.value; this.value="";');
     // input.setAttribute('onmouseout', 'this.value=this.temp;');
     input.addEventListener('input', onInput);
-    input.addEventListener('focusout', autoComplete);
+    input.addEventListener('focusout', autoCompleteEv);
 }
 
 function onInput() {
     hideMessage();
 }
 
-function autoComplete(event) {
-    var input = event.target;
+function autoCompleteEv(event)
+{
+    autoComplete(event.target)
+}
+
+function autoComplete(input) {
     var value = input.value.trim();
     if (value != '' && !isValidLocation(value)) {
         var r = new RegExp(value, 'i');
@@ -365,13 +386,34 @@ function onRowSelected(row, id) {
     onPlanSelected(id);
 }
 
-function updateRoutesTable() {
+function columns_count()
+{
+    var w = window.outerWidth;
+    if (w > 600) return 7;
+    if (w > 500) return 6;
+    if (w > 400) return 5;
+    return 4;
+}
+
+function updateRoutesTable() 
+{
     if (tab_routes_table.hidden)
         return;
-    if (tabs_state.routes_table_sort == current_sort)
+    if (tabs_state.routes_table_sort == current_sort && tabs_state.columns_count == columns_count())
         return;
     tabs_state.routes_table_sort = current_sort;
+    tabs_state.columns_count = columns_count();
 
+    var header_row_html = "";
+    var c = 0;
+    for (var k in columns)
+    {
+        if (c++ == tabs_state.columns_count)
+            break;
+        header_row_html += `<th class="w3-center hover-underline" onclick="sortPlans('${columns[k]}')">${k}</th>`;
+    }
+    document.querySelector('#tab-routes-table-header-row').innerHTML = header_row_html;
+        
     // clear table
     while (routes_table.firstChild)
         routes_table.removeChild(routes_table.firstChild);
@@ -389,35 +431,42 @@ function updateRoutesTable() {
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
-        td.textContent = timeToString(plan.depart_time);
+        td.innerHTML = timeToString(plan.depart_time);
         tr.appendChild(td);
 
         var td = document.createElement('td');
         td.classList.add('w3-center')
-        td.textContent = timeToString(plan.arrive_time)
+        td.innerHTML = timeToString(plan.arrive_time)
         tr.appendChild(td)
 
         var td = document.createElement('td');
         td.classList.add('w3-center');
-        td.textContent = durationToString(plan.duration * 1000);
+        td.innerHTML = durationToString(plan.duration * 1000);
         tr.appendChild(td)
 
-        var td = document.createElement('td');
-        td.classList.add('w3-center');
-        td.textContent = durationToString(plan.driving_duration * 1000);
-        tr.appendChild(td)
+        if (tabs_state.columns_count > 4)
+        {
+            var td = document.createElement('td');
+            td.classList.add('w3-center');
+            td.innerHTML = durationToString(plan.driving_duration * 1000);
+            tr.appendChild(td)
+        }
 
+        if (tabs_state.columns_count > 5)
+        {
+            var td = document.createElement('td');
+            td.classList.add('w3-center');
+            td.textContent = `${plan.driving_distance.toFixed(1)} km`;
+            tr.appendChild(td)
+        }
 
-        var td = document.createElement('td');
-        td.classList.add('w3-center');
-        td.textContent = `${plan.driving_distance.toFixed(1)} km`;
-        tr.appendChild(td)
-
-
-        var td = document.createElement('td');
-        td.classList.add('w3-center');
-        td.textContent = plan.via.join(',');
-        tr.appendChild(td)
+        if (tabs_state.columns_count > 6)
+        {
+            var td = document.createElement('td');
+            td.classList.add('w3-center');
+            td.textContent = plan.via.join(',');
+            tr.appendChild(td)
+        }
 
         routes_table.appendChild(tr);
     }
@@ -427,10 +476,11 @@ function updateTimelines() {
     if (tab_routes_timelines.hidden)
         return;
     var current_coloring = document.getElementById('color-option').value;
-    if (tabs_state.timelines_sort == current_sort && tabs_state.timelines_coloring == current_coloring)
+    if (tabs_state.timelines_sort == current_sort && tabs_state.timelines_coloring == current_coloring && tabs_state.screen_width == screen.width)
         return;
     tabs_state.timelines_sort = current_sort;
     tabs_state.timelines_coloring = current_coloring;
+    tabs_state.screen_width = screen.width;
     d3.select('#timeline').select('svg').remove();
     //debug.textContent = JSON.stringify(plans, null, 2);
     var chartRows = [];
@@ -615,8 +665,9 @@ function onPlanSelected(id) {
 
     document.getElementById('schedule-details').innerHTML =
         `Route ${plan.id}.` +
-        ` Total time: <strong>${durationToString(plan.duration * 1000)}</strong>,` +
-        ` driving distance ${plan.driving_distance.toFixed(1)} km.`;
+        ` Date:&nbsp;<strong>${new Date(plan.depart_time.substring(0,16)).toDateString()}</strong>.` +
+        ` Total time:&nbsp;<strong>${durationToString(plan.duration * 1000)}</strong>.` +
+        ` Driving distance:&nbsp;${plan.driving_distance.toFixed(1)} km.`;
     // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
     var schedule_map = document.getElementById('schedule-map');
     if (plan.map_url && plan.map_url.length > 0) {
@@ -638,7 +689,7 @@ function onPlanSelected(id) {
             tr.appendChild(td);
 
             var desc = t.description;
-            if (s.schedule_url && t.type == 'TRAVEL')
+            if (s.schedule_url && t.type == 'TRAVEL' && t.start != t.end)
                 desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 8px!important" href="${s.schedule_url}" target="_blank"><i class="fa fa-list-alt"></i>&nbsp;Schedule</a>`;
             var td = document.createElement('td');
             td.innerHTML = desc;
@@ -671,6 +722,20 @@ function sortPlans(sortBy) {
 function updateTabsData() {
     updateRoutesTable();
     updateTimelines();
+}
+
+onorientationchange = (event) => { 
+    updateTabsData();
+};
+
+ScreenOrientation.onchange = (event) =>
+{
+    updateTabsData();
+}   
+
+window.onresize = () =>
+{
+    updateTabsData();
 }
 
 function showTab(id) {
