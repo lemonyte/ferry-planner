@@ -1,4 +1,5 @@
 // find elements
+var d3;
 const input_origin = document.querySelector('#origin');
 const input_destination = document.querySelector('#destination');
 const loading_spinner = document.querySelector('#loading-spinner');
@@ -21,7 +22,7 @@ var columns = {
     "Depart Time" : "depart_time",
     "Arrival Time" : "arrive_time",
     "Total Time" : "duration", 
-    "Driving Time" : "driving_time",
+    "Driving Time" : "driving_duration",
     "Driving Distance" : "driving_distance",  
     "Via" : "via"
 };
@@ -48,12 +49,15 @@ for (var k in columns)
 //     });
 
 // add tooltip
+if ( d3 != undefined)
+{
 d3.select('body')
     .append('div')
     .attr('id', 'tooltip')
     .attr('style', 'position: absolute; opacity: 0;')
     .attr('class', 'timeline-tooltip');
 const tooltip = d3.select('#tooltip');
+}
 
 // globals
 var plans;
@@ -120,19 +124,21 @@ initInput(input_origin);
 initInput(input_destination);
 
 async function fetchApiData(request, body, method = 'GET') {
-    try {
-        // if (url_params)
-        // request += '?' + new URLSearchParams(url_params)
-        const fetchOptions = {
-            method: method,
-            body: JSON.stringify(body),
-            headers: { 'Content-Type': 'application/json' }
-        }
-        const response = await fetch('/api' + request, fetchOptions);
-        return await response.json();
-    } catch (error) {
-        console.warn("Fetch error: " + error);
+    const fetchOptions = {
+        method: method,
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' }
     }
+    const _response = await fetch('/api' + request, fetchOptions);
+    const response = await _response.json();
+    if (!_response.ok)
+    {
+        msg = _response.statusText;
+        if (response && response.detail)
+            msg += ' ' + JSON.stringify(response.detail);
+        throw new Error(msg);
+    }
+    return response;
 }
 
 // load locations list
@@ -297,7 +303,10 @@ async function submit() {
                             via.add(lg);
                         }
                     }
-                    plan.via = Array.from(via).splice(1, 1);
+                    if (via.size < 2)
+                        plan.via = Array.from(via)
+                    if (via.size > 1)
+                        plan.via = [Array.from(via)[1]];
                 }
                 // force sort
                 var sort = current_sort;
@@ -621,7 +630,6 @@ function assignTooltip(e) {
         if (n.nodeName == 'text')
             n = n.parentNode;
         var r = n.getBoundingClientRect();
-        console.log(r);
         tooltip
             .style('left', (r.x + window.scrollX) + 'px')
             .style('top', (r.bottom + + window.scrollY + 3) + 'px');
@@ -710,7 +718,7 @@ function sortPlans(sortBy) {
     if (sortBy == current_sort)
         return;
     plans.sort((a, b) => {
-        if (a[sortBy] > b[sortBy])
+        if (a[sortBy] >= b[sortBy])
             return 1;
         return -1;
     });
