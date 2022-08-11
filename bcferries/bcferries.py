@@ -316,6 +316,9 @@ def parse_table(table: Tag) -> list[FerrySailing]:
     sailings = []
     if table:
         for row in table.tbody.find_all('tr'):  # type: ignore
+            tds = row.find_all('td')
+            if len(tds) < 3:
+                continue
             depart_time = datetime.strptime(
                 row.find_all('td')[1].text,
                 '%I:%M %p',
@@ -324,8 +327,9 @@ def parse_table(table: Tag) -> list[FerrySailing]:
                 row.find_all('td')[2].text,
                 '%I:%M %p',
             ).strftime('%H:%M:%S')
+            td3 = tds[3].text.strip()
             duration = datetime.strptime(
-                row.find_all('td')[3].div.span.text,
+                td3,
                 '%Hh %Mm',
             ).strftime('%H:%M')
             sailing = FerrySailing(
