@@ -1,24 +1,26 @@
 // elements
 const elements = {
-  inputOrigin: document.querySelector('#origin'),
-  inputDestination: document.querySelector('#destination'),
-  inputDate: document.querySelector('#date'),
-  buttonSubmit: document.querySelector('#submit'),
-  loadingSpinner: document.querySelector('#loading-spinner'),
-  messageCard: document.querySelector('#message-card'),
-  routesCard: document.querySelector('#routes-card'),
-  routesTable: document.querySelector('#routes-table'),
+  inputOrigin: document.querySelector("#origin"),
+  inputDestination: document.querySelector("#destination"),
+  inputDate: document.querySelector("#date"),
+  buttonSubmit: document.querySelector("#submit"),
+  loadingSpinner: document.querySelector("#loading-spinner"),
+  messageCard: document.querySelector("#message-card"),
+  routesCard: document.querySelector("#routes-card"),
+  routesTable: document.querySelector("#routes-table"),
   // schedule: document.querySelector('#schedule'),
-  scheduleCard: document.querySelector('#schedule-card'),
-  scheduleTable: document.querySelector('#schedule-table'),
-  timeline: document.querySelector('#timeline'),
-  sortOption: document.querySelector('#sort-option'),
-  tabRoutesTable: document.querySelector('#tab-routes-table'),
-  tabRoutesTimelines: document.querySelector('#tab-routes-timeline'),
-  tabRoutesTableHeaderRow: document.querySelector('#tab-routes-table-header-row'),
+  scheduleCard: document.querySelector("#schedule-card"),
+  scheduleTable: document.querySelector("#schedule-table"),
+  timeline: document.querySelector("#timeline"),
+  sortOption: document.querySelector("#sort-option"),
+  tabRoutesTable: document.querySelector("#tab-routes-table"),
+  tabRoutesTimelines: document.querySelector("#tab-routes-timeline"),
+  tabRoutesTableHeaderRow: document.querySelector(
+    "#tab-routes-table-header-row"
+  ),
 };
 
-const tooltip = d3.select('#tooltip');
+const tooltip = d3.select("#tooltip");
 
 // globals
 let plans;
@@ -26,70 +28,70 @@ let timelinesFilled;
 let routesTableFilled;
 let selectedRow;
 let currentTab;
-let currentSort = 'duration';
+let currentSort = "duration";
 let locations = {};
 let locationsToId = {};
 let locationNames = [];
 let messageHidden = true;
 
 const columns = {
-  "Route": 'id',
-  "Depart Time": 'depart_time',
-  "Arrival Time": 'arrive_time',
-  "Total Time": 'duration',
-  "Driving Time": 'driving_duration',
-  "Driving Distance": 'driving_distance',
-  "Via": 'via'
+  Route: "id",
+  "Depart Time": "depart_time",
+  "Arrival Time": "arrive_time",
+  "Total Time": "duration",
+  "Driving Time": "driving_duration",
+  "Driving Distance": "driving_distance",
+  Via: "via",
 };
 
 let tabsState = {
   routesTableSort: currentSort,
   columnsCount: columnsCount(),
   timelinesSort: currentSort,
-  timelinesColoring: document.getElementById('color-option').value,
+  timelinesColoring: document.getElementById("color-option").value,
   screenWidth: screen.width,
 };
 
 const activityColorsMap = {
-    FREE: 'lightgreen',
-    WAIT: 'lightgray',
-    CAR: 'orange',
-    FERRY: 'aqua  ',
-    BUS: 'darkblue',
-    AIR: 'aqua'
+  FREE: "lightgreen",
+  WAIT: "lightgray",
+  CAR: "orange",
+  FERRY: "aqua  ",
+  BUS: "darkblue",
+  AIR: "aqua",
 };
 
 const activitiesInfo = {
-    FREE: {
-        color: 'lightgreen',
-        icon: '\uf118', // far fa-smile
-        iconClass: 'fa',
-    },
-    WAIT: {
-        color: 'lightgray',
-        icon: '\uf017', // fa fa-clock-o, far fa-clock, fas fa-clock
-        iconClass: 'fa',
-    },
-    CAR: {
-        color: 'orange',
-        icon: '\uf1b9', // fa/fas fa-car, fas fa-car-alt:f5de, fas fa-car-side:f5e4 directions_car:e531
-        iconClass: 'fa',
-    },
-    FERRY: {
-        color: 'aqua',
-        icon: '\uf21a', // fa/fas fa-ship
-        iconClass: 'fa',
-    },
-    BUS: {
-        color: 'darkblue',
-        icon: '\uf207', // fa/fas fa-bus
-        iconClass: 'fa',
-    },
-    AIR: {
-        color: 'lightblue',
-        icon: '\uf072', // fa/fas fa-plane
-        iconClass: 'fa',
-    },
+  FREE: {
+    color: "lightgreen",
+    icon: "\uf118", // far fa-smile
+    iconClass: "fa",
+  },
+  WAIT: {
+    color: "lightgray",
+    icon: "\uf017", // fa fa-clock-o, far fa-clock, fas fa-clock
+    iconClass: "fa",
+  },
+  CAR: {
+    color: "orange",
+    icon: "\uf1b9", // fa/fas fa-car, fas fa-car-alt:f5de, fas fa-car-side:f5e4 directions_car:e531
+    iconClass: "fa",
+  },
+  FERRY: {
+    color: "aqua",
+    icon: "\uf21a", // fa/fas fa-ship
+    iconClass: "fa",
+  },
+  BUS: {
+    color: "darkblue",
+    icon: "\uf207", // fa/fas fa-bus
+    iconClass: "fa",
+  },
+  AIR: {
+    color: "lightblue",
+    icon: "\uf072", // fa/fas fa-plane
+    iconClass: "fa",
+  },
 };
 
 function resetState() {
@@ -104,610 +106,634 @@ function resetState() {
   timelinesFilled = false;
 }
 
-async function fetchApiData(request, body, method = 'GET') {
-    const fetchOptions = {
-        method: method,
-        body: JSON.stringify(body),
-        headers: { 'Content-Type': 'application/json' }
-    }
-    const response = await fetch('/api' + request, fetchOptions);
-    const responseJson = await response.json();
-    if (!response.ok) {
-        msg = response.statusText;
-        if (responseJson && responseJson.detail)
-            msg += ' ' + JSON.stringify(responseJson.detail);
-        throw new Error(msg);
-    }
-    return responseJson;
+async function fetchApiData(request, body, method = "GET") {
+  const fetchOptions = {
+    method: method,
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "application/json" },
+  };
+  const response = await fetch("/api" + request, fetchOptions);
+  const responseJson = await response.json();
+  if (!response.ok) {
+    msg = response.statusText;
+    if (responseJson && responseJson.detail)
+      msg += " " + JSON.stringify(responseJson.detail);
+    throw new Error(msg);
+  }
+  return responseJson;
 }
 
 async function loadLocations() {
-    locations = await fetchApiData('/locations');
-    for (const id in locations) {
-        locationsToId[locations[id]] = id;
-    }
+  locations = await fetchApiData("/locations");
+  for (const id in locations) {
+    locationsToId[locations[id]] = id;
+  }
 
-    locationNames = Object.values(locations);
-    locationNames.sort((a, b) => a.localeCompare(b));
+  locationNames = Object.values(locations);
+  locationNames.sort((a, b) => a.localeCompare(b));
 
-    const locationsList = document.getElementById('locations');
-    for (const name of locationNames) {
-        const option = document.createElement('option');
-        option.value = name;
-        locationsList.appendChild(option);
-    }
-    await parseParams();
+  const locationsList = document.getElementById("locations");
+  for (const name of locationNames) {
+    const option = document.createElement("option");
+    option.value = name;
+    locationsList.appendChild(option);
+  }
+  await parseParams();
 }
 
 function initInput(input) {
-    input.addEventListener('input', onInput);
-    input.addEventListener('focusout', (event) => { autoComplete(event.target) });
+  input.addEventListener("input", onInput);
+  input.addEventListener("focusout", (event) => {
+    autoComplete(event.target);
+  });
 }
 
 function onInput() {
-    hideMessage();
+  hideMessage();
 }
 
 function autoComplete(input) {
-    const value = input.value.trim();
-    if (value != '' && !isValidLocation(value)) {
-        const r = new RegExp(value, 'i');
-        for (const name of locationNames) {
-            if (name.search(r) >= 0) {
-                input.value = name;
-                input.temp = name;
-                onInput();
-                break;
-            }
-        }
+  const value = input.value.trim();
+  if (value != "" && !isValidLocation(value)) {
+    const r = new RegExp(value, "i");
+    for (const name of locationNames) {
+      if (name.search(r) >= 0) {
+        input.value = name;
+        input.temp = name;
+        onInput();
+        break;
+      }
     }
+  }
 }
 
 async function getRoutePlans() {
-    let options = {}
-    for (const input of document.getElementsByTagName('input')) {
-        let value = input.value;
-        switch (input.type) {
-            case 'text':
-                value = locationsToId[value];
-                break;
-            case 'number':
-                value = parseInt(value);
-                break;
-            case 'checkbox':
-                value = input.checked;
-                break;
-            case 'radio':
-                value = input.checked;
-                break;
-        }
-        options[input.id] = value;
+  let options = {};
+  for (const input of document.getElementsByTagName("input")) {
+    let value = input.value;
+    switch (input.type) {
+      case "text":
+        value = locationsToId[value];
+        break;
+      case "number":
+        value = parseInt(value);
+        break;
+      case "checkbox":
+        value = input.checked;
+        break;
+      case "radio":
+        value = input.checked;
+        break;
     }
-    // url = new URL(window.location);
-    // for (const [key, value] in options) {
-    //     if (url.searchParams.has(key))
-    //         url.searchParams.set(key, value);
-    //     else
-    //         url.searchParams.append(key, value);
-    // }
-    // window.location = url
-    plans = await fetchApiData('/routeplans', options, 'POST');
-    for (let i = 0; i < plans.length; i++) {
-        plans[i].id = i + 1;
-    }
-    return plans
+    options[input.id] = value;
+  }
+  // url = new URL(window.location);
+  // for (const [key, value] in options) {
+  //     if (url.searchParams.has(key))
+  //         url.searchParams.set(key, value);
+  //     else
+  //         url.searchParams.append(key, value);
+  // }
+  // window.location = url
+  plans = await fetchApiData("/routeplans", options, "POST");
+  for (let i = 0; i < plans.length; i++) {
+    plans[i].id = i + 1;
+  }
+  return plans;
 }
 
 function isValidLocation(name) {
-    name = name.trim();
-    return name != ' ' && name in locationsToId;
+  name = name.trim();
+  return name != " " && name in locationsToId;
 }
 
 async function parseParams() {
-    const params = new URLSearchParams(window.location.search);
-    let hasParams;
-    for (const param of params.entries()) {
-        hasParams = true;
-        const element = document.getElementById(param[0]);
-        if (element) {
-            element.value = param[1];
-        }
+  const params = new URLSearchParams(window.location.search);
+  let hasParams;
+  for (const param of params.entries()) {
+    hasParams = true;
+    const element = document.getElementById(param[0]);
+    if (element) {
+      element.value = param[1];
     }
-    if (hasParams) {
-        autoComplete(elements.inputOrigin);
-        autoComplete(elements.inputDestination);
-        await submit();
-    }
+  }
+  if (hasParams) {
+    autoComplete(elements.inputOrigin);
+    autoComplete(elements.inputDestination);
+    await submit();
+  }
 }
 
 function showMessage(heading, text, color) {
-    elements.messageCard.hidden = false;
-    messageHidden = false;
-    if (!heading)
-        heading = '';
-    if (heading.length > 0)
-        heading += ' : ';
-    elements.messageCard.querySelector('#message-heading').textContent = heading;
-    elements.messageCard.querySelector('#message-content').textContent = text;
-    elements.messageCard.setAttribute('class', `w3-panel w3-card-4 w3-${color}`);
-    // elements.messageCard.querySelector('#message-heading').setAttribute('class', `w3-container w3-${color}`);
+  elements.messageCard.hidden = false;
+  messageHidden = false;
+  if (!heading) heading = "";
+  if (heading.length > 0) heading += " : ";
+  elements.messageCard.querySelector("#message-heading").textContent = heading;
+  elements.messageCard.querySelector("#message-content").textContent = text;
+  elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
+  // elements.messageCard.querySelector('#message-heading').setAttribute('class', `w3-container w3-${color}`);
 }
 
 function hideMessage() {
-    if (messageHidden == true)
-        return;
-    messageHidden = true;
-    elements.messageCard.hidden = true;
+  if (messageHidden == true) return;
+  messageHidden = true;
+  elements.messageCard.hidden = true;
 }
 
 function showError(message) {
-    showMessage("Error", message, 'red');
-    console.error(message);
+  showMessage("Error", message, "red");
+  console.error(message);
 }
 
 async function submit() {
-    hideMessage();
-    resetState();
-    if (!isValidLocation(elements.inputOrigin.value))
-        showError("Please select start location");
-    else if (!isValidLocation(elements.inputDestination.value))
-        showError("Please select destination location");
-    else if (elements.inputOrigin.value == elements.inputDestination.value)
-        showError("Start and destination location cannot be the same");
-    else {
-        try {
-            elements.loadingSpinner.hidden = false;
-            elements.buttonSubmit.disabled = true;
-            plans = await getRoutePlans();
-            if (!plans)
-                showError("Failed to fetch schedule information");
-            else if (plans.length == 0)
-                showMessage('', "No itineraries found. Try select another date and/or locations.", 'yellow');
-            else {
-                for (const plan of plans) {
-                    const via = new Set();
-                    for (const s of plan.segments) {
-                        let lg = s.connection.origin.land_group;
-                        if (lg) {
-                            const pos = lg.indexOf(' (');
-                            if (pos > 0)
-                                lg = lg.substring(0, pos).trim();
-                            via.add(lg);
-                        }
-                    }
-                    if (via.size < 2)
-                        plan.via = Array.from(via)
-                    if (via.size > 1)
-                        plan.via = [Array.from(via)[1]];
-                }
-                // force sort
-                const sort = currentSort;
-                currentSort = null;
-                sortPlans(sort);
-                // show routes
-                elements.routesCard.hidden = false;
-                showTab('tab-routes-table');
+  hideMessage();
+  resetState();
+  if (!isValidLocation(elements.inputOrigin.value))
+    showError("Please select start location");
+  else if (!isValidLocation(elements.inputDestination.value))
+    showError("Please select destination location");
+  else if (elements.inputOrigin.value == elements.inputDestination.value)
+    showError("Start and destination location cannot be the same");
+  else {
+    try {
+      elements.loadingSpinner.hidden = false;
+      elements.buttonSubmit.disabled = true;
+      plans = await getRoutePlans();
+      if (!plans) showError("Failed to fetch schedule information");
+      else if (plans.length == 0)
+        showMessage(
+          "",
+          "No itineraries found. Try select another date and/or locations.",
+          "yellow"
+        );
+      else {
+        for (const plan of plans) {
+          const via = new Set();
+          for (const s of plan.segments) {
+            let lg = s.connection.origin.land_group;
+            if (lg) {
+              const pos = lg.indexOf(" (");
+              if (pos > 0) lg = lg.substring(0, pos).trim();
+              via.add(lg);
             }
+          }
+          if (via.size < 2) plan.via = Array.from(via);
+          if (via.size > 1) plan.via = [Array.from(via)[1]];
         }
-        catch (error) {
-            showError(error.message);
-        }
-        finally {
-            elements.loadingSpinner.hidden = true;
-            elements.buttonSubmit.disabled = false;
-        }
+        // force sort
+        const sort = currentSort;
+        currentSort = null;
+        sortPlans(sort);
+        // show routes
+        elements.routesCard.hidden = false;
+        showTab("tab-routes-table");
+      }
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      elements.loadingSpinner.hidden = true;
+      elements.buttonSubmit.disabled = false;
     }
+  }
 }
 
 function secondsToString(seconds) {
-    dateObj = new Date(seconds * 1000);
-    hours = dateObj.getUTCHours();
-    minutes = dateObj.getUTCMinutes();
-    seconds = dateObj.getSeconds();
-    let timeString = hours.toString().padStart(2, '0')
-        + ':' + minutes.toString().padStart(2, '0')
-        + ':' + seconds.toString().padStart(2, '0');
-    return timeString;
+  dateObj = new Date(seconds * 1000);
+  hours = dateObj.getUTCHours();
+  minutes = dateObj.getUTCMinutes();
+  seconds = dateObj.getSeconds();
+  let timeString =
+    hours.toString().padStart(2, "0") +
+    ":" +
+    minutes.toString().padStart(2, "0") +
+    ":" +
+    seconds.toString().padStart(2, "0");
+  return timeString;
 }
 
 function timeToString(time) {
-    dateObj = new Date(time);
-    hours = dateObj.getHours();
-    minutes = dateObj.getMinutes();
-    seconds = dateObj.getSeconds();
-    ampm = 'am';
-    if (hours >= 12) {
-        hours -= 12;
-        ampm = 'pm';
-    }
-    if (hours == 0)
-        hours = 12;
-    timeString = hours.toString().padStart(2, '0')
-        + ':' + minutes.toString().padStart(2, '0')
-        + ampm;
-    return timeString;
+  dateObj = new Date(time);
+  hours = dateObj.getHours();
+  minutes = dateObj.getMinutes();
+  seconds = dateObj.getSeconds();
+  ampm = "am";
+  if (hours >= 12) {
+    hours -= 12;
+    ampm = "pm";
+  }
+  if (hours == 0) hours = 12;
+  timeString =
+    hours.toString().padStart(2, "0") +
+    ":" +
+    minutes.toString().padStart(2, "0") +
+    ampm;
+  return timeString;
 }
 
 function durationToString(time) {
-    dateObj = new Date(time);
-    days = Math.floor(dateObj.getTime() / 60 / 60 / 24 / 1000);
-    hours = dateObj.getUTCHours();
-    minutes = dateObj.getUTCMinutes();
-    seconds = dateObj.getUTCSeconds();
-    timeString = '';
-    if (days < 1)
-        timeString = '';
-    else if (days >= 2)
-        timeString = `${days} days `;
-    else
-        timeString = '1 day ';
-    timeString += hours.toString().padStart(2, '0')
-        + ':' + minutes.toString().padStart(2, '0');
-    return timeString;
+  dateObj = new Date(time);
+  days = Math.floor(dateObj.getTime() / 60 / 60 / 24 / 1000);
+  hours = dateObj.getUTCHours();
+  minutes = dateObj.getUTCMinutes();
+  seconds = dateObj.getUTCSeconds();
+  timeString = "";
+  if (days < 1) timeString = "";
+  else if (days >= 2) timeString = `${days} days `;
+  else timeString = "1 day ";
+  timeString +=
+    hours.toString().padStart(2, "0") +
+    ":" +
+    minutes.toString().padStart(2, "0");
+  return timeString;
 }
 
 function onRowSelected(row, id) {
-    for (const child of elements.routesTable.children) {
-        child.classList.remove('selected-row');
-    }
-    row.classList.add('selected-row')
-    onPlanSelected(id);
+  for (const child of elements.routesTable.children) {
+    child.classList.remove("selected-row");
+  }
+  row.classList.add("selected-row");
+  onPlanSelected(id);
 }
 
 function columnsCount() {
-    const w = window.outerWidth;
-    if (w > 600) return 7;
-    if (w > 500) return 6;
-    if (w > 400) return 5;
-    return 4;
+  const w = window.outerWidth;
+  if (w > 600) return 7;
+  if (w > 500) return 6;
+  if (w > 400) return 5;
+  return 4;
 }
 
 function updateRoutesTable() {
-    if (elements.tabRoutesTable.hidden)
-        return;
-    if (tabsState.routesTableSort == currentSort && tabsState.columnsCount == columnsCount())
-        return;
-    tabsState.routesTableSort = currentSort;
-    tabsState.columnsCount = columnsCount();
+  if (elements.tabRoutesTable.hidden) return;
+  if (
+    tabsState.routesTableSort == currentSort &&
+    tabsState.columnsCount == columnsCount()
+  )
+    return;
+  tabsState.routesTableSort = currentSort;
+  tabsState.columnsCount = columnsCount();
 
-    let headerRowHtml = '';
-    let c = 0;
-    for (const k in columns) {
-        if (c++ == tabsState.columnsCount)
-            break;
-        headerRowHtml += `<th class="w3-center hover-underline" onclick="sortPlans('${columns[k]}')">${k}</th>`;
+  let headerRowHtml = "";
+  let c = 0;
+  for (const k in columns) {
+    if (c++ == tabsState.columnsCount) break;
+    headerRowHtml += `<th class="w3-center hover-underline" onclick="sortPlans('${columns[k]}')">${k}</th>`;
+  }
+  elements.tabRoutesTableHeaderRow.innerHTML = headerRowHtml;
+
+  // clear table
+  while (elements.routesTable.firstChild)
+    elements.routesTable.removeChild(elements.routesTable.firstChild);
+
+  for (let i = 0; i < plans.length; i++) {
+    const plan = plans[i];
+
+    let tr = document.createElement("tr");
+    tr.setAttribute("onclick", `javascript:onRowSelected(this,${plan.id});`);
+    tr.classList.add("routes-table-row");
+
+    let td;
+    td = document.createElement("td");
+    td.textContent = `Route ${plan.id}`;
+    tr.appendChild(td);
+
+    td = document.createElement("td");
+    td.classList.add("w3-center");
+    td.innerHTML = timeToString(plan.depart_time);
+    tr.appendChild(td);
+
+    td = document.createElement("td");
+    td.classList.add("w3-center");
+    td.innerHTML = timeToString(plan.arrive_time);
+    tr.appendChild(td);
+
+    td = document.createElement("td");
+    td.classList.add("w3-center");
+    td.innerHTML = durationToString(plan.duration * 1000);
+    tr.appendChild(td);
+
+    if (tabsState.columnsCount > 4) {
+      td = document.createElement("td");
+      td.classList.add("w3-center");
+      td.innerHTML = durationToString(plan.driving_duration * 1000);
+      tr.appendChild(td);
     }
-    elements.tabRoutesTableHeaderRow.innerHTML = headerRowHtml;
 
-    // clear table
-    while (elements.routesTable.firstChild)
-        elements.routesTable.removeChild(elements.routesTable.firstChild);
-
-    for (let i = 0; i < plans.length; i++) {
-        const plan = plans[i];
-
-        let tr = document.createElement('tr');
-        tr.setAttribute('onclick', `javascript:onRowSelected(this,${plan.id});`);
-        tr.classList.add('routes-table-row');
-
-        let td;
-        td = document.createElement('td');
-        td.textContent = `Route ${plan.id}`
-        tr.appendChild(td);
-
-        td = document.createElement('td');
-        td.classList.add('w3-center');
-        td.innerHTML = timeToString(plan.depart_time);
-        tr.appendChild(td);
-
-        td = document.createElement('td');
-        td.classList.add('w3-center')
-        td.innerHTML = timeToString(plan.arrive_time)
-        tr.appendChild(td)
-
-        td = document.createElement('td');
-        td.classList.add('w3-center');
-        td.innerHTML = durationToString(plan.duration * 1000);
-        tr.appendChild(td)
-
-        if (tabsState.columnsCount > 4) {
-            td = document.createElement('td');
-            td.classList.add('w3-center');
-            td.innerHTML = durationToString(plan.driving_duration * 1000);
-            tr.appendChild(td)
-        }
-
-        if (tabsState.columnsCount > 5) {
-            td = document.createElement('td');
-            td.classList.add('w3-center');
-            td.textContent = `${plan.driving_distance.toFixed(1)} km`;
-            tr.appendChild(td)
-        }
-
-        if (tabsState.columnsCount > 6) {
-            td = document.createElement('td');
-            td.classList.add('w3-center');
-            td.textContent = plan.via.join(',');
-            tr.appendChild(td)
-        }
-
-        elements.routesTable.appendChild(tr);
+    if (tabsState.columnsCount > 5) {
+      td = document.createElement("td");
+      td.classList.add("w3-center");
+      td.textContent = `${plan.driving_distance.toFixed(1)} km`;
+      tr.appendChild(td);
     }
+
+    if (tabsState.columnsCount > 6) {
+      td = document.createElement("td");
+      td.classList.add("w3-center");
+      td.textContent = plan.via.join(",");
+      tr.appendChild(td);
+    }
+
+    elements.routesTable.appendChild(tr);
+  }
 }
 
 function updateTimelines() {
-    if (elements.tabRoutesTimelines.hidden)
-        return;
-    const currentColoring = document.getElementById('color-option').value;
-    if (tabsState.timelinesSort == currentSort && tabsState.timelinesColoring == currentColoring && tabsState.screenWidth == screen.width)
-        return;
-    tabsState.timelinesSort = currentSort;
-    tabsState.timelinesColoring = currentColoring;
-    tabsState.screenWidth = screen.width;
-    d3.select('#timeline').select('svg').remove();
-    let chartRows = [];
-    let coloringKeys = new Set();
-    for (const plan of plans) {
-        let chartRow = {
-            label: `Route ${plan.id}`,
-            times: []
-        }
-        let location;
-        let landGroup;
-        for (const s of plan.segments) {
-            for (const t of s.times) {
-                let label = '';
-                const segmentType = t.type == 'TRAVEL' ? s.connection.type : t.type;
-                const activityInfo = activitiesInfo[segmentType];
-                if (location == null || t.type == 'TRAVEL') {
-                    if (location != s.connection.destination) {
-                        location = s.connection.destination;
-                        landGroup = location.land_group;
-                        if (landGroup == undefined) {
-                            landGroup = null;
-                            if (location.address.indexOf('Island') > 0 || location.name.indexOf('Island') > 0)
-                                landGroup = 'Islands';
-                        }
-                        if (landGroup && landGroup.indexOf('(') > 0)
-                            landGroup = landGroup.substring(0, landGroup.indexOf('(')).trim();
-
-                        //label = location.id.length == 3 ? location.id : location.name;
-                    }
-                }
-                if (activityInfo.icon)
-                    label = `<tspan class="${activityInfo.iconClass}">${activityInfo.icon}<tspan>` + label;
-
-                const t2 = {
-                    description: t.description,
-                    segmentType: segmentType,
-                    startingTime: new Date(t.start).getTime(),
-                    endingTime: new Date(t.end).getTime()
-                };
-                if (label.length > 0) {
-                    t2.label = ''; // just a placeholder now, will be replaced with _label later
-                    t2._label = label;
-                }
-                const colorKey = currentColoring == 'activity' ? segmentType : landGroup;
-                if (colorKey != null) {
-                    coloringKeys.add(colorKey);
-                    t2._color = colorKey;
-                }
-                if (t.end == t.start) {
-                    t2.display = 'circle';
-                    t2._label = ''; // don't show labels for start/finish 
-                    chartRow.times.splice(0, 0, t2);
-                }
-                else {
-                    chartRow.times.push(t2);
-                }
+  if (elements.tabRoutesTimelines.hidden) return;
+  const currentColoring = document.getElementById("color-option").value;
+  if (
+    tabsState.timelinesSort == currentSort &&
+    tabsState.timelinesColoring == currentColoring &&
+    tabsState.screenWidth == screen.width
+  )
+    return;
+  tabsState.timelinesSort = currentSort;
+  tabsState.timelinesColoring = currentColoring;
+  tabsState.screenWidth = screen.width;
+  d3.select("#timeline").select("svg").remove();
+  let chartRows = [];
+  let coloringKeys = new Set();
+  for (const plan of plans) {
+    let chartRow = {
+      label: `Route ${plan.id}`,
+      times: [],
+    };
+    let location;
+    let landGroup;
+    for (const s of plan.segments) {
+      for (const t of s.times) {
+        let label = "";
+        const segmentType = t.type == "TRAVEL" ? s.connection.type : t.type;
+        const activityInfo = activitiesInfo[segmentType];
+        if (location == null || t.type == "TRAVEL") {
+          if (location != s.connection.destination) {
+            location = s.connection.destination;
+            landGroup = location.land_group;
+            if (landGroup == undefined) {
+              landGroup = null;
+              if (
+                location.address.indexOf("Island") > 0 ||
+                location.name.indexOf("Island") > 0
+              )
+                landGroup = "Islands";
             }
+            if (landGroup && landGroup.indexOf("(") > 0)
+              landGroup = landGroup.substring(0, landGroup.indexOf("(")).trim();
+
+            //label = location.id.length == 3 ? location.id : location.name;
+          }
         }
-        chartRows.push(chartRow);
+        if (activityInfo.icon)
+          label =
+            `<tspan class="${activityInfo.iconClass}">${activityInfo.icon}<tspan>` +
+            label;
+
+        const t2 = {
+          description: t.description,
+          segmentType: segmentType,
+          startingTime: new Date(t.start).getTime(),
+          endingTime: new Date(t.end).getTime(),
+        };
+        if (label.length > 0) {
+          t2.label = ""; // just a placeholder now, will be replaced with _label later
+          t2._label = label;
+        }
+        const colorKey =
+          currentColoring == "activity" ? segmentType : landGroup;
+        if (colorKey != null) {
+          coloringKeys.add(colorKey);
+          t2._color = colorKey;
+        }
+        if (t.end == t.start) {
+          t2.display = "circle";
+          t2._label = ""; // don't show labels for start/finish
+          chartRow.times.splice(0, 0, t2);
+        } else {
+          chartRow.times.push(t2);
+        }
+      }
     }
+    chartRows.push(chartRow);
+  }
 
-    let colorScale;
-    if (currentColoring == 'activity') {
-        colorScale = d3.scaleOrdinal().range(Object.values(activityColorsMap)).domain(Object.keys(activityColorsMap));
-    }
-    else {
-        colorScale = d3.scaleOrdinal().range(d3.scaleOrdinal(d3.schemeAccent).range()).domain(Array.from(coloringKeys));
-    }
+  let colorScale;
+  if (currentColoring == "activity") {
+    colorScale = d3
+      .scaleOrdinal()
+      .range(Object.values(activityColorsMap))
+      .domain(Object.keys(activityColorsMap));
+  } else {
+    colorScale = d3
+      .scaleOrdinal()
+      .range(d3.scaleOrdinal(d3.schemeAccent).range())
+      .domain(Array.from(coloringKeys));
+  }
 
-    let chart = d3.timeline()
-        .colors(colorScale)
-        .colorProperty('_color')
-        .showAxisTop()
-        .margin({ left: 90, right: 10, top: 10, bottom: 10 })
-        .tickFormat({
-            format: d3.timeFormat('%I %p'),
-            tickTime: d3.timeHours,
-            tickInterval: 3,
-            tickSize: 1
-        })
-        .stack();
+  let chart = d3
+    .timeline()
+    .colors(colorScale)
+    .colorProperty("_color")
+    .showAxisTop()
+    .margin({ left: 90, right: 10, top: 10, bottom: 10 })
+    .tickFormat({
+      format: d3.timeFormat("%I %p"),
+      tickTime: d3.timeHours,
+      tickInterval: 3,
+      tickSize: 1,
+    })
+    .stack();
 
-    const width = elements.timeline.clientWidth - 40; // FIXME: magic number
-    const svg = d3
-      .select('#timeline')
-      .append('svg')
-      .attr('width', width)
-      .datum(chartRows)
-      .call(chart);
+  const width = elements.timeline.clientWidth - 40; // FIXME: magic number
+  const svg = d3
+    .select("#timeline")
+    .append("svg")
+    .attr("width", width)
+    .datum(chartRows)
+    .call(chart);
 
-    updateLegend(chart, coloringKeys, currentColoring, document.getElementById('timeline-legend'));
+  updateLegend(
+    chart,
+    coloringKeys,
+    currentColoring,
+    document.getElementById("timeline-legend")
+  );
 
-    svg.selectAll('.timeline-label')
-        .html((d, i) => {
-            return `<a href="javascript:onPlanSelected(${plans[i].id});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
-        });
+  svg.selectAll(".timeline-label").html((d, i) => {
+    return `<a href="javascript:onPlanSelected(${plans[i].id});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
+  });
 
-    svg
-      .selectAll('text')
-      .style('cursor', 'default')._groups[0]
-      .forEach((e) => {
-        assignTooltip(e);
-        const d = e.__data__;
-        if (d && d._label) e.innerHTML = d._label;
-        //if (e.getClientRects()[0].width < e.textLength.baseVal.value)
-        //    e.innerHTML = '';
-      });
+  svg
+    .selectAll("text")
+    .style("cursor", "default")
+    ._groups[0].forEach((e) => {
+      assignTooltip(e);
+      const d = e.__data__;
+      if (d && d._label) e.innerHTML = d._label;
+      //if (e.getClientRects()[0].width < e.textLength.baseVal.value)
+      //    e.innerHTML = '';
+    });
 
-    svg.selectAll('rect')._groups[0].forEach((e) => assignTooltip(e));
-    svg.selectAll('tspan')._groups[0].forEach((e) => assignTooltip(e));
+  svg.selectAll("rect")._groups[0].forEach((e) => assignTooltip(e));
+  svg.selectAll("tspan")._groups[0].forEach((e) => assignTooltip(e));
 }
 
 function updateLegend(chart, coloringKeys, currentColoring, legendElement) {
-    coloringKeys = Array.from(coloringKeys);
-    const colorsRange = chart.colors().range();
-    const colorsDomain = chart.colors().domain();
-    let legend = "Legend: ";
-    for (let i = 0; i < colorsRange.length && i < coloringKeys.length; i++) {
-        n = colorsDomain.indexOf(coloringKeys[i]);
-        c = colorsRange[n];
-        legend += `<span>&nbsp;&nbsp;`;
-        legend += `<div style="display:inline-block;height:1em;width:1em;vertical-align:middle;background-color:${c}">&nbsp;</div>&nbsp;`;
-        if (currentColoring == 'activity') {
-            const activityInfo = activitiesInfo[coloringKeys[i]];
-            legend += `<span class="${activityInfo.iconClass}">${activityInfo.icon}</span>`;
-        }
-        legend += `&nbsp;${coloringKeys[i]}</span>`;
+  coloringKeys = Array.from(coloringKeys);
+  const colorsRange = chart.colors().range();
+  const colorsDomain = chart.colors().domain();
+  let legend = "Legend: ";
+  for (let i = 0; i < colorsRange.length && i < coloringKeys.length; i++) {
+    n = colorsDomain.indexOf(coloringKeys[i]);
+    c = colorsRange[n];
+    legend += `<span>&nbsp;&nbsp;`;
+    legend += `<div style="display:inline-block;height:1em;width:1em;vertical-align:middle;background-color:${c}">&nbsp;</div>&nbsp;`;
+    if (currentColoring == "activity") {
+      const activityInfo = activitiesInfo[coloringKeys[i]];
+      legend += `<span class="${activityInfo.iconClass}">${activityInfo.icon}</span>`;
     }
-    legendElement.innerHTML = legend;
+    legend += `&nbsp;${coloringKeys[i]}</span>`;
+  }
+  legendElement.innerHTML = legend;
 }
 
 function assignTooltip(element) {
-    element.onmousemove = (event) => {
-        let n = event.target;
-        if (n.nodeName == 'tspan')
-            n = n.parentNode;
-        if (n.nodeName == 'text')
-            n = n.parentNode;
-        const rect = n.getBoundingClientRect();
-        tooltip
-            .style('left', (rect.x + window.scrollX) + 'px')
-            .style('top', (rect.bottom + + window.scrollY + 3) + 'px');
-    };
-    element.onmouseout = (event) => {
-        tooltip
-            .transition()
-            .duration(100)
-            .style('opacity', 0);
-    };
-    element.onmouseover = (event) => {
-        let o = event.target.__data__;
-        if (!o)
-            o = event.target.parentNode.__data__;
-        if (!o || !o.description)
-            return;
-        //const rect = n.getBoundingClientRect();
-        tooltip
-            .html(timeToString(o.startingTime) + ' ' + o.description)
-            .transition()
-            .duration(100)
-            //.style('left', (rect.x) + 'px')
-            //.style('top', (rect.bottom + 3) + 'px')
-            .style('opacity', 1);
-    };
+  element.onmousemove = (event) => {
+    let n = event.target;
+    if (n.nodeName == "tspan") n = n.parentNode;
+    if (n.nodeName == "text") n = n.parentNode;
+    const rect = n.getBoundingClientRect();
+    tooltip
+      .style("left", rect.x + window.scrollX + "px")
+      .style("top", rect.bottom + +window.scrollY + 3 + "px");
+  };
+  element.onmouseout = (event) => {
+    tooltip.transition().duration(100).style("opacity", 0);
+  };
+  element.onmouseover = (event) => {
+    let o = event.target.__data__;
+    if (!o) o = event.target.parentNode.__data__;
+    if (!o || !o.description) return;
+    //const rect = n.getBoundingClientRect();
+    tooltip
+      .html(timeToString(o.startingTime) + " " + o.description)
+      .transition()
+      .duration(100)
+      //.style('left', (rect.x) + 'px')
+      //.style('top', (rect.bottom + 3) + 'px')
+      .style("opacity", 1);
+  };
 }
 
 function onPlanSelected(id) {
-    elements.scheduleCard.hidden = false;
-    const plan = plans.find(p => p.id == id);
-    document.getElementById('rid').value = plan.hash;
+  elements.scheduleCard.hidden = false;
+  const plan = plans.find((p) => p.id == id);
+  document.getElementById("rid").value = plan.hash;
 
-    // clear table
-    while (elements.scheduleTable.firstChild) {
-        elements.scheduleTable.removeChild(elements.scheduleTable.firstChild);
+  // clear table
+  while (elements.scheduleTable.firstChild) {
+    elements.scheduleTable.removeChild(elements.scheduleTable.firstChild);
+  }
+
+  // schedule.appendChild(node = document.createElement('div').className('schedule-header'));
+  document.getElementById("schedule-header").textContent = `${
+    plan.segments[0].connection.origin.name
+  } to ${plan.segments.slice(-1)[0].connection.destination.name}`;
+  // schedule.appendChild(node = document.createElement('div').className('schedule-via'));
+  document.getElementById("schedule-via").textContent =
+    "via " +
+    [
+      ...new Set(
+        plan.segments.slice(0, -1).map((s) => s.connection.destination.name)
+      ),
+    ].join(", ");
+
+  document.getElementById("schedule-details").innerHTML =
+    `Route ${plan.id}.` +
+    ` Date:&nbsp;<strong>${new Date(
+      plan.depart_time.substring(0, 16)
+    ).toDateString()}</strong>.` +
+    ` Total time:&nbsp;<strong>${durationToString(
+      plan.duration * 1000
+    )}</strong>.` +
+    ` Driving distance:&nbsp;${plan.driving_distance.toFixed(1)} km.`;
+  // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
+  const scheduleMap = document.getElementById("schedule-map");
+  if (plan.map_url && plan.map_url.length > 0) {
+    scheduleMap.href = plan.map_url;
+    scheduleMap.hidden = false;
+  } else {
+    scheduleMap.hidden = true;
+  }
+
+  for (const s of plan.segments) {
+    for (const t of s.times) {
+      const tr = document.createElement("tr");
+      elements.scheduleTable.appendChild(tr);
+
+      let td;
+      td = document.createElement("td");
+      td.classList.add("w3-center");
+      td.innerHTML = timeToString(t.start).replace(" ", "&nbsp;");
+      tr.appendChild(td);
+
+      let desc = t.description;
+      if (s.schedule_url && t.type == "TRAVEL" && t.start != t.end)
+        desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 8px!important" href="${s.schedule_url}" target="_blank"><i class="fa fa-list-alt"></i>&nbsp;Schedule</a>`;
+      td = document.createElement("td");
+      td.innerHTML = desc;
+      tr.appendChild(td);
+
+      const duration = new Date(t.end) - new Date(t.start);
+
+      td = document.createElement("td");
+      td.classList.add("w3-center");
+      td.textContent = duration > 0 ? durationToString(duration) : "--";
+      tr.appendChild(td);
     }
-
-    // schedule.appendChild(node = document.createElement('div').className('schedule-header'));
-    document.getElementById('schedule-header').textContent = `${plan.segments[0].connection.origin.name} to ${plan.segments.slice(-1)[0].connection.destination.name}`
-    // schedule.appendChild(node = document.createElement('div').className('schedule-via'));
-    document.getElementById('schedule-via').textContent = 'via ' + [...new Set(plan.segments.slice(0, -1).map(s => s.connection.destination.name))].join(', ');
-
-    document.getElementById('schedule-details').innerHTML =
-        `Route ${plan.id}.` +
-        ` Date:&nbsp;<strong>${new Date(plan.depart_time.substring(0, 16)).toDateString()}</strong>.` +
-        ` Total time:&nbsp;<strong>${durationToString(plan.duration * 1000)}</strong>.` +
-        ` Driving distance:&nbsp;${plan.driving_distance.toFixed(1)} km.`;
-    // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
-    const scheduleMap = document.getElementById('schedule-map');
-    if (plan.map_url && plan.map_url.length > 0) {
-        scheduleMap.href = plan.map_url;
-        scheduleMap.hidden = false;
-    }
-    else {
-        scheduleMap.hidden = true;
-    }
-
-    for (const s of plan.segments) {
-        for (const t of s.times) {
-            const tr = document.createElement('tr');
-            elements.scheduleTable.appendChild(tr);
-
-            let td;
-            td = document.createElement('td');
-            td.classList.add('w3-center');
-            td.innerHTML = timeToString(t.start).replace(' ', '&nbsp;');
-            tr.appendChild(td);
-
-            let desc = t.description;
-            if (s.schedule_url && t.type == 'TRAVEL' && t.start != t.end)
-                desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 8px!important" href="${s.schedule_url}" target="_blank"><i class="fa fa-list-alt"></i>&nbsp;Schedule</a>`;
-            td = document.createElement('td');
-            td.innerHTML = desc;
-            tr.appendChild(td);
-
-            const duration = new Date(t.end) - new Date(t.start);
-
-            td = document.createElement('td');
-            td.classList.add('w3-center');
-            td.textContent = duration > 0 ? durationToString(duration) : '--';
-            tr.appendChild(td);
-        }
-    }
-    elements.scheduleCard.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' });
+  }
+  elements.scheduleCard.scrollIntoView({
+    block: "start",
+    inline: "nearest",
+    behavior: "smooth",
+  });
 }
 
 function sortPlans(sortBy) {
-    if (sortBy == currentSort)
-        return;
-    plans.sort((a, b) => {
-        if (a[sortBy] >= b[sortBy])
-            return 1;
-        return -1;
-    });
-    currentSort = sortBy;
-    elements.sortOption.value = sortBy;
-    updateTabsData();
+  if (sortBy == currentSort) return;
+  plans.sort((a, b) => {
+    if (a[sortBy] >= b[sortBy]) return 1;
+    return -1;
+  });
+  currentSort = sortBy;
+  elements.sortOption.value = sortBy;
+  updateTabsData();
 }
 
 function updateTabsData() {
-    updateRoutesTable();
-    updateTimelines();
+  updateRoutesTable();
+  updateTimelines();
 }
 
 function showTab(id) {
-    if (currentTab) {
-        if (currentTab.id == id)
-            return;
-        currentTab.hidden = true;
-    }
-    currentTab = document.getElementById(id);
-    currentTab.hidden = false; // .style.display = 'block'/'none';
-    updateTabsData();
+  if (currentTab) {
+    if (currentTab.id == id) return;
+    currentTab.hidden = true;
+  }
+  currentTab = document.getElementById(id);
+  currentTab.hidden = false; // .style.display = 'block'/'none';
+  updateTabsData();
 }
 
 function toggleShow(id) {
-    const element = document.getElementById(id);
-    element.hidden = !element.hidden;
+  const element = document.getElementById(id);
+  element.hidden = !element.hidden;
 }
 
 function onPrint(card) {
-    elements.routesCard.classList.add('no-print');
-    elements.scheduleCard.classList.add('no-print');
-    document.getElementById(card).classList.remove('no-print');
-    print();
+  elements.routesCard.classList.add("no-print");
+  elements.scheduleCard.classList.add("no-print");
+  document.getElementById(card).classList.remove("no-print");
+  print();
 }
 
 // deprecated
@@ -717,32 +743,32 @@ function onPrint(card) {
 
 screen.orientation.onchange = (event) => {
   updateTabsData();
-}
+};
 
 window.onresize = () => {
   updateTabsData();
-}
+};
 
 resetState();
 loadLocations();
 
 // initialize input controls
-elements.inputDate.setAttribute('value', new Date().toJSON().slice(0, 10));
-elements.inputDate.setAttribute('min', new Date().toJSON().slice(0, 10));
+elements.inputDate.setAttribute("value", new Date().toJSON().slice(0, 10));
+elements.inputDate.setAttribute("min", new Date().toJSON().slice(0, 10));
 initInput(elements.inputOrigin);
 initInput(elements.inputDestination);
 
 // initialize sort options
-elements.sortOption.setAttribute('onchange', "sortPlans(this.value);");
+elements.sortOption.setAttribute("onchange", "sortPlans(this.value);");
 for (const k in columns) {
-    const opt = document.createElement('option');
-    opt.text = k;
-    opt.value = columns[k];
-    elements.sortOption.add(opt, null);
+  const opt = document.createElement("option");
+  opt.text = k;
+  opt.value = columns[k];
+  elements.sortOption.add(opt, null);
 }
 
 // elements.routesTable.parentNode.querySelectorAll('th') // get all the table header elements
-//     .forEach((element, columnNo) => { // add a click handler for each 
+//     .forEach((element, columnNo) => { // add a click handler for each
 //         const sortBy = element.getAttribute('sort');
 //         if (sortBy) {
 //             element.addEventListener('click', event => sortPlans(sortBy));
