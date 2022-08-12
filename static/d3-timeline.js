@@ -33,7 +33,7 @@ d3.timeline = () => {
     left: 30,
     right: 30,
     top: 30,
-    bottom: 30
+    bottom: 30,
   };
   let stacked = false;
   let rotateTicks = false;
@@ -136,8 +136,7 @@ d3.timeline = () => {
   }
 
   function appendAxisHeaderBackground(g, xAxis, yAxis) {
-    g
-      .insert("rect")
+    g.insert("rect")
       .attr("class", "row-green-bar")
       .attr("x", xAxis)
       .attr("width", width)
@@ -147,8 +146,7 @@ d3.timeline = () => {
   }
 
   function appendTimeAxisTick(g, xAxis, maxStack) {
-    g
-      .append("g")
+    g.append("g")
       .attr("class", "axis")
       .attr(
         "transform",
@@ -173,8 +171,7 @@ d3.timeline = () => {
   function appendBackgroundBar(yAxisMapping, index, g, data, datum) {
     const greenbarYAxis =
       (itemHeight + itemMargin) * yAxisMapping[index] + margin.top;
-    g
-      .selectAll("svg")
+    g.selectAll("svg")
       .data(data)
       .enter()
       .insert("rect")
@@ -218,10 +215,10 @@ d3.timeline = () => {
 
     const gParentItem = d3.select(gParent._groups[0][0]);
 
-    const yAxisMapping = {}
-    let maxStack = 1
-    let minTime = 0
-    let maxTime = 0
+    const yAxisMapping = {};
+    let maxStack = 1;
+    let minTime = 0;
+    let maxTime = 0;
 
     setWidth();
 
@@ -292,9 +289,7 @@ d3.timeline = () => {
     if (orient === "left") xAxis = d3.axisLeft(xScale);
     if (orient === "right") xAxis = d3.axisRight(xScale);
 
-    xAxis
-      .tickFormat(tickFormat.format)
-      .tickSize(tickFormat.tickSize);
+    xAxis.tickFormat(tickFormat.format).tickSize(tickFormat.tickSize);
 
     if (tickFormat.tickValues != null) {
       xAxis.tickValues(tickFormat.tickValues);
@@ -790,7 +785,8 @@ d3.timeline = () => {
   };
 
   timeline.navigate = (navigateBackwards, navigateForwards) => {
-    if (!navigateBackwards && !navigateForwards) return [navigateLeft, navigateRight];
+    if (!navigateBackwards && !navigateForwards)
+      return [navigateLeft, navigateRight];
     navigateLeft = navigateBackwards;
     navigateRight = navigateForwards;
     showAxisNav = !showAxisNav;

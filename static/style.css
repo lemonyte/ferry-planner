@@ -1,29 +1,51 @@
 .timeline-tooltip {
-    line-height: 1;
-    font-weight: bold;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px;
-    background: rgba(0, 0, 0, 0.8);
-    color: #fff;
+  line-height: 1;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
 }
 
 .hover-underline:hover {
-    cursor: pointer;
-    text-decoration: underline;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .routes-table-row:hover {
-    background-color: skyblue !important;
-    cursor: pointer;
+  background-color: skyblue !important;
+  cursor: pointer;
 }
 
 .selected-row {
-    background-color: deepskyblue !important;
+  background-color: deepskyblue !important;
 }
 
 @media print {
-    .no-print, .no-print * {
-        display: none !important;
-    }
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+}
+
+@media (max-width: 512px) {
+  .m-font75 {
+    font-size: 75%;
+  }
+
+  .m-hide-c {
+    display: none;
+  }
+}
+
+.font120 {
+  font-size: 120%;
+}
+
+.font150 {
+  font-size: 150%;
+}
+
+.font200 {
+  font-size: 200%;
 }
