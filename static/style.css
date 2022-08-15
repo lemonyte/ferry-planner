@@ -49,3 +49,14 @@
 .font200 {
   font-size: 200%;
 }
+
+@media screen {
+  .background-image {
+    background-image: url(/static/bc-ferries-1920.jpg); 
+    background-attachment: fixed; 
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    background-position: center; 
+    min-width: 350px;
+  }    
+}
