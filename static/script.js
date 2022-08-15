@@ -736,7 +736,13 @@ function onPrint(card) {
   print();
 }
 
-// deprecated
+function pad(num, size) {
+  num = num.toString();
+  while (num.length < size) num = "0" + num;
+  return num;
+}
+
+// DEPRECATED
 // onorientationchange = (event) => {
 //   updateTabsData();
 // };
@@ -753,10 +759,14 @@ resetState();
 loadLocations();
 
 // initialize input controls
-elements.inputDate.setAttribute("value", new Date().toJSON().slice(0, 10));
-elements.inputDate.setAttribute("min", new Date().toJSON().slice(0, 10));
-initInput(elements.inputOrigin);
-initInput(elements.inputDestination);
+{
+  const d = new Date();
+  const today = `${d.getFullYear()}-${pad(d.getMonth() + 1, 2)}-${pad(d.getDate(), 2)}`;
+  elements.inputDate.setAttribute("value", today);
+  elements.inputDate.setAttribute("min", today);
+  initInput(elements.inputOrigin);
+  initInput(elements.inputDestination);
+}
 
 // initialize sort options
 elements.sortOption.setAttribute("onchange", "sortPlans(this.value);");
