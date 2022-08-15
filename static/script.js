@@ -15,24 +15,21 @@ const elements = {
   sortOption: document.querySelector("#sort-option"),
   tabRoutesTable: document.querySelector("#tab-routes-table"),
   tabRoutesTimelines: document.querySelector("#tab-routes-timeline"),
-  tabRoutesTableHeaderRow: document.querySelector(
-    "#tab-routes-table-header-row"
-  ),
+  tabRoutesTableHeaderRow: document.querySelector("#tab-routes-table-header-row"),
 };
-
-const tooltip = d3.select("#tooltip");
 
 // globals
 let plans;
 let timelinesFilled;
 let routesTableFilled;
-let selectedRow;
 let currentTab;
 let currentSort = "duration";
 let locations = {};
 let locationsToId = {};
 let locationNames = [];
 let messageHidden = true;
+let tooltip;
+let currentHash;
 
 const columns = {
   Route: "id",
@@ -116,8 +113,7 @@ async function fetchApiData(request, body, method = "GET") {
   const responseJson = await response.json();
   if (!response.ok) {
     msg = response.statusText;
-    if (responseJson && responseJson.detail)
-      msg += " " + JSON.stringify(responseJson.detail);
+    if (responseJson && responseJson.detail) msg += " " + JSON.stringify(responseJson.detail);
     throw new Error(msg);
   }
   return responseJson;
@@ -138,7 +134,10 @@ async function loadLocations() {
     option.value = name;
     locationsList.appendChild(option);
   }
-  await parseParams();
+
+  // parse parameters from URL
+  const options = urlToOptions(window.location);
+  await applyOptions(options);
 }
 
 function initInput(input) {
@@ -155,46 +154,141 @@ function onInput() {
 function autoComplete(input) {
   const value = input.value.trim();
   if (value != "" && !isValidLocation(value)) {
-    const r = new RegExp(value, "i");
-    for (const name of locationNames) {
-      if (name.search(r) >= 0) {
-        input.value = name;
-        input.temp = name;
-        onInput();
-        break;
+    let locationName = value;
+    if (value in locations) {
+      locationName = locations[value];
+    } else {
+      const r = new RegExp(value, "i");
+      for (const name of locationNames) {
+        if (name.search(r) >= 0) {
+          locationName = name;
+          break;
+        }
       }
+    }
+    if (locationName != value) {
+      input.value = locationName;
+      onInput();
     }
   }
 }
 
-async function getRoutePlans() {
+function getOptions(excludeDefaults) {
   let options = {};
   for (const input of document.getElementsByTagName("input")) {
-    let value = input.value;
-    switch (input.type) {
-      case "text":
-        value = locationsToId[value];
-        break;
-      case "number":
-        value = parseInt(value);
-        break;
-      case "checkbox":
-        value = input.checked;
-        break;
-      case "radio":
-        value = input.checked;
-        break;
-    }
+    const value = inputValue(input);
+    if (excludeDefaults == true && value == input.default) continue;
     options[input.id] = value;
   }
-  // url = new URL(window.location);
-  // for (const [key, value] in options) {
-  //     if (url.searchParams.has(key))
-  //         url.searchParams.set(key, value);
-  //     else
-  //         url.searchParams.append(key, value);
-  // }
-  // window.location = url
+  if (currentHash) options["hash"] = currentHash;
+  return options;
+}
+
+async function applyOptions(options) {
+  let changed = false;
+  let hash = "";
+  for (const o in options) {
+    const value = options[o];
+    if (value == undefined) continue;
+    if (o == "hash") {
+      // will apply later below
+      hash = value;
+      continue;
+    }
+    const element = document.getElementById(o);
+    if (!element) {
+      console.warn("unknown option: " + o);
+      continue;
+    }
+    const currentValue = inputValue(element);
+    if (value == currentValue) continue;
+
+    switch (element.type) {
+      case "checkbox":
+      case "radio":
+        element.checked = value;
+        break;
+      case "text":
+        element.value = value;
+        autoComplete(element);
+        break;
+      default:
+        element.value = value;
+    }
+    changed = true;
+  }
+  if (changed) await submit();
+  onHashChange(hash);
+}
+
+function optionsToUrl(options, url) {
+  if (!options) options = getOptions(true);
+  if (!url) url = new URL(window.location);
+  url.search = "";
+  url.hash = "";
+  for (const key in options) {
+    const value = options[key];
+    if (value != undefined && value != null) {
+      if (key == "hash") {
+        if (value != "") url.hash = value;
+      } else {
+        url.searchParams.append(key, value);
+      }
+    }
+  }
+  return url;
+}
+
+function urlToOptions(url) {
+  if (url instanceof Location) url = new URL(url.href);
+  else if (url instanceof string) url = new URL(url);
+  else if (url instanceof URL);
+  else throw new Error("Unexpected url type:" + typeof url);
+
+  let options = {};
+  for (const param of url.searchParams.entries()) options[param[0]] = param[1];
+  if (url.hash != "") options["hash"] = url.hash;
+
+  return options;
+}
+
+function saveHistory(options) {
+  if (!options) options = getOptions(true);
+  url = optionsToUrl(options);
+
+  // don't push duplicate states
+  if (url.href == window.location.href) return;
+
+  history.pushState(options, null, url);
+}
+
+window.onhashchange = (e) => {
+  onHashChange(new URL(e.newURL).hash);
+};
+
+window.onpopstate = (e) => {
+  applyOptions(e.state);
+};
+
+function onHashChange(hash) {
+  if (!hash) hash = "";
+  if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
+  if (hash == "") {
+    currentHash = "";
+    elements.scheduleCard.hidden = true;
+    markSelectedRow();
+    return;
+  }
+
+  const plan = plans.find((p) => p.hash == hash);
+  if (plan) onPlanSelected(plan.id);
+  else showWarning("The route specified in link is not found or not valid anymore");
+}
+
+async function getRoutePlans() {
+  currentHash = null;
+  saveHistory();
+  let options = getOptions();
   plans = await fetchApiData("/routeplans", options, "POST");
   for (let i = 0; i < plans.length; i++) {
     plans[i].id = i + 1;
@@ -207,32 +301,14 @@ function isValidLocation(name) {
   return name != " " && name in locationsToId;
 }
 
-async function parseParams() {
-  const params = new URLSearchParams(window.location.search);
-  let hasParams;
-  for (const param of params.entries()) {
-    hasParams = true;
-    const element = document.getElementById(param[0]);
-    if (element) {
-      element.value = param[1];
-    }
-  }
-  if (hasParams) {
-    autoComplete(elements.inputOrigin);
-    autoComplete(elements.inputDestination);
-    await submit();
-  }
-}
-
 function showMessage(heading, text, color) {
   elements.messageCard.hidden = false;
   messageHidden = false;
   if (!heading) heading = "";
-  if (heading.length > 0) heading += " : ";
+  if (heading.length > 0) heading += ": ";
   elements.messageCard.querySelector("#message-heading").textContent = heading;
   elements.messageCard.querySelector("#message-content").textContent = text;
   elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
-  // elements.messageCard.querySelector('#message-heading').setAttribute('class', `w3-container w3-${color}`);
 }
 
 function hideMessage() {
@@ -246,13 +322,16 @@ function showError(message) {
   console.error(message);
 }
 
+function showWarning(message) {
+  showMessage("Warning", message, "yellow");
+  console.warn(message);
+}
+
 async function submit() {
   hideMessage();
   resetState();
-  if (!isValidLocation(elements.inputOrigin.value))
-    showError("Please select start location");
-  else if (!isValidLocation(elements.inputDestination.value))
-    showError("Please select destination location");
+  if (!isValidLocation(elements.inputOrigin.value)) showError("Please select start location");
+  else if (!isValidLocation(elements.inputDestination.value)) showError("Please select destination location");
   else if (elements.inputOrigin.value == elements.inputDestination.value)
     showError("Start and destination location cannot be the same");
   else {
@@ -262,11 +341,7 @@ async function submit() {
       plans = await getRoutePlans();
       if (!plans) showError("Failed to fetch schedule information");
       else if (plans.length == 0)
-        showMessage(
-          "",
-          "No itineraries found. Try select another date and/or locations.",
-          "yellow"
-        );
+        showMessage("", "No itineraries found. Try select another date and/or locations.", "yellow");
       else {
         for (const plan of plans) {
           const via = new Set();
@@ -323,11 +398,7 @@ function timeToString(time) {
     ampm = "pm";
   }
   if (hours == 0) hours = 12;
-  timeString =
-    hours.toString().padStart(2, "0") +
-    ":" +
-    minutes.toString().padStart(2, "0") +
-    ampm;
+  timeString = hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0") + ampm;
   return timeString;
 }
 
@@ -341,19 +412,8 @@ function durationToString(time) {
   if (days < 1) timeString = "";
   else if (days >= 2) timeString = `${days} days `;
   else timeString = "1 day ";
-  timeString +=
-    hours.toString().padStart(2, "0") +
-    ":" +
-    minutes.toString().padStart(2, "0");
+  timeString += hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0");
   return timeString;
-}
-
-function onRowSelected(row, id) {
-  for (const child of elements.routesTable.children) {
-    child.classList.remove("selected-row");
-  }
-  row.classList.add("selected-row");
-  onPlanSelected(id);
 }
 
 function columnsCount() {
@@ -366,11 +426,7 @@ function columnsCount() {
 
 function updateRoutesTable() {
   if (elements.tabRoutesTable.hidden) return;
-  if (
-    tabsState.routesTableSort == currentSort &&
-    tabsState.columnsCount == columnsCount()
-  )
-    return;
+  if (tabsState.routesTableSort == currentSort && tabsState.columnsCount == columnsCount()) return;
   tabsState.routesTableSort = currentSort;
   tabsState.columnsCount = columnsCount();
 
@@ -383,15 +439,15 @@ function updateRoutesTable() {
   elements.tabRoutesTableHeaderRow.innerHTML = headerRowHtml;
 
   // clear table
-  while (elements.routesTable.firstChild)
-    elements.routesTable.removeChild(elements.routesTable.firstChild);
+  while (elements.routesTable.firstChild) elements.routesTable.removeChild(elements.routesTable.firstChild);
 
   for (let i = 0; i < plans.length; i++) {
     const plan = plans[i];
 
     let tr = document.createElement("tr");
-    tr.setAttribute("onclick", `javascript:onRowSelected(this,${plan.id});`);
+    tr.setAttribute("onclick", `javascript:onPlanSelected(this.plan.id);`);
     tr.classList.add("routes-table-row");
+    tr.plan = plan;
 
     let td;
     td = document.createElement("td");
@@ -471,11 +527,7 @@ function updateTimelines() {
             landGroup = location.land_group;
             if (landGroup == undefined) {
               landGroup = null;
-              if (
-                location.address.indexOf("Island") > 0 ||
-                location.name.indexOf("Island") > 0
-              )
-                landGroup = "Islands";
+              if (location.address.indexOf("Island") > 0 || location.name.indexOf("Island") > 0) landGroup = "Islands";
             }
             if (landGroup && landGroup.indexOf("(") > 0)
               landGroup = landGroup.substring(0, landGroup.indexOf("(")).trim();
@@ -483,10 +535,7 @@ function updateTimelines() {
             //label = location.id.length == 3 ? location.id : location.name;
           }
         }
-        if (activityInfo.icon)
-          label =
-            `<tspan class="${activityInfo.iconClass}">${activityInfo.icon}<tspan>` +
-            label;
+        if (activityInfo.icon) label = `<tspan class="${activityInfo.iconClass}">${activityInfo.icon}<tspan>` + label;
 
         const t2 = {
           description: t.description,
@@ -498,8 +547,7 @@ function updateTimelines() {
           t2.label = ""; // just a placeholder now, will be replaced with _label later
           t2._label = label;
         }
-        const colorKey =
-          currentColoring == "activity" ? segmentType : landGroup;
+        const colorKey = currentColoring == "activity" ? segmentType : landGroup;
         if (colorKey != null) {
           coloringKeys.add(colorKey);
           t2._color = colorKey;
@@ -518,15 +566,9 @@ function updateTimelines() {
 
   let colorScale;
   if (currentColoring == "activity") {
-    colorScale = d3
-      .scaleOrdinal()
-      .range(Object.values(activityColorsMap))
-      .domain(Object.keys(activityColorsMap));
+    colorScale = d3.scaleOrdinal().range(Object.values(activityColorsMap)).domain(Object.keys(activityColorsMap));
   } else {
-    colorScale = d3
-      .scaleOrdinal()
-      .range(d3.scaleOrdinal(d3.schemeAccent).range())
-      .domain(Array.from(coloringKeys));
+    colorScale = d3.scaleOrdinal().range(d3.scaleOrdinal(d3.schemeAccent).range()).domain(Array.from(coloringKeys));
   }
 
   let chart = d3
@@ -544,19 +586,9 @@ function updateTimelines() {
     .stack();
 
   const width = elements.timeline.clientWidth - 40; // FIXME: magic number
-  const svg = d3
-    .select("#timeline")
-    .append("svg")
-    .attr("width", width)
-    .datum(chartRows)
-    .call(chart);
+  const svg = d3.select("#timeline").append("svg").attr("width", width).datum(chartRows).call(chart);
 
-  updateLegend(
-    chart,
-    coloringKeys,
-    currentColoring,
-    document.getElementById("timeline-legend")
-  );
+  updateLegend(chart, coloringKeys, currentColoring, document.getElementById("timeline-legend"));
 
   svg.selectAll(".timeline-label").html((d, i) => {
     return `<a href="javascript:onPlanSelected(${plans[i].id});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
@@ -597,14 +629,13 @@ function updateLegend(chart, coloringKeys, currentColoring, legendElement) {
 }
 
 function assignTooltip(element) {
+  if (!tooltip) tooltip = d3.select("#tooltip");
   element.onmousemove = (event) => {
     let n = event.target;
     if (n.nodeName == "tspan") n = n.parentNode;
     if (n.nodeName == "text") n = n.parentNode;
     const rect = n.getBoundingClientRect();
-    tooltip
-      .style("left", rect.x + window.scrollX + "px")
-      .style("top", rect.bottom + +window.scrollY + 3 + "px");
+    tooltip.style("left", rect.x + window.scrollX + "px").style("top", rect.bottom + +window.scrollY + 3 + "px");
   };
   element.onmouseout = (event) => {
     tooltip.transition().duration(100).style("opacity", 0);
@@ -624,10 +655,21 @@ function assignTooltip(element) {
   };
 }
 
+function markSelectedRow() {
+  // mark selected row in routes table
+  for (const row of elements.routesTable.children) {
+    row.classList.remove("selected-row");
+    if (currentHash && row.plan.hash == currentHash) row.classList.add("selected-row");
+  }
+}
+
 function onPlanSelected(id) {
   elements.scheduleCard.hidden = false;
   const plan = plans.find((p) => p.id == id);
-  document.getElementById("rid").value = plan.hash;
+  currentHash = plan.hash;
+  saveHistory();
+
+  markSelectedRow();
 
   // clear table
   while (elements.scheduleTable.firstChild) {
@@ -635,26 +677,17 @@ function onPlanSelected(id) {
   }
 
   // schedule.appendChild(node = document.createElement('div').className('schedule-header'));
-  document.getElementById("schedule-header").textContent = `${
-    plan.segments[0].connection.origin.name
-  } to ${plan.segments.slice(-1)[0].connection.destination.name}`;
+  document.getElementById("schedule-header").textContent = `${plan.segments[0].connection.origin.name} to ${
+    plan.segments.slice(-1)[0].connection.destination.name
+  }`;
   // schedule.appendChild(node = document.createElement('div').className('schedule-via'));
   document.getElementById("schedule-via").textContent =
-    "via " +
-    [
-      ...new Set(
-        plan.segments.slice(0, -1).map((s) => s.connection.destination.name)
-      ),
-    ].join(", ");
+    "via " + [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))].join(", ");
 
   document.getElementById("schedule-details").innerHTML =
     `Route ${plan.id}.` +
-    ` Date:&nbsp;<strong>${new Date(
-      plan.depart_time.substring(0, 16)
-    ).toDateString()}</strong>.` +
-    ` Total time:&nbsp;<strong>${durationToString(
-      plan.duration * 1000
-    )}</strong>.` +
+    ` Date:&nbsp;<strong>${new Date(plan.depart_time.substring(0, 16)).toDateString()}</strong>.` +
+    ` Total time:&nbsp;<strong>${durationToString(plan.duration * 1000)}</strong>.` +
     ` Driving distance:&nbsp;${plan.driving_distance.toFixed(1)} km.`;
   // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
   const scheduleMap = document.getElementById("schedule-map");
@@ -758,6 +791,21 @@ window.onresize = () => {
 resetState();
 loadLocations();
 
+function inputValue(input) {
+  const value = input.value;
+  switch (input.type) {
+    case "text":
+      if (value in locationsToId) return locationsToId[value];
+      return value;
+    case "number":
+      return parseInt(value);
+    case "checkbox":
+    case "radio":
+      return input.checked;
+  }
+  return value;
+}
+
 // initialize input controls
 {
   const d = new Date();
@@ -766,6 +814,9 @@ loadLocations();
   elements.inputDate.setAttribute("min", today);
   initInput(elements.inputOrigin);
   initInput(elements.inputDestination);
+  for (const input of document.getElementsByTagName("input")) {
+    input.default = inputValue(input);
+  }
 }
 
 // initialize sort options
@@ -776,25 +827,3 @@ for (const k in columns) {
   opt.value = columns[k];
   elements.sortOption.add(opt, null);
 }
-
-// elements.routesTable.parentNode.querySelectorAll('th') // get all the table header elements
-//     .forEach((element, columnNo) => { // add a click handler for each
-//         const sortBy = element.getAttribute('sort');
-//         if (sortBy) {
-//             element.addEventListener('click', event => sortPlans(sortBy));
-//             const opt = document.createElement('option');
-//             opt.text = element.textContent;
-//             opt.value = sortBy;
-//             elements.sortOption.add(opt, null);
-//         }
-//     });
-
-// add tooltip
-// let d3; // TODO: import d3?
-// if (d3 != undefined) {
-//     d3.select('body')
-//         .append('div')
-//         .attr('id', 'tooltip')
-//         .attr('style', 'position: absolute; opacity: 0;')
-//         .attr('class', 'timeline-tooltip');
-// }
