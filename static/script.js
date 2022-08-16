@@ -29,7 +29,7 @@ let locationsToId = {};
 let locationNames = [];
 let messageHidden = true;
 let tooltip;
-let currentHash;
+let currentPlan;
 
 const columns = {
   Route: "id",
@@ -110,6 +110,7 @@ async function fetchApiData(request, body, method = "GET") {
     headers: { "Content-Type": "application/json" },
   };
   const response = await fetch("/api" + request, fetchOptions);
+  // if (response.type) // FIXME: check if valid json
   const responseJson = await response.json();
   if (!response.ok) {
     msg = response.statusText;
@@ -180,7 +181,7 @@ function getOptions(excludeDefaults) {
     if (excludeDefaults == true && value == input.default) continue;
     options[input.id] = value;
   }
-  if (currentHash) options["hash"] = currentHash;
+  if (currentPlan) options["hash"] = currentPlan.hash;
   return options;
 }
 
@@ -197,7 +198,7 @@ async function applyOptions(options) {
     }
     const element = document.getElementById(o);
     if (!element) {
-      console.warn("unknown option: " + o);
+      console.warn("Unknown option: " + o);
       continue;
     }
     const currentValue = inputValue(element);
@@ -274,7 +275,7 @@ function onHashChange(hash) {
   if (!hash) hash = "";
   if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
   if (hash == "") {
-    currentHash = "";
+    currentPlan = null;
     elements.scheduleCard.hidden = true;
     markSelectedRow();
     return;
@@ -286,13 +287,30 @@ function onHashChange(hash) {
 }
 
 async function getRoutePlans() {
-  currentHash = null;
+  currentPlan = null;
   saveHistory();
   let options = getOptions();
   plans = await fetchApiData("/routeplans", options, "POST");
+
+  // pre-process plans data
   for (let i = 0; i < plans.length; i++) {
-    plans[i].id = i + 1;
+    let plan = plans[i];
+    plan.id = i + 1;
+    let via = new Set();
+    for (const s of plan.segments) {
+      let lg = s.connection.origin.land_group;
+      if (lg) {
+        const pos = lg.indexOf(" (");
+        if (pos > 0) lg = lg.substring(0, pos).trim();
+        via.add(lg);
+      }
+    }
+    if (via.size < 2) plan.via = Array.from(via);
+    if (via.size > 1) plan.via = [Array.from(via)[1]];
+    plan.origin = plan.segments[0].connection.origin;
+    plan.destination = plan.segments.slice(-1)[0].connection.destination;
   }
+
   return plans;
 }
 
@@ -343,19 +361,6 @@ async function submit() {
       else if (plans.length == 0)
         showMessage("", "No itineraries found. Try select another date and/or locations.", "yellow");
       else {
-        for (const plan of plans) {
-          const via = new Set();
-          for (const s of plan.segments) {
-            let lg = s.connection.origin.land_group;
-            if (lg) {
-              const pos = lg.indexOf(" (");
-              if (pos > 0) lg = lg.substring(0, pos).trim();
-              via.add(lg);
-            }
-          }
-          if (via.size < 2) plan.via = Array.from(via);
-          if (via.size > 1) plan.via = [Array.from(via)[1]];
-        }
         // force sort
         const sort = currentSort;
         currentSort = null;
@@ -387,19 +392,20 @@ function secondsToString(seconds) {
   return timeString;
 }
 
-function timeToString(time) {
-  dateObj = new Date(time);
-  hours = dateObj.getHours();
-  minutes = dateObj.getMinutes();
-  seconds = dateObj.getSeconds();
-  ampm = "am";
-  if (hours >= 12) {
-    hours -= 12;
-    ampm = "pm";
-  }
-  if (hours == 0) hours = 12;
-  timeString = hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0") + ampm;
-  return timeString;
+function timeToString(time, roundSeconds = true) {
+  const dateObj = new Date(time);
+  if (roundSeconds) dateObj.setSeconds(0);
+  return dateObj.toLocaleTimeString().toLowerCase().replace(":00 ", "");
+  // hours = dateObj.getHours();
+  // minutes = dateObj.getMinutes();
+  // ampm = "am";
+  // if (hours >= 12) {
+  //   hours -= 12;
+  //   ampm = "pm";
+  // }
+  // if (hours == 0) hours = 12;
+  // const timeString = hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0") + ampm;
+  // return timeString;
 }
 
 function durationToString(time) {
@@ -659,14 +665,14 @@ function markSelectedRow() {
   // mark selected row in routes table
   for (const row of elements.routesTable.children) {
     row.classList.remove("selected-row");
-    if (currentHash && row.plan.hash == currentHash) row.classList.add("selected-row");
+    if (currentPlan && row.plan == currentPlan) row.classList.add("selected-row");
   }
 }
 
 function onPlanSelected(id) {
   elements.scheduleCard.hidden = false;
   const plan = plans.find((p) => p.id == id);
-  currentHash = plan.hash;
+  currentPlan = plan;
   saveHistory();
 
   markSelectedRow();
@@ -677,16 +683,15 @@ function onPlanSelected(id) {
   }
 
   // schedule.appendChild(node = document.createElement('div').className('schedule-header'));
-  document.getElementById("schedule-header").textContent = `${plan.segments[0].connection.origin.name} to ${
-    plan.segments.slice(-1)[0].connection.destination.name
-  }`;
+  document.getElementById("schedule-header").textContent = `${plan.origin.name} to ${plan.destination.name}`;
   // schedule.appendChild(node = document.createElement('div').className('schedule-via'));
   document.getElementById("schedule-via").textContent =
     "via " + [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))].join(", ");
 
+  const depart_time = new Date(plan.depart_time.substring(0, 16));
   document.getElementById("schedule-details").innerHTML =
     `Route ${plan.id}.` +
-    ` Date:&nbsp;<strong>${new Date(plan.depart_time.substring(0, 16)).toDateString()}</strong>.` +
+    ` Departing:&nbsp;<strong>${depart_time.toDateString()} at ${timeToString(depart_time)}</strong>.` +
     ` Total time:&nbsp;<strong>${durationToString(plan.duration * 1000)}</strong>.` +
     ` Driving distance:&nbsp;${plan.driving_distance.toFixed(1)} km.`;
   // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
@@ -767,6 +772,32 @@ function onPrint(card) {
   elements.scheduleCard.classList.add("no-print");
   document.getElementById(card).classList.remove("no-print");
   print();
+}
+
+async function onShare() {
+  try {
+    const data = {
+      url: window.location.href,
+      title: "FerryPlanner link",
+    };
+    if (currentPlan) {
+      const depart_time = new Date(currentPlan.depart_time);
+      data.text = `Route from ${currentPlan.origin.name} to ${
+        currentPlan.destination.name
+      } departing on ${depart_time.toDateString()} at ${timeToString(depart_time)}`;
+    } else {
+      data.text = `Routes from ${elements.inputOrigin.text} to ${elements.destination.text} on ${new Date(
+        elements.inputDate.value
+      ).toDateString()}`;
+    }
+
+    if (!window.navigator.canShare) throw new Error("Browser doesn't support sharing");
+    if (!window.navigator.canShare(data)) throw new Error("Browser cannot share data");
+    await window.navigator.share(data);
+  } catch (e) {
+    await navigator.clipboard.writeText(window.location.href);
+    alert("Link copied to clipboard.");
+  }
 }
 
 function pad(num, size) {

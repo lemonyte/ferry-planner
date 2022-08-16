@@ -28,6 +28,13 @@
   }
 }
 
+/* @media (any-pointer: none) {
+  .hide-no-poiner,
+  .hide-no-poiner * {
+    display: none !important;
+  }
+} */
+
 @media (max-width: 512px) {
   .m-font75 {
     font-size: 75%;
