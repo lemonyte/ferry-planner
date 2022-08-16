@@ -352,12 +352,13 @@ def get_schedule(origin_id: str, destination_id: str, date: Optional[Union[str, 
     cache_dir = f'data/cache/{route}'
     filepath = f"{cache_dir}/{schedule_date.strftime('%Y-%m-%d')}.json"
     if os.path.exists(filepath):
-        with open(filepath, 'r') as file:
-            schedule = FerrySchedule.parse_obj(json.loads(file.read()))
-            time_difference = datetime.now() - datetime.fromisoformat(schedule.date)
-            if time_difference.total_seconds() < 24 * 60 * 60:  # refresh once a day
-                return schedule
+        last_modified = os.path.getmtime(filepath)
+        time_difference = datetime.now() - datetime.fromtimestamp(last_modified)
+        if time_difference.total_seconds() < 24 * 60 * 60:  # refresh once a day
+            schedule = FerrySchedule.parse_file(filepath)
+            return schedule
     url = f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={schedule_date.strftime('%m/%d/%Y')}"
+    print(f'fetching url {url}')
     doc = requests.get(url).text.replace('\u2060', '')
     soup = BeautifulSoup(markup=doc, features='html.parser')
     table = soup.find('table', id='dailyScheduleTableOnward')
