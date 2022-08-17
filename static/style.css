@@ -28,6 +28,13 @@
   }
 }
 
+/* @media (any-pointer: none) {
+  .hide-no-poiner,
+  .hide-no-poiner * {
+    display: none !important;
+  }
+} */
+
 @media (max-width: 512px) {
   .m-font75 {
     font-size: 75%;
@@ -36,4 +43,15 @@
   .m-hide-c {
     display: none;
   }
+}
+
+@media screen {
+  .background-image {
+    background-image: url(/static/bc-ferries-1920.jpg); 
+    background-attachment: fixed; 
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    background-position: center; 
+    min-width: 350px;
+  }    
 }
