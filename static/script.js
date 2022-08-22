@@ -1,5 +1,7 @@
 // elements
 const elements = {
+  body: document.getElementsByTagName("body"),
+  inputForm: document.querySelector("#input-form"),
   inputOrigin: document.querySelector("#origin"),
   inputDestination: document.querySelector("#destination"),
   inputDate: document.querySelector("#date"),
@@ -218,8 +220,8 @@ async function applyOptions(options) {
     }
     changed = true;
   }
-  if (changed) await submit();
-  onHashChange(hash);
+  //if (changed) await submit();
+  await goto(hash);
 }
 
 function optionsToUrl(options, url) {
@@ -253,8 +255,9 @@ function urlToOptions(url) {
   return options;
 }
 
-function saveHistory(options) {
+function saveHistory(options, hash) {
   if (!options) options = getOptions(true);
+  if (hash) options['hash'] = hash;
   url = optionsToUrl(options);
 
   // don't push duplicate states
@@ -264,31 +267,71 @@ function saveHistory(options) {
 }
 
 window.onhashchange = (e) => {
-  onHashChange(new URL(e.newURL).hash);
+  goto(new URL(e.newURL).hash);
 };
 
 window.onpopstate = (e) => {
-  applyOptions(e.state);
+  if (e.state)
+    applyOptions(e.state);
 };
 
-function onHashChange(hash) {
+async function goto(hash,clickEvent) {
+  console.log(`goto: ${hash}`);
+    
   if (!hash) hash = "";
   if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
-  if (hash == "") {
-    currentPlan = null;
-    elements.scheduleCard.hidden = true;
-    markSelectedRow();
+
+  if (clickEvent && clickEvent.ctrlKey)
+  {
+    let url = new URL(window.location);
+    url.hash = hash;
+    window.open(url, "_blank").focus();
     return;
   }
 
-  const plan = plans.find((p) => p.hash == hash);
-  if (plan) onPlanSelected(plan.id);
-  else showWarning("The route specified in link is not found or not valid anymore");
+  hideMessage();
+  
+  if (hash != "")
+  {
+    if (plans == null) await submit();
+    if (plans != null)
+    {
+      if (hash == "routes")
+      {
+      }
+      else
+      {
+        const plan = plans.find((p) => p.hash == hash);
+        if (plan) {
+          onPlanSelected(plan.id);
+        } else {
+          showWarning("The route specified in link is not found or not valid anymore.");
+          hash = "routes";
+        }
+      }
+    }
+  }
+
+  if (plans == null) hash = "";
+  if (hash == "") currentPlan = null;
+ 
+  // mark selected row in routes table
+  for (const row of elements.routesTable.children) {
+    row.classList.remove("selected-row");
+    if (currentPlan && row.plan == currentPlan) row.classList.add("selected-row");
+  }
+
+  elements.scheduleCard.hidden = (currentPlan == null || hash == "routes");
+  elements.routesCard.hidden = (hash != "routes");
+  elements.inputForm.hidden = (hash != "");  
+
+  //if (window.location.hash != hash)
+  //  window.location.hash = hash;
+  saveHistory(null, hash);
 }
 
 async function getRoutePlans() {
   currentPlan = null;
-  saveHistory();
   let options = getOptions();
   plans = await fetchApiData("/routeplans", options, "POST");
 
@@ -451,7 +494,7 @@ function updateRoutesTable() {
     const plan = plans[i];
 
     let tr = document.createElement("tr");
-    tr.setAttribute("onclick", `javascript:onPlanSelected(this.plan.id);`);
+    tr.setAttribute("onclick", `javascript: goto(this.plan.hash, event);`);
     tr.classList.add("routes-table-row");
     tr.plan = plan;
 
@@ -597,7 +640,7 @@ function updateTimelines() {
   updateLegend(chart, coloringKeys, currentColoring, document.getElementById("timeline-legend"));
 
   svg.selectAll(".timeline-label").html((d, i) => {
-    return `<a href="javascript:onPlanSelected(${plans[i].id});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
+    return `<a href="#${plans[i].hash}" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
   });
 
   svg
@@ -661,21 +704,11 @@ function assignTooltip(element) {
   };
 }
 
-function markSelectedRow() {
-  // mark selected row in routes table
-  for (const row of elements.routesTable.children) {
-    row.classList.remove("selected-row");
-    if (currentPlan && row.plan == currentPlan) row.classList.add("selected-row");
-  }
-}
 
 function onPlanSelected(id) {
   elements.scheduleCard.hidden = false;
   const plan = plans.find((p) => p.id == id);
   currentPlan = plan;
-  saveHistory();
-
-  markSelectedRow();
 
   // clear table
   while (elements.scheduleTable.firstChild) {

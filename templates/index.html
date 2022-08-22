@@ -36,7 +36,7 @@
             <input class="w3-input w3-border" style="width:9em;" type="date" id="date">
           </div>
           <div class="w3-bar-item w3-padding-small w3-cell-middle">
-            <button class="w3-button w3-blue w3-border w3-round-medium" id="submit" onclick="submit();">Submit</button>
+            <button class="w3-button w3-blue w3-border w3-round-medium" id="submit" onclick="goto('routes');">Submit</button>
           </div>
           <div class="w3-bar-item w3-padding-small w3-cell-middle w3-right">
             <button class="w3-button w3-border w3-round-medium" onclick="toggleShow('options');">Options</button>
@@ -135,8 +135,14 @@
           <div id="schedule-header-container" class="w3-center">
             <div id="schedule-details" class=""></div>
             <div id="schedule-via" class="w3-small"></div>
-            <div class="w3-bar w3-padding w3-right">
-              <button onclick='javascript:onPrint("schedule-card");'
+            <div class="w3-bar w3-padding" style="width: 100%;">
+              <div class "w3-left">
+              <a id='schedule-back' href='#routes'
+                class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right"><i
+                  class="fa fa-angle-double-left"></i>&nbsp;Routes</a>
+                </div>
+                <div class "w3-right">
+                  <button onclick='javascript:onPrint("schedule-card");'
                 class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
                   class="fa fa-print"></i>&nbsp;Print</button>
               <a id='schedule-map' href='' target="_blank"
@@ -145,6 +151,7 @@
               <button onclick='javascript:onShare();'
                 class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
                   class="fa fa-share-alt"></i>&nbsp;Share</button>
+                  </div>
               </div>
           </div>
           <table class="w3-table w3-striped">
