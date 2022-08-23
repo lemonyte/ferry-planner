@@ -1,3 +1,16 @@
+// globals
+let plans;
+let timelinesFilled;
+let routesTableFilled;
+let currentTab;
+let currentSort = "duration";
+let locations = {};
+let locationsToId = {};
+let locationNames = [];
+let messageHidden = true;
+let tooltip;
+let currentPlan;
+
 // elements
 const elements = {
   body: document.getElementsByTagName("body"),
@@ -18,20 +31,8 @@ const elements = {
   tabRoutesTable: document.querySelector("#tab-routes-table"),
   tabRoutesTimelines: document.querySelector("#tab-routes-timeline"),
   tabRoutesTableHeaderRow: document.querySelector("#tab-routes-table-header-row"),
+  debug: document.querySelector("#debug"),
 };
-
-// globals
-let plans;
-let timelinesFilled;
-let routesTableFilled;
-let currentTab;
-let currentSort = "duration";
-let locations = {};
-let locationsToId = {};
-let locationNames = [];
-let messageHidden = true;
-let tooltip;
-let currentPlan;
 
 const columns = {
   Route: "id",
@@ -55,7 +56,7 @@ const activityColorsMap = {
   FREE: "lightgreen",
   WAIT: "lightgray",
   CAR: "orange",
-  FERRY: "aqua  ",
+  FERRY: "aqua",
   BUS: "darkblue",
   AIR: "aqua",
 };
@@ -92,6 +93,33 @@ const activitiesInfo = {
     iconClass: "fa",
   },
 };
+
+function showMessage(heading, text, color) {
+  elements.messageCard.hidden = false;
+  messageHidden = false;
+  if (!heading) heading = "";
+  if (heading.length > 0) heading += ": ";
+  elements.messageCard.querySelector("#message-heading").textContent = heading;
+  elements.messageCard.querySelector("#message-content").textContent = text;
+  elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
+  debug.textContent = `${debug.textContent}${heading}${text}\n`; 
+}
+
+function hideMessage() {
+  if (messageHidden == true) return;
+  messageHidden = true;
+  elements.messageCard.hidden = true;
+}
+
+function showError(message) {
+  showMessage("Error", message, "red");
+  console.error(message);
+}
+
+function showWarning(message) {
+  showMessage("Warning", message, "yellow");
+  console.warn(message);
+}
 
 function resetState() {
   elements.routesCard.hidden = true;
@@ -266,15 +294,6 @@ function saveHistory(options, hash) {
   history.pushState(options, null, url);
 }
 
-window.onhashchange = (e) => {
-  goto(new URL(e.newURL).hash);
-};
-
-window.onpopstate = (e) => {
-  if (e.state)
-    applyOptions(e.state);
-};
-
 async function goto(hash,clickEvent) {
   console.log(`goto: ${hash}`);
     
@@ -360,32 +379,6 @@ async function getRoutePlans() {
 function isValidLocation(name) {
   name = name.trim();
   return name != " " && name in locationsToId;
-}
-
-function showMessage(heading, text, color) {
-  elements.messageCard.hidden = false;
-  messageHidden = false;
-  if (!heading) heading = "";
-  if (heading.length > 0) heading += ": ";
-  elements.messageCard.querySelector("#message-heading").textContent = heading;
-  elements.messageCard.querySelector("#message-content").textContent = text;
-  elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
-}
-
-function hideMessage() {
-  if (messageHidden == true) return;
-  messageHidden = true;
-  elements.messageCard.hidden = true;
-}
-
-function showError(message) {
-  showMessage("Error", message, "red");
-  console.error(message);
-}
-
-function showWarning(message) {
-  showMessage("Warning", message, "yellow");
-  console.warn(message);
 }
 
 async function submit() {
@@ -844,17 +837,6 @@ function pad(num, size) {
 //   updateTabsData();
 // };
 
-screen.orientation.onchange = (event) => {
-  updateTabsData();
-};
-
-window.onresize = () => {
-  updateTabsData();
-};
-
-resetState();
-loadLocations();
-
 function inputValue(input) {
   const value = input.value;
   switch (input.type) {
@@ -870,24 +852,53 @@ function inputValue(input) {
   return value;
 }
 
-// initialize input controls
+function init()
 {
-  const d = new Date();
-  const today = `${d.getFullYear()}-${pad(d.getMonth() + 1, 2)}-${pad(d.getDate(), 2)}`;
-  elements.inputDate.setAttribute("value", today);
-  elements.inputDate.setAttribute("min", today);
-  initInput(elements.inputOrigin);
-  initInput(elements.inputDestination);
-  for (const input of document.getElementsByTagName("input")) {
-    input.default = inputValue(input);
+  window.addEventListener('error', (event) => {
+    showMessage(event.type, event.message, 'red');
+  });
+  
+  screen.orientation.onchange = (event) => {
+    updateTabsData();
+  };
+
+  window.onresize = () => {
+    updateTabsData();
+  };
+
+  window.onhashchange = (e) => {
+    goto(new URL(e.newURL).hash);
+  };
+
+  window.onpopstate = (e) => {
+    if (e.state)
+      applyOptions(e.state);
+  };
+
+  resetState();
+  loadLocations();
+
+  // initialize input controls
+  {
+    const d = new Date();
+    const today = `${d.getFullYear()}-${pad(d.getMonth() + 1, 2)}-${pad(d.getDate(), 2)}`;
+    elements.inputDate.setAttribute("value", today);
+    elements.inputDate.setAttribute("min", today);
+    initInput(elements.inputOrigin);
+    initInput(elements.inputDestination);
+    for (const input of document.getElementsByTagName("input")) {
+      input.default = inputValue(input);
+    }
+  }
+
+  // initialize sort options
+  elements.sortOption.setAttribute("onchange", "sortPlans(this.value);");
+  for (const k in columns) {
+    const opt = document.createElement("option");
+    opt.text = k;
+    opt.value = columns[k];
+    elements.sortOption.add(opt, null);
   }
 }
 
-// initialize sort options
-elements.sortOption.setAttribute("onchange", "sortPlans(this.value);");
-for (const k in columns) {
-  const opt = document.createElement("option");
-  opt.text = k;
-  opt.value = columns[k];
-  elements.sortOption.add(opt, null);
-}
+init();
