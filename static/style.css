@@ -45,18 +45,6 @@
   }
 }
 
-.font120 {
-  font-size: 120%;
-}
-
-.font150 {
-  font-size: 150%;
-}
-
-.font200 {
-  font-size: 200%;
-}
-
 @media screen {
   .background-image {
     background-image: url(/static/bc-ferries-1920.jpg); 

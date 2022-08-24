@@ -1,5 +1,20 @@
+// globals
+let plans;
+let timelinesFilled;
+let routesTableFilled;
+let currentTab;
+let currentSort = "duration";
+let locations = {};
+let locationsToId = {};
+let locationNames = [];
+let messageHidden = true;
+let tooltip;
+let currentPlan;
+
 // elements
 const elements = {
+  body: document.getElementsByTagName("body"),
+  inputForm: document.querySelector("#input-form"),
   inputOrigin: document.querySelector("#origin"),
   inputDestination: document.querySelector("#destination"),
   inputDate: document.querySelector("#date"),
@@ -16,20 +31,8 @@ const elements = {
   tabRoutesTable: document.querySelector("#tab-routes-table"),
   tabRoutesTimelines: document.querySelector("#tab-routes-timeline"),
   tabRoutesTableHeaderRow: document.querySelector("#tab-routes-table-header-row"),
+  debug: document.querySelector("#debug"),
 };
-
-// globals
-let plans;
-let timelinesFilled;
-let routesTableFilled;
-let currentTab;
-let currentSort = "duration";
-let locations = {};
-let locationsToId = {};
-let locationNames = [];
-let messageHidden = true;
-let tooltip;
-let currentPlan;
 
 const columns = {
   Route: "id",
@@ -53,7 +56,7 @@ const activityColorsMap = {
   FREE: "lightgreen",
   WAIT: "lightgray",
   CAR: "orange",
-  FERRY: "aqua  ",
+  FERRY: "aqua",
   BUS: "darkblue",
   AIR: "aqua",
 };
@@ -90,6 +93,33 @@ const activitiesInfo = {
     iconClass: "fa",
   },
 };
+
+function showMessage(heading, text, color) {
+  elements.messageCard.hidden = false;
+  messageHidden = false;
+  if (!heading) heading = "";
+  if (heading.length > 0) heading += ": ";
+  elements.messageCard.querySelector("#message-heading").textContent = heading;
+  elements.messageCard.querySelector("#message-content").textContent = text;
+  elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
+  debug.textContent = `${debug.textContent}${heading}${text}\n`; 
+}
+
+function hideMessage() {
+  if (messageHidden == true) return;
+  messageHidden = true;
+  elements.messageCard.hidden = true;
+}
+
+function showError(message) {
+  showMessage("Error", message, "red");
+  console.error(message);
+}
+
+function showWarning(message) {
+  showMessage("Warning", message, "yellow");
+  console.warn(message);
+}
 
 function resetState() {
   elements.routesCard.hidden = true;
@@ -218,8 +248,8 @@ async function applyOptions(options) {
     }
     changed = true;
   }
-  if (changed) await submit();
-  onHashChange(hash);
+  //if (changed) await submit();
+  await goto(hash);
 }
 
 function optionsToUrl(options, url) {
@@ -253,8 +283,9 @@ function urlToOptions(url) {
   return options;
 }
 
-function saveHistory(options) {
+function saveHistory(options, hash) {
   if (!options) options = getOptions(true);
+  if (hash) options['hash'] = hash;
   url = optionsToUrl(options);
 
   // don't push duplicate states
@@ -263,32 +294,63 @@ function saveHistory(options) {
   history.pushState(options, null, url);
 }
 
-window.onhashchange = (e) => {
-  onHashChange(new URL(e.newURL).hash);
-};
-
-window.onpopstate = (e) => {
-  applyOptions(e.state);
-};
-
-function onHashChange(hash) {
+async function goto(hash,clickEvent) {
+  console.log(`goto: ${hash}`);
+    
   if (!hash) hash = "";
   if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
-  if (hash == "") {
-    currentPlan = null;
-    elements.scheduleCard.hidden = true;
-    markSelectedRow();
+
+  if (clickEvent && clickEvent.ctrlKey)
+  {
+    let url = new URL(window.location);
+    url.hash = hash;
+    window.open(url, "_blank").focus();
     return;
   }
 
-  const plan = plans.find((p) => p.hash == hash);
-  if (plan) onPlanSelected(plan.id);
-  else showWarning("The route specified in link is not found or not valid anymore");
+  hideMessage();
+  
+  if (hash != "")
+  {
+    if (plans == null) await submit();
+    if (plans != null)
+    {
+      if (hash == "routes")
+      {
+      }
+      else
+      {
+        const plan = plans.find((p) => p.hash == hash);
+        if (plan) {
+          onPlanSelected(plan.id);
+        } else {
+          showWarning("The route specified in link is not found or not valid anymore.");
+          hash = "routes";
+        }
+      }
+    }
+  }
+
+  if (plans == null) hash = "";
+  if (hash == "") currentPlan = null;
+ 
+  // mark selected row in routes table
+  for (const row of elements.routesTable.children) {
+    row.classList.remove("selected-row");
+    if (currentPlan && row.plan == currentPlan) row.classList.add("selected-row");
+  }
+
+  elements.scheduleCard.hidden = (currentPlan == null || hash == "routes");
+  elements.routesCard.hidden = (hash != "routes");
+  elements.inputForm.hidden = (hash != "");  
+
+  //if (window.location.hash != hash)
+  //  window.location.hash = hash;
+  saveHistory(null, hash);
 }
 
 async function getRoutePlans() {
   currentPlan = null;
-  saveHistory();
   let options = getOptions();
   plans = await fetchApiData("/routeplans", options, "POST");
 
@@ -317,32 +379,6 @@ async function getRoutePlans() {
 function isValidLocation(name) {
   name = name.trim();
   return name != " " && name in locationsToId;
-}
-
-function showMessage(heading, text, color) {
-  elements.messageCard.hidden = false;
-  messageHidden = false;
-  if (!heading) heading = "";
-  if (heading.length > 0) heading += ": ";
-  elements.messageCard.querySelector("#message-heading").textContent = heading;
-  elements.messageCard.querySelector("#message-content").textContent = text;
-  elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
-}
-
-function hideMessage() {
-  if (messageHidden == true) return;
-  messageHidden = true;
-  elements.messageCard.hidden = true;
-}
-
-function showError(message) {
-  showMessage("Error", message, "red");
-  console.error(message);
-}
-
-function showWarning(message) {
-  showMessage("Warning", message, "yellow");
-  console.warn(message);
 }
 
 async function submit() {
@@ -451,7 +487,7 @@ function updateRoutesTable() {
     const plan = plans[i];
 
     let tr = document.createElement("tr");
-    tr.setAttribute("onclick", `javascript:onPlanSelected(this.plan.id);`);
+    tr.setAttribute("onclick", `javascript: goto(this.plan.hash, event);`);
     tr.classList.add("routes-table-row");
     tr.plan = plan;
 
@@ -597,7 +633,7 @@ function updateTimelines() {
   updateLegend(chart, coloringKeys, currentColoring, document.getElementById("timeline-legend"));
 
   svg.selectAll(".timeline-label").html((d, i) => {
-    return `<a href="javascript:onPlanSelected(${plans[i].id});" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
+    return `<a href="#${plans[i].hash}" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
   });
 
   svg
@@ -661,21 +697,11 @@ function assignTooltip(element) {
   };
 }
 
-function markSelectedRow() {
-  // mark selected row in routes table
-  for (const row of elements.routesTable.children) {
-    row.classList.remove("selected-row");
-    if (currentPlan && row.plan == currentPlan) row.classList.add("selected-row");
-  }
-}
 
 function onPlanSelected(id) {
   elements.scheduleCard.hidden = false;
   const plan = plans.find((p) => p.id == id);
   currentPlan = plan;
-  saveHistory();
-
-  markSelectedRow();
 
   // clear table
   while (elements.scheduleTable.firstChild) {
@@ -811,17 +837,6 @@ function pad(num, size) {
 //   updateTabsData();
 // };
 
-screen.orientation.onchange = (event) => {
-  updateTabsData();
-};
-
-window.onresize = () => {
-  updateTabsData();
-};
-
-resetState();
-loadLocations();
-
 function inputValue(input) {
   const value = input.value;
   switch (input.type) {
@@ -837,24 +852,53 @@ function inputValue(input) {
   return value;
 }
 
-// initialize input controls
+function init()
 {
-  const d = new Date();
-  const today = `${d.getFullYear()}-${pad(d.getMonth() + 1, 2)}-${pad(d.getDate(), 2)}`;
-  elements.inputDate.setAttribute("value", today);
-  elements.inputDate.setAttribute("min", today);
-  initInput(elements.inputOrigin);
-  initInput(elements.inputDestination);
-  for (const input of document.getElementsByTagName("input")) {
-    input.default = inputValue(input);
+  window.addEventListener('error', (event) => {
+    showMessage(event.type, event.message, 'red');
+  });
+  
+  screen.orientation.onchange = (event) => {
+    updateTabsData();
+  };
+
+  window.onresize = () => {
+    updateTabsData();
+  };
+
+  window.onhashchange = (e) => {
+    goto(new URL(e.newURL).hash);
+  };
+
+  window.onpopstate = (e) => {
+    if (e.state)
+      applyOptions(e.state);
+  };
+
+  resetState();
+  loadLocations();
+
+  // initialize input controls
+  {
+    const d = new Date();
+    const today = `${d.getFullYear()}-${pad(d.getMonth() + 1, 2)}-${pad(d.getDate(), 2)}`;
+    elements.inputDate.setAttribute("value", today);
+    elements.inputDate.setAttribute("min", today);
+    initInput(elements.inputOrigin);
+    initInput(elements.inputDestination);
+    for (const input of document.getElementsByTagName("input")) {
+      input.default = inputValue(input);
+    }
+  }
+
+  // initialize sort options
+  elements.sortOption.setAttribute("onchange", "sortPlans(this.value);");
+  for (const k in columns) {
+    const opt = document.createElement("option");
+    opt.text = k;
+    opt.value = columns[k];
+    elements.sortOption.add(opt, null);
   }
 }
 
-// initialize sort options
-elements.sortOption.setAttribute("onchange", "sortPlans(this.value);");
-for (const k in columns) {
-  const opt = document.createElement("option");
-  opt.text = k;
-  opt.value = columns[k];
-  elements.sortOption.add(opt, null);
-}
+init();
