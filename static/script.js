@@ -248,7 +248,9 @@ async function applyOptions(options) {
     }
     changed = true;
   }
-  //if (changed) await submit();
+  // invalidate cached data
+  if (changed) 
+    plans = null;
   await goto(hash);
 }
 
