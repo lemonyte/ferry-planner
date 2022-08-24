@@ -102,7 +102,7 @@ function showMessage(heading, text, color) {
   elements.messageCard.querySelector("#message-heading").textContent = heading;
   elements.messageCard.querySelector("#message-content").textContent = text;
   elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
-  debug.textContent = `${debug.textContent}${heading}${text}\n`; 
+  debug.textContent = `${debug.textContent}${heading}${text}\n`;
 }
 
 function hideMessage() {
@@ -285,7 +285,7 @@ function urlToOptions(url) {
 
 function saveHistory(options, hash) {
   if (!options) options = getOptions(true);
-  if (hash) options['hash'] = hash;
+  if (hash) options["hash"] = hash;
   url = optionsToUrl(options);
 
   // don't push duplicate states
@@ -294,14 +294,13 @@ function saveHistory(options, hash) {
   history.pushState(options, null, url);
 }
 
-async function goto(hash,clickEvent) {
+async function goto(hash, clickEvent) {
   console.log(`goto: ${hash}`);
-    
+
   if (!hash) hash = "";
   if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
 
-  if (clickEvent && clickEvent.ctrlKey)
-  {
+  if (clickEvent && clickEvent.ctrlKey) {
     let url = new URL(window.location);
     url.hash = hash;
     window.open(url, "_blank").focus();
@@ -309,17 +308,12 @@ async function goto(hash,clickEvent) {
   }
 
   hideMessage();
-  
-  if (hash != "")
-  {
+
+  if (hash != "") {
     if (plans == null) await submit();
-    if (plans != null)
-    {
-      if (hash == "routes")
-      {
-      }
-      else
-      {
+    if (plans != null) {
+      if (hash == "routes") { /* pass */
+      } else {
         const plan = plans.find((p) => p.hash == hash);
         if (plan) {
           onPlanSelected(plan.id);
@@ -333,16 +327,16 @@ async function goto(hash,clickEvent) {
 
   if (plans == null) hash = "";
   if (hash == "") currentPlan = null;
- 
+
   // mark selected row in routes table
   for (const row of elements.routesTable.children) {
     row.classList.remove("selected-row");
     if (currentPlan && row.plan == currentPlan) row.classList.add("selected-row");
   }
 
-  elements.scheduleCard.hidden = (currentPlan == null || hash == "routes");
-  elements.routesCard.hidden = (hash != "routes");
-  elements.inputForm.hidden = (hash != "");  
+  elements.scheduleCard.hidden = currentPlan == null || hash == "routes";
+  elements.routesCard.hidden = hash != "routes";
+  elements.inputForm.hidden = hash != "";
 
   //if (window.location.hash != hash)
   //  window.location.hash = hash;
@@ -697,7 +691,6 @@ function assignTooltip(element) {
   };
 }
 
-
 function onPlanSelected(id) {
   elements.scheduleCard.hidden = false;
   const plan = plans.find((p) => p.id == id);
@@ -832,11 +825,6 @@ function pad(num, size) {
   return num;
 }
 
-// DEPRECATED
-// onorientationchange = (event) => {
-//   updateTabsData();
-// };
-
 function inputValue(input) {
   const value = input.value;
   switch (input.type) {
@@ -852,15 +840,21 @@ function inputValue(input) {
   return value;
 }
 
-function init()
-{
-  window.addEventListener('error', (event) => {
-    showMessage(event.type, event.message, 'red');
+function init() {
+  window.addEventListener("error", (event) => {
+    showMessage(event.type, event.message, "red");
   });
-  
-  screen.orientation.onchange = (event) => {
-    updateTabsData();
-  };
+
+  if (screen.orientation) {
+    screen.orientation.onchange = (event) => {
+      updateTabsData();
+    };
+  } else {
+    // DEPRECATED
+    window.onorientationchange = (event) => {
+      updateTabsData();
+    };
+  }
 
   window.onresize = () => {
     updateTabsData();
@@ -871,8 +865,7 @@ function init()
   };
 
   window.onpopstate = (e) => {
-    if (e.state)
-      applyOptions(e.state);
+    if (e.state) applyOptions(e.state);
   };
 
   resetState();
