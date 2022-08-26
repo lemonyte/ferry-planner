@@ -186,6 +186,10 @@ function onInput() {
   hideMessage();
 }
 
+function escapeRegex(string) {
+  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
 function autoComplete(input) {
   const value = input.value.trim();
   if (value != "" && !isValidLocation(value)) {
@@ -193,7 +197,8 @@ function autoComplete(input) {
     if (value in locations) {
       locationName = locations[value];
     } else {
-      const r = new RegExp(value, "i");
+      // find name containing entered text, this is also the 1st shown in filtered drop down list
+      let r = new RegExp(escapeRegex(value), "i");
       for (const name of locationNames) {
         if (name.search(r) >= 0) {
           locationName = name;
