@@ -32,7 +32,7 @@ async def api(request: Request):
     return templates.TemplateResponse('api.html', {'request': request})
 
 
-@app.get('/api/locations')
+@app.get('/api/locations', response_model=dict[str, str])
 async def api_locations():
     return {loc.id: loc.name for loc in locations.values()}
 
@@ -63,3 +63,8 @@ async def api_update():
         return {'result': "Update successful"}
     else:
         raise HTTPException(status_code=500, detail="Failed to update server")
+
+
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exception):
+    return templates.TemplateResponse('404.html', {'request': request})
