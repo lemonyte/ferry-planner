@@ -7,6 +7,11 @@
   color: #ffffff;
 }
 
+/* prevent form zoom on iOS */
+input {
+  font-size: 16px;
+}
+
 .hover-underline:hover {
   cursor: pointer;
   text-decoration: underline;
