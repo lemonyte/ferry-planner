@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% block head %}
+  <title>{% block title %}Ferry Planner{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" type="image/png" href="/static/favicon.ico" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="/static/w3.css" />
+  <link rel="stylesheet" href="/static/style.css" />
+  {% endblock %}
+</head>
+
+<body class="background-image">
+  <nav class="w3-bar w3-card w3-white no-print">
+    {% block navbar %}
+    <a href="/" class="w3-bar-item w3-button w3-blue"><span class="fa fa-home"></span>&nbsp;Home</a>
+    <a href="/about" class="w3-bar-item w3-button"><span class="fa fa-info-circle"></span>&nbsp;About</a>
+    <a href="/docs" class="w3-bar-item w3-button"><span class="fa fa-code"></span>&nbsp;API</a>
+    <a href="https://github.com/LemonPi314/ferry-planner" class="w3-bar-item w3-button">
+      <span class="fa fa-github"></span>&nbsp;GitHub
+    </a>
+    {% endblock %}
+  </nav>
+
+  <div class="w3-container w3-padding-small" style="max-width: 1200px; margin-left: auto; margin-right: auto">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+  <footer>
+    {% block footer %}
+    {% endblock %}
+  </footer>
+
+  {% block scripts %}
+  <script type="text/javascript" src="https://d3js.org/d3.v7.js"></script>
+  <script type="text/javascript" src="/static/d3-timeline.js"></script>
+  <script type="text/javascript" src="/static/script.js"></script>
+  {% endblock %}
+</body>
