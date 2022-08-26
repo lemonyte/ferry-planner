@@ -36,7 +36,7 @@
             <input class="w3-input w3-border" style="width:9em;" type="date" id="date">
           </div>
           <div class="w3-bar-item w3-padding-small w3-cell-middle">
-            <button class="w3-button w3-blue w3-border w3-round-medium" id="submit" onclick="goto('routes');">Submit</button>
+            <button class="w3-button w3-blue w3-border w3-round-medium" id="submit" onclick="submit();">Submit</button>
           </div>
           <div class="w3-bar-item w3-padding-small w3-cell-middle w3-right">
             <button class="w3-button w3-border w3-round-medium" onclick="toggleShow('options');">Options</button>
@@ -82,6 +82,26 @@
 
     <div id="routes-card" class="w3-card-4 w3-white" hidden>
       <h3 class="w3-center w3-indigo" style="font-size: 200%;">Available Routes</h3>
+
+      <div class="w3-bar w3-padding" style="width: 100%;">
+        <div class "w3-left">
+          <a id='routes-back' href='#'
+            class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right"><i
+              class="fa fa-angle-double-left"></i>&nbsp;Back</a>
+        </div>
+        <div class "w3-right">
+          <!-- <button onclick='javascript:onPrint("schedule-card");'
+            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
+              class="fa fa-print"></i>&nbsp;Print</button>
+          <a id='schedule-map' href='' target="_blank"
+            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left"><i
+              class="fa fa-map"></i>&nbsp;Map</a>
+          <button onclick='javascript:onShare();'
+            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
+              class="fa fa-share-alt"></i>&nbsp;Share</button> -->
+        </div>
+      </div>
+
 
       <div class="w3-container w3-padding-small">
         <div class="w3-bar w3-blue">
@@ -137,22 +157,22 @@
             <div id="schedule-via" class="w3-small"></div>
             <div class="w3-bar w3-padding" style="width: 100%;">
               <div class "w3-left">
-              <a id='schedule-back' href='#routes'
-                class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right"><i
-                  class="fa fa-angle-double-left"></i>&nbsp;Routes</a>
-                </div>
-                <div class "w3-right">
-                  <button onclick='javascript:onPrint("schedule-card");'
-                class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
-                  class="fa fa-print"></i>&nbsp;Print</button>
-              <a id='schedule-map' href='' target="_blank"
-                class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left"><i
-                  class="fa fa-map"></i>&nbsp;Map</a>
-              <button onclick='javascript:onShare();'
-                class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
-                  class="fa fa-share-alt"></i>&nbsp;Share</button>
-                  </div>
+                <a id='schedule-back' href='#routes'
+                  class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right"><i
+                    class="fa fa-angle-double-left"></i>&nbsp;Routes</a>
               </div>
+              <div class "w3-right">
+                <button onclick='javascript:onPrint("schedule-card");'
+                  class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
+                    class="fa fa-print"></i>&nbsp;Print</button>
+                <a id='schedule-map' href='' target="_blank"
+                  class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left"><i
+                    class="fa fa-map"></i>&nbsp;Map</a>
+                <button onclick='javascript:onShare();'
+                  class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
+                    class="fa fa-share-alt"></i>&nbsp;Share</button>
+              </div>
+            </div>
           </div>
           <table class="w3-table w3-striped">
             <tr class="w3-light-grey w3-center" style="font-size: 100%;">

@@ -32,6 +32,7 @@ const elements = {
   tabRoutesTimelines: document.querySelector("#tab-routes-timeline"),
   tabRoutesTableHeaderRow: document.querySelector("#tab-routes-table-header-row"),
   debug: document.querySelector("#debug"),
+  inputs: document.querySelector("#input-form").querySelectorAll("input, button"),
 };
 
 const columns = {
@@ -94,6 +95,11 @@ const activitiesInfo = {
   },
 };
 
+function debug(text) {
+  console.log(text);
+  elements.debug.textContent = `${elements.debug.textContent}${text}\n`;
+}
+
 function showMessage(heading, text, color) {
   elements.messageCard.hidden = false;
   messageHidden = false;
@@ -102,7 +108,7 @@ function showMessage(heading, text, color) {
   elements.messageCard.querySelector("#message-heading").textContent = heading;
   elements.messageCard.querySelector("#message-content").textContent = text;
   elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
-  debug.textContent = `${debug.textContent}${heading}${text}\n`;
+  debug(`${heading}${text}`);
 }
 
 function hideMessage() {
@@ -113,12 +119,10 @@ function hideMessage() {
 
 function showError(message) {
   showMessage("Error", message, "red");
-  console.error(message);
 }
 
 function showWarning(message) {
   showMessage("Warning", message, "yellow");
-  console.warn(message);
 }
 
 function resetState() {
@@ -228,11 +232,11 @@ async function applyOptions(options) {
     }
     const element = document.getElementById(o);
     if (!element) {
-      console.warn("Unknown option: " + o);
+      debug("Unknown option: " + o);
       continue;
     }
     const currentValue = inputValue(element);
-    if (value == currentValue) continue;
+    if (`${value}` == `${currentValue}`) continue;
 
     switch (element.type) {
       case "checkbox":
@@ -249,8 +253,7 @@ async function applyOptions(options) {
     changed = true;
   }
   // invalidate cached data
-  if (changed) 
-    plans = null;
+  if (changed) plans = null;
   await goto(hash);
 }
 
@@ -291,13 +294,22 @@ function saveHistory(options, hash) {
   url = optionsToUrl(options);
 
   // don't push duplicate states
-  if (url.href == window.location.href) return;
+  if (url.href == window.location.href.trimEnd("#")) {
+    return;
+  }
 
   history.pushState(options, null, url);
 }
 
+function validatePlans(options) {
+  if (!plans || !plans.options) return false;
+  for (const k in options) if (k != "hash" && options[k] != plans.options[k]) return false;
+  for (const k in plans.options) if (k != "hash" && options[k] != plans.options[k]) return false;
+  return true;
+}
+
 async function goto(hash, clickEvent) {
-  console.log(`goto: ${hash}`);
+  //debug(`goto: ${hash}`);
 
   if (!hash) hash = "";
   if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
@@ -310,11 +322,14 @@ async function goto(hash, clickEvent) {
   }
 
   hideMessage();
+  const options = getOptions();
+  if (!validatePlans(options)) plans = null;
 
   if (hash != "") {
-    if (plans == null) await submit();
+    if (plans == null) await fetchRoutes();
     if (plans != null) {
-      if (hash == "routes") { /* pass */
+      if (hash == "routes") {
+        /* pass */
       } else {
         const plan = plans.find((p) => p.hash == hash);
         if (plan) {
@@ -349,6 +364,7 @@ async function getRoutePlans() {
   currentPlan = null;
   let options = getOptions();
   plans = await fetchApiData("/routeplans", options, "POST");
+  plans.options = options;
 
   // pre-process plans data
   for (let i = 0; i < plans.length; i++) {
@@ -378,8 +394,13 @@ function isValidLocation(name) {
 }
 
 async function submit() {
+  goto("routes");
+}
+
+async function fetchRoutes() {
   hideMessage();
   resetState();
+  saveHistory();
   if (!isValidLocation(elements.inputOrigin.value)) showError("Please select start location");
   else if (!isValidLocation(elements.inputDestination.value)) showError("Please select destination location");
   else if (elements.inputOrigin.value == elements.inputDestination.value)
@@ -387,12 +408,13 @@ async function submit() {
   else {
     try {
       elements.loadingSpinner.hidden = false;
-      elements.buttonSubmit.disabled = true;
+      for (const e of elements.inputs) e.disabled = true;
       plans = await getRoutePlans();
       if (!plans) showError("Failed to fetch schedule information");
-      else if (plans.length == 0)
+      else if (plans.length == 0) {
         showMessage("", "No itineraries found. Try select another date and/or locations.", "yellow");
-      else {
+        plans = null;
+      } else {
         // force sort
         const sort = currentSort;
         currentSort = null;
@@ -405,7 +427,7 @@ async function submit() {
       showError(error.message);
     } finally {
       elements.loadingSpinner.hidden = true;
-      elements.buttonSubmit.disabled = false;
+      for (const e of elements.inputs) e.disabled = false;
     }
   }
 }
@@ -867,7 +889,7 @@ function init() {
   };
 
   window.onpopstate = (e) => {
-    if (e.state) applyOptions(e.state);
+    applyOptions(e.state ?? urlToOptions(window.location));
   };
 
   resetState();
