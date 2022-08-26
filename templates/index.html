@@ -1,173 +1,165 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="w3-container w3-padding-small" style="max-width: 1200px; margin-left: auto; margin-right: auto">
-  <div id="input-form" class="w3-card-4 w3-white no-print">
-    <div class="w3-row w3-padding-small">
-      <div class="w3-third w3-padding-small">
-        <input class="w3-input w3-border" type="text" id="origin" list="locations"
-          placeholder="Select start location" required />
-      </div>
-      <div class="w3-third w3-padding-small">
-        <input class="w3-input w3-border" type="text" id="destination" list="locations"
-          placeholder="Select destination" required />
-      </div>
-      <div class="w3-third w3-right w3-bar">
-        <div class="w3-bar-item w3-padding-small w3-cell-middle">
-          <input class="w3-input w3-border" style="width: 9em" type="date" id="date" />
-        </div>
-        <div class="w3-bar-item w3-padding-small w3-cell-middle">
-          <button class="w3-button w3-blue w3-border w3-round-medium" id="submit" onclick="submit();">
-            Submit
-          </button>
-        </div>
-        <div class="w3-bar-item w3-padding-small w3-cell-middle w3-right">
-          <button class="w3-button w3-border w3-round-medium" onclick="toggleShow('options');">Options</button>
-        </div>
-      </div>
+<div id="input-form" class="w3-card-4 w3-white no-print">
+  <div class="w3-row w3-padding-small">
+    <div class="w3-third w3-padding-small">
+      <input class="w3-input w3-border" type="text" id="origin" list="locations" placeholder="Select start location"
+        required />
     </div>
-
-    <div class="w3-row w3-padding-small" id="options" hidden>
-      <div class="w3-cell-middle">
-        <input class="w3-check" type="radio" id="reservation" name="res-type" checked="true" />
-        <label>Assume ferry reservation</label>
+    <div class="w3-third w3-padding-small">
+      <input class="w3-input w3-border" type="text" id="destination" list="locations" placeholder="Select destination"
+        required />
+    </div>
+    <div class="w3-third w3-right w3-bar">
+      <div class="w3-bar-item w3-padding-small w3-cell-middle">
+        <input class="w3-input w3-border" style="width: 9em;" type="date" id="date" />
       </div>
-      <div class="w3-cell-middle">
-        <input class="w3-check" type="radio" id="assured" name="res-type" />
-        <label>Assured loading</label>
+      <div class="w3-bar-item w3-padding-small w3-cell-middle">
+        <button class="w3-button w3-blue w3-border w3-round-medium" id="submit" onclick="submit();">
+          Submit
+        </button>
       </div>
-      <div class="w3-cell-middle">
-        <input class="w3-check" type="radio" id="hostled" name="res-type" />
-        <label>Hostled vehicle</label>
-      </div>
-      <div class="w3-cell-middle">
-        <input class="w3-check" type="checkbox" id="show_all" />
-        <label>Show all possible routes</label>
-      </div>
-      <div class="w3-cell-middle">
-        <p>
-          Arrive at terminal
-          <input class="w3-padding-small w3-border-0 w3-border-bottom" type="number" id="buffer"
-            min="0" max="60" value="15" />
-          minutes in advance
-        </p>
+      <div class="w3-bar-item w3-padding-small w3-cell-middle w3-right">
+        <button class="w3-button w3-border w3-round-medium" onclick="toggleShow('options');">Options</button>
       </div>
     </div>
   </div>
 
-  <div id="loading-spinner" class="w3-center w3-panel w3-white no-print" hidden>
-    <span>Fetching schedules...</span>
-    <p><i class="fa fa-circle-o-notch w3-spin" style="font-size: 32px"></i></p>
+  <div class="w3-row w3-padding-small" id="options" hidden>
+    <div class="w3-cell-middle">
+      <input class="w3-check" type="radio" id="reservation" name="res-type" checked="true" />
+      <label>Assume ferry reservation</label>
+    </div>
+    <div class="w3-cell-middle">
+      <input class="w3-check" type="radio" id="assured" name="res-type" />
+      <label>Assured loading</label>
+    </div>
+    <div class="w3-cell-middle">
+      <input class="w3-check" type="radio" id="hostled" name="res-type" />
+      <label>Hostled vehicle</label>
+    </div>
+    <div class="w3-cell-middle">
+      <input class="w3-check" type="checkbox" id="show_all" />
+      <label>Show all possible routes</label>
+    </div>
+    <div class="w3-cell-middle">
+      <p>
+        Arrive at terminal
+        <input class="w3-padding-small w3-border-0 w3-border-bottom" type="number" id="buffer" min="0" max="60"
+          value="15" />
+        minutes in advance
+      </p>
+    </div>
   </div>
+</div>
 
-  <div id="message-card" class="w3-center w3-card-4" hidden>
-    <div class="w3-container w3-padding-small">
-      <b><span id="message-heading"></span></b><span id="message-content"></span>
+<div id="loading-spinner" class="w3-center w3-panel w3-white no-print" hidden>
+  <span>Fetching schedules...</span>
+  <p><i class="fa fa-circle-o-notch w3-spin" style="font-size: 32px;"></i></p>
+</div>
+
+<div id="message-card" class="w3-center w3-card-4" hidden>
+  <div class="w3-container w3-padding-small">
+    <b><span id="message-heading"></span></b><span id="message-content"></span>
+  </div>
+</div>
+
+<div id="routes-card" class="w3-card-4 w3-white" hidden>
+  <h3 class="w3-center w3-blue">Available Routes</h3>
+
+  <div class="w3-bar w3-padding" style="width: 100%;">
+    <div class="w3-left">
+      <a id="routes-back" href="#" class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right">
+        <span class="icon"><i class="fa fa-angle-double-left"></i></span>Back</a>
     </div>
   </div>
 
-    <div id="routes-card" class="w3-card-4 w3-white" hidden>
-      <h3 class="w3-center w3-indigo" style="font-size: 200%;">Available Routes</h3>
+  <div class="w3-container" style="padding: 0px">
+    <div class="w3-bar w3-blue">
+      <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-table');">Table</button>
+      <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-timeline');">Timeline</button>
+    </div>
 
-      <div class="w3-bar w3-padding" style="width: 100%;">
-        <div class="w3-left">
-          <a id='routes-back' href='#'
-            class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right"><i
-              class="fa fa-angle-double-left"></i>&nbsp;Back</a>
+    <div id="tab-routes-table" class="tab-content">
+      <div id="routes">
+        <div id="routes-header-container" class="w3-center w3-padding-small">
+          <div id="routes-details"></div>
+          <div id="routes-via" class="w3-small"></div>
         </div>
-        <div class="w3-right">
-          <!-- <button onclick='javascript:onPrint("schedule-card");'
-            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
-              class="fa fa-print"></i>&nbsp;Print</button>
-          <a id='schedule-map' href='' target="_blank"
-            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left"><i
-              class="fa fa-map"></i>&nbsp;Map</a>
-          <button onclick='javascript:onShare();'
-            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
-              class="fa fa-share-alt"></i>&nbsp;Share</button> -->
-        </div>
+        <table class="w3-table w3-striped">
+          <thead>
+            <tr id="tab-routes-table-header-row" class="w3-light-grey w3-center"></tr>
+          </thead>
+          <tbody id="routes-table"></tbody>
+        </table>
       </div>
+    </div>
 
+    <div id="tab-routes-timeline" class="tab-content" style="user-select: none;" hidden>
+      <div class="w3-bar">
+        <label class="w3-bar-item">Sort by:</label>
+        <select class="w3-select w3-bar-item w3-border-bottom" id="sort-option"></select>
+        <label class="w3-bar-item">Color by:</label>
+        <select class="w3-select w3-bar-item w3-border-bottom" id="color-option" onchange="updateTimelines();">
+          <option value="activity">Activity</option>
+          <option value="region">Region</option>
+        </select>
+      </div>
+      <div id="timeline-legend"></div>
+      <div id="timeline" class="w3-padding-small"></div>
+    </div>
+  </div>
+</div>
 
-      <div class="w3-container w3-padding-small">
-        <div class="w3-bar w3-blue">
-          <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-table');">Table</button>
-          <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-timeline');">Timeline</button>
-        </div>
-
-      <div id="tab-routes-table" class="tab-content">
-        <div id="routes" class="">
-          <div id="routes-header-container" class="w3-center w3-padding-small">
-            <div id="routes-details" class=""></div>
-            <div id="routes-via" class="w3-small"></div>
+<div id="schedule-card" class="w3-card-4 w3-white" hidden>
+  <div id="schedule-print">
+    <h3 id="schedule-header" class="w3-center w3-blue">Itinerary</h3>
+    <div id="schedule" class="w3-container" style="padding: 0px;">
+      <div id="schedule-header-container" class="w3-center">
+        <div id="schedule-details"></div>
+        <div id="schedule-via" class="w3-small"></div>
+        <div class="w3-bar w3-padding" style="width: 100%;">
+          <div class="w3-left">
+            <a id="schedule-back" href="#routes"
+              class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right">
+              <span class="icon"><i class="fa fa-angle-double-left"></i></span>Routes</a>
           </div>
-          <table class="w3-table w3-striped">
-            <thead>
-              <tr id="tab-routes-table-header-row" class="w3-light-grey w3-center"></tr>
-            </thead>
-            <tbody id="routes-table"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="tab-routes-timeline" class="tab-content" style="user-select: none" hidden>
-        <div class="w3-bar">
-          <label class="w3-bar-item">Sort by:</label>
-          <select class="w3-select w3-bar-item w3-border-bottom" id="sort-option"></select>
-          <label class="w3-bar-item">Color by:</label>
-          <select class="w3-select w3-bar-item w3-border-bottom" id="color-option" onchange="updateTimelines();">
-            <option value="activity">Activity</option>
-            <option value="region">Region</option>
-          </select>
-        </div>
-        <div id="timeline-legend" class="w3-right"></div>
-        <div id="timeline" class="w3-padding-small"></div>
-      </div>
-    </div>
-  </div>
-
-    <div id="schedule-card" class="w3-card-4 w3-white" hidden>
-      <div id="schedule-print">
-        <h3 id="schedule-header" class="w3-center w3-indigo">Itinerary</h3>
-        <div id="schedule" class="w3-container w3-padding-small">
-          <div id="schedule-header-container" class="w3-center">
-            <div id="schedule-details" class=""></div>
-            <div id="schedule-via" class="w3-small"></div>
-            <div class="w3-bar w3-padding" style="width: 100%;">
-              <div class="w3-left">
-                <a id='schedule-back' href='#routes'
-                  class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right">
-                  <i class="fa fa-angle-double-left"></i>&nbsp;Routes</a>
-              </div>
-              <div class="w3-right">
-                <button onclick='javascript:onPrint("schedule-card");'
-                  class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print">
-                  <i class="fa fa-print"></i>&nbsp;Print</button>
-                <a id='schedule-map' href='' target="_blank"
-                  class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left">
-                  <i class="fa fa-map"></i>&nbsp;Map</a>
-                <button onclick='javascript:onShare();'
-                  class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print">
-                  <i class="fa fa-share-alt"></i>&nbsp;Share</button>
-              </div>
-            </div>
+          <div class="w3-right">
+            <button onclick="onPrint('schedule-card');"
+              class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print">
+              <span class="icon"><i class="fa fa-print"></i></span>Print</button>
+            <a id="schedule-map" target="_blank"
+              class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left">
+              <span class="icon"><i class="fa fa-map"></i></span>Map</a>
+            <button onclick="onShare();"
+              class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print">
+              <span class="icon"><i class="fa fa-share-alt"></i></span>Share</button>
           </div>
-          <table class="w3-table w3-striped">
-            <tr class="w3-light-grey w3-center" style="font-size: 100%;">
-              <th class="w3-center">Time</th>
-              <th class="w3-center" style="width:95%">Description</th>
-              <th class="w3-center">Duration</th>
-            </tr>
-            <tbody id="schedule-table"></tbody>
-          </table>
         </div>
       </div>
+      <table class="w3-table w3-striped">
+        <tr class="w3-light-grey w3-center" style="font-size: 100%;">
+          <th class="w3-center">Time</th>
+          <th class="w3-center" style="width:95%">Description</th>
+          <th class="w3-center">Duration</th>
+        </tr>
+        <tbody id="schedule-table"></tbody>
+      </table>
     </div>
   </div>
+</div>
 
-<div id="tooltip" class="timeline-tooltip" style="position: absolute; opacity: 0"></div>
+<div id="tooltip" class="timeline-tooltip" style="position: absolute; opacity: 0;"></div>
 
 <pre id="debug"></pre>
 
 <datalist id="locations"></datalist>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript" src="https://d3js.org/d3.v7.js"></script>
+<script type="text/javascript" src="/static/d3-timeline.js"></script>
+<script type="text/javascript" src="/static/index.js"></script>
 {% endblock %}

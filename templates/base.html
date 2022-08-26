@@ -16,16 +16,26 @@
 <body class="background-image">
   <nav class="w3-bar w3-card w3-white no-print">
     {% block navbar %}
-    <a href="/" class="w3-bar-item w3-button w3-blue"><span class="fa fa-home"></span>&nbsp;Home</a>
-    <a href="/about" class="w3-bar-item w3-button"><span class="fa fa-info-circle"></span>&nbsp;About</a>
-    <a href="/docs" class="w3-bar-item w3-button"><span class="fa fa-code"></span>&nbsp;API</a>
+    <a href="/" class="w3-bar-item w3-button w3-blue">
+      <span class="icon"><i class="fa fa-home"></i></span>
+      Home
+    </a>
+    <a href="/about" class="w3-bar-item w3-button">
+      <span class="icon"><i class="fa fa-info-circle"></i></span>
+      About
+    </a>
+    <a href="/docs" class="w3-bar-item w3-button">
+      <span class="icon"><i class="fa fa-code"></i></span>
+      API
+    </a>
     <a href="https://github.com/LemonPi314/ferry-planner" class="w3-bar-item w3-button">
-      <span class="fa fa-github"></span>&nbsp;GitHub
+      <span class="icon"><i class="fa fa-github"></i></span>
+      GitHub
     </a>
     {% endblock %}
   </nav>
 
-  <div class="w3-container w3-padding-small" style="max-width: 1200px; margin-left: auto; margin-right: auto">
+  <div class="w3-container w3-padding-small" style="max-width: 1200px; margin-left: auto; margin-right: auto;">
     {% block content %}
     {% endblock %}
   </div>
@@ -36,8 +46,5 @@
   </footer>
 
   {% block scripts %}
-  <script type="text/javascript" src="https://d3js.org/d3.v7.js"></script>
-  <script type="text/javascript" src="/static/d3-timeline.js"></script>
-  <script type="text/javascript" src="/static/script.js"></script>
   {% endblock %}
 </body>
