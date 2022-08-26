@@ -66,14 +66,34 @@
     </div>
   </div>
 
-  <div id="routes-card" class="w3-card-4 w3-white" hidden>
-    <h3 class="w3-center w3-indigo" style="font-size: 200%">Available Routes</h3>
+    <div id="routes-card" class="w3-card-4 w3-white" hidden>
+      <h3 class="w3-center w3-indigo" style="font-size: 200%;">Available Routes</h3>
 
-    <div class="w3-container w3-padding-small">
-      <div class="w3-bar w3-blue">
-        <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-table');">Table</button>
-        <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-timeline');">Timeline</button>
+      <div class="w3-bar w3-padding" style="width: 100%;">
+        <div class="w3-left">
+          <a id='routes-back' href='#'
+            class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right"><i
+              class="fa fa-angle-double-left"></i>&nbsp;Back</a>
+        </div>
+        <div class="w3-right">
+          <!-- <button onclick='javascript:onPrint("schedule-card");'
+            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
+              class="fa fa-print"></i>&nbsp;Print</button>
+          <a id='schedule-map' href='' target="_blank"
+            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left"><i
+              class="fa fa-map"></i>&nbsp;Map</a>
+          <button onclick='javascript:onShare();'
+            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print"><i
+              class="fa fa-share-alt"></i>&nbsp;Share</button> -->
+        </div>
       </div>
+
+
+      <div class="w3-container w3-padding-small">
+        <div class="w3-bar w3-blue">
+          <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-table');">Table</button>
+          <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-timeline');">Timeline</button>
+        </div>
 
       <div id="tab-routes-table" class="tab-content">
         <div id="routes" class="">
@@ -106,42 +126,48 @@
     </div>
   </div>
 
-  <div id="schedule-card" class="w3-card-4 w3-white" hidden>
-    <div id="schedule-print">
-      <h3 id="schedule-header" class="w3-center w3-indigo">Itinerary</h3>
-      <div id="schedule" class="w3-container w3-padding-small">
-        <div id="schedule-header-container" class="w3-center">
-          <div id="schedule-details" class=""></div>
-          <div id="schedule-via" class="w3-small"></div>
-          <div class="w3-bar w3-padding w3-right">
-            <button onclick="onPrint('schedule-card');"
-              class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print">
-              <span><i class="fa fa-print"></i></span><span>Print</span>
-            </button>
-            <a id="schedule-map" href="" target="_blank"
-              class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left">
-              <i class="fa fa-map"></i>&nbsp;Map
-            </a>
-            <button onclick="onShare();"
-              class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print">
-              <i class="fa fa-share-alt"></i>&nbsp;Share
-            </button>
+    <div id="schedule-card" class="w3-card-4 w3-white" hidden>
+      <div id="schedule-print">
+        <h3 id="schedule-header" class="w3-center w3-indigo">Itinerary</h3>
+        <div id="schedule" class="w3-container w3-padding-small">
+          <div id="schedule-header-container" class="w3-center">
+            <div id="schedule-details" class=""></div>
+            <div id="schedule-via" class="w3-small"></div>
+            <div class="w3-bar w3-padding" style="width: 100%;">
+              <div class="w3-left">
+                <a id='schedule-back' href='#routes'
+                  class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right">
+                  <i class="fa fa-angle-double-left"></i>&nbsp;Routes</a>
+              </div>
+              <div class="w3-right">
+                <button onclick='javascript:onPrint("schedule-card");'
+                  class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print">
+                  <i class="fa fa-print"></i>&nbsp;Print</button>
+                <a id='schedule-map' href='' target="_blank"
+                  class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left">
+                  <i class="fa fa-map"></i>&nbsp;Map</a>
+                <button onclick='javascript:onShare();'
+                  class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-left no-print">
+                  <i class="fa fa-share-alt"></i>&nbsp;Share</button>
+              </div>
+            </div>
           </div>
+          <table class="w3-table w3-striped">
+            <tr class="w3-light-grey w3-center" style="font-size: 100%;">
+              <th class="w3-center">Time</th>
+              <th class="w3-center" style="width:95%">Description</th>
+              <th class="w3-center">Duration</th>
+            </tr>
+            <tbody id="schedule-table"></tbody>
+          </table>
         </div>
-        <table class="w3-table w3-striped">
-          <tr class="w3-light-grey w3-center">
-            <th class="w3-center">Time</th>
-            <th class="w3-center" style="width: 95%">Description</th>
-            <th class="w3-center">Duration</th>
-          </tr>
-          <tbody id="schedule-table"></tbody>
-        </table>
       </div>
     </div>
   </div>
-</div>
 
 <div id="tooltip" class="timeline-tooltip" style="position: absolute; opacity: 0"></div>
+
+<pre id="debug"></pre>
 
 <datalist id="locations"></datalist>
 {% endblock %}
