@@ -180,6 +180,9 @@ function initInput(input) {
   input.addEventListener("focusout", (event) => {
     autoComplete(event.target);
   });
+  input.addEventListener("focusin", (event) => {
+    event.target.setSelectionRange(0, event.target.value.length);
+  });
 }
 
 function onInput() {
@@ -293,13 +296,30 @@ function urlToOptions(url) {
   return options;
 }
 
+function trim(str, ch) {
+  var start = 0;
+  var end = str.length;
+  while(start < end && str[start] === ch)
+      ++start;
+  while(end > start && str[end - 1] === ch)
+      --end;
+  return (start > 0 || end < str.length) ? str.substring(start, end) : str;
+}
+
+function trimEnd(str, ch) {
+  var end = str.length;
+  while(end > 0 && str[end - 1] === ch)
+      --end;
+  return (end < str.length) ? str.substring(0, end) : str;
+}
+
 function saveHistory(options, hash) {
   if (!options) options = getOptions(true);
   if (hash) options["hash"] = hash;
   url = optionsToUrl(options);
 
   // don't push duplicate states
-  if (url.href == window.location.href.trimEnd("#")) {
+  if (trimEnd(url.href, '#') == trimEnd(window.location.href, "#")) {
     return;
   }
 
@@ -358,7 +378,7 @@ async function goto(hash, clickEvent) {
 
   elements.scheduleCard.hidden = currentPlan == null || hash == "routes";
   elements.routesCard.hidden = hash != "routes";
-  elements.inputForm.hidden = hash != "";
+  elements.inputForm.hidden = hash != "" && hash != "routes";
 
   //if (window.location.hash != hash)
   //  window.location.hash = hash;
