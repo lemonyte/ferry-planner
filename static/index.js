@@ -25,6 +25,7 @@ const elements = {
   scheduleCard: document.querySelector("#schedule-card"),
   scheduleTable: document.querySelector("#schedule-table"),
   timeline: document.querySelector("#timeline"),
+  timelineSwitch: document.querySelector("#timeline-switch"),
   sortOption: document.querySelector("#sort-option"),
   tabRoutesTable: document.querySelector("#tab-routes-table"),
   tabRoutesTimelines: document.querySelector("#tab-routes-timeline"),
@@ -33,6 +34,8 @@ const elements = {
   inputs: document.querySelector("#input-form").querySelectorAll("input, button"),
   tooltip: document.querySelector("#tooltip"),
 };
+
+const cards = [elements.inputForm, elements.routesCard, elements.scheduleCard];
 
 const columns = {
   Route: "id",
@@ -217,7 +220,7 @@ function autoComplete(input) {
 
 function getOptions(excludeDefaults) {
   let options = {};
-  for (const input of document.getElementsByTagName("input")) {
+  for (const input of elements.inputForm.getElementsByTagName("input")) {
     const value = inputValue(input);
     if (excludeDefaults == true && value == input.default) continue;
     options[input.id] = value;
@@ -298,18 +301,15 @@ function urlToOptions(url) {
 function trim(str, ch) {
   var start = 0;
   var end = str.length;
-  while(start < end && str[start] === ch)
-      ++start;
-  while(end > start && str[end - 1] === ch)
-      --end;
-  return (start > 0 || end < str.length) ? str.substring(start, end) : str;
+  while (start < end && str[start] === ch) ++start;
+  while (end > start && str[end - 1] === ch) --end;
+  return start > 0 || end < str.length ? str.substring(start, end) : str;
 }
 
 function trimEnd(str, ch) {
   var end = str.length;
-  while(end > 0 && str[end - 1] === ch)
-      --end;
-  return (end < str.length) ? str.substring(0, end) : str;
+  while (end > 0 && str[end - 1] === ch) --end;
+  return end < str.length ? str.substring(0, end) : str;
 }
 
 function saveHistory(options, hash) {
@@ -318,7 +318,7 @@ function saveHistory(options, hash) {
   url = optionsToUrl(options);
 
   // don't push duplicate states
-  if (trimEnd(url.href, '#') == trimEnd(window.location.href, "#")) {
+  if (trimEnd(url.href, "#") == trimEnd(window.location.href, "#")) {
     return;
   }
 
@@ -330,6 +330,22 @@ function validatePlans(options) {
   for (const k in options) if (k != "hash" && options[k] != plans.options[k]) return false;
   for (const k in plans.options) if (k != "hash" && options[k] != plans.options[k]) return false;
   return true;
+}
+
+function welcomeClick() {
+  const moreinfo = document.querySelector("#welcome-more-info");
+  const button = document.querySelector("#welcome-more");
+  const lastState = moreinfo.hidden;
+  moreinfo.hidden = !lastState;
+  button.textContent = `see ${lastState ? "less" : "more"}`;
+}
+
+function showElements(elements) {
+  for (const c of cards) {
+    const show = elements.includes(c);
+    c.hidden = !show;
+    if (show) lastElement = c;
+  }
 }
 
 async function goto(hash, clickEvent) {
@@ -364,6 +380,7 @@ async function goto(hash, clickEvent) {
     }
   }
 
+  if (plans && plans.length == 0) plans = null;
   if (plans == null) hash = "";
   if (hash == "") currentPlan = null;
 
@@ -373,10 +390,33 @@ async function goto(hash, clickEvent) {
     if (currentPlan && row.plan == currentPlan) row.classList.add("selected-row");
   }
 
-  elements.scheduleCard.hidden = currentPlan == null || hash == "routes";
-  elements.routesCard.hidden = hash != "routes";
-  elements.inputForm.hidden = hash != "" && hash != "routes";
+  if (hash == "") {
+    showElements([elements.inputForm]);
+  } else if (hash == "routes") {
+    const depart_time = new Date(plans[0].depart_time.substring(0, 16));
+    elements.routesCard.querySelector("#routes-card-header").innerHTML =
+      `<div class='card-header'>${elements.inputOrigin.value} to ${elements.inputDestination.value}</div>` +
+      `<div class='card-header-date'>${depart_time.toDateString()}</div>`;
+    showElements([/*elements.inputForm,*/ elements.routesCard]);
+  } else {
+    showElements([elements.scheduleCard]);
+    // window.scrollTo(0,0);
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant",
+    });
+    // elements.scheduleCard.scrollIntoView({
+    //   block: "start",
+    //   inline: "nearest",
+    //   behavior: "smooth",
+    // });
+  }
 
+  /*  elements.inputForm.hidden = hash != "" && hash != "routes";
+  elements.routesCard.hidden = hash != "routes";
+  elements.scheduleCard.hidden = currentPlan == null || hash == "routes";
+*/
   //if (window.location.hash != hash)
   //  window.location.hash = hash;
   saveHistory(null, hash);
@@ -429,8 +469,9 @@ async function fetchRoutes() {
     showError("Start and destination location cannot be the same");
   else {
     try {
+      elements.inputForm.hidden = true;
       elements.loadingSpinner.hidden = false;
-      for (const e of elements.inputs) e.disabled = true;
+      //for (const e of elements.inputs) e.disabled = true;
       plans = await getRoutePlans();
       if (!plans) showError("Failed to fetch schedule information");
       else if (plans.length == 0) {
@@ -449,7 +490,7 @@ async function fetchRoutes() {
       showError(error.message);
     } finally {
       elements.loadingSpinner.hidden = true;
-      for (const e of elements.inputs) e.disabled = false;
+      //for (const e of elements.inputs) e.disabled = false;
     }
   }
 }
@@ -658,6 +699,8 @@ function updateTimelines() {
     colorScale = d3.scaleOrdinal().range(d3.scaleOrdinal(d3.schemeAccent).range()).domain(Array.from(coloringKeys));
   }
 
+  const width = elements.timeline.clientWidth - 40; // FIXME: magic number
+
   const chart = d3
     .timeline()
     .colors(colorScale)
@@ -667,18 +710,18 @@ function updateTimelines() {
     .tickFormat({
       format: d3.timeFormat("%I %p"),
       tickTime: d3.timeHours,
+      numTicks: width / 100,
       tickInterval: 3,
-      tickSize: 1,
+      tickSize: 4,
     })
     .stack();
 
-  const width = elements.timeline.clientWidth - 40; // FIXME: magic number
   const svg = d3.select(elements.timeline).append("svg").attr("width", width).datum(chartRows).call(chart);
 
   updateLegend(chart, coloringKeys, currentColoring, document.getElementById("timeline-legend"));
 
   svg.selectAll(".timeline-label").html((d, i) => {
-    return `<a href="#${plans[i].hash}" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
+    return `<a href="#${plans[i].hash}">Route ${plans[i].id}</a>`;
   });
 
   svg
@@ -748,19 +791,23 @@ function onPlanSelected(id) {
   currentPlan = plan;
 
   // clear table
-  while (elements.scheduleTable.firstChild) elements.scheduleTable.removeChild(elements.scheduleTable.firstChild);
-
-  document.getElementById("schedule-header").textContent = `${plan.origin.name} to ${plan.destination.name}`;
-  document.getElementById("schedule-via").textContent =
-    "via " + [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))].join(", ");
+  while (elements.scheduleTable.firstChild) {
+    elements.scheduleTable.removeChild(elements.scheduleTable.firstChild);
+  }
 
   const depart_time = new Date(plan.depart_time.substring(0, 16));
-  document.getElementById("schedule-details").innerHTML =
-    `Route ${plan.id}.` +
-    ` Departing:&nbsp;<strong>${depart_time.toDateString()} at ${timeToString(depart_time)}</strong>.` +
-    ` Total time:&nbsp;<strong>${durationToString(plan.duration * 1000)}</strong>.` +
-    ` Driving distance:&nbsp;${plan.driving_distance.toFixed(1)} km.`;
-  const scheduleMap = document.getElementById("schedule-map");
+  elements.scheduleCard.querySelector("#schedule-header").innerHTML =
+    `<div class='card-header'>${plan.origin.name} to ${plan.destination.name}</div>` +
+    `<div class='card-header-date'>${depart_time.toDateString()} at ${timeToString(depart_time)}</div>`;
+  elements.scheduleCard.querySelector("#schedule-via").textContent =
+    "via " + [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))].join(", ");
+
+  elements.scheduleCard.querySelector("#schedule-details").innerHTML =
+    //`Route ${plan.id}.` +
+    //` Departing:&nbsp;<strong>${depart_time.toDateString()} at ${timeToString(depart_time)}</strong>.` +
+    `Total&nbsp;time:&nbsp;<strong>${durationToString(plan.duration * 1000)}</strong>.` +
+    ` Driving&nbsp;distance:&nbsp;${plan.driving_distance.toFixed(1)}&nbsp;km.`;
+  const scheduleMap = elements.scheduleCard.querySelector("#schedule-map");
   if (plan.map_url && plan.map_url.length > 0) {
     scheduleMap.href = plan.map_url;
     scheduleMap.hidden = false;
@@ -794,11 +841,6 @@ function onPlanSelected(id) {
       tr.appendChild(td);
     }
   }
-  elements.scheduleCard.scrollIntoView({
-    block: "start",
-    inline: "nearest",
-    behavior: "smooth",
-  });
 }
 
 function sortPlans(sortBy) {
@@ -925,6 +967,12 @@ function init() {
     elements.inputDate.setAttribute("min", today);
     initInput(elements.inputOrigin);
     initInput(elements.inputDestination);
+    elements.inputDate.addEventListener("keypress", (e) => {
+      if (e.code == "Enter") submit();
+    });
+    elements.timelineSwitch.addEventListener("change", (e) => {
+      showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
+    });
     for (const input of document.getElementsByTagName("input")) {
       input.default = inputValue(input);
     }
