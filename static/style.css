@@ -73,3 +73,7 @@ input {
 .card-header-date {
   font-size: 16px;
 }
+
+#menu-button.pressed {
+  background-color: #f1f1f1; /* light-gray */
+}
