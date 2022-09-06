@@ -102,15 +102,29 @@ function debug(text) {
   elements.debug.textContent = `${elements.debug.textContent}${text}\n`;
 }
 
-function showMessage(heading, text, color) {
-  elements.messageCard.hidden = false;
-  messageHidden = false;
-  if (!heading) heading = "";
-  if (heading.length > 0) heading += ": ";
-  elements.messageCard.querySelector("#message-heading").textContent = heading;
-  elements.messageCard.querySelector("#message-content").textContent = text;
-  elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
-  debug(`${heading}${text}`);
+// function showMessage(heading, text, color) {
+//   elements.messageCard.hidden = false;
+//   messageHidden = false;
+//   if (!heading) heading = "";
+//   if (heading.length > 0) heading += ": ";
+//   elements.messageCard.querySelector("#message-heading").textContent = heading;
+//   elements.messageCard.querySelector("#message-content").textContent = text;
+//   elements.messageCard.setAttribute("class", `w3-card-4 w3-margin w3-padding w3-${color}`);
+//   debug(`${heading}${text}`);
+// }
+
+function showMessage(heading, text, theme) {
+  window.createNotification({
+    closeOnClick: true,
+    displayCloseButton: false,
+    positionClass: "nfc-top-right",
+    onclick: false,
+    showDuration: 3500,
+    theme: theme,
+  })({
+    title: heading,
+    message: text,
+  });
 }
 
 function hideMessage() {
@@ -120,11 +134,11 @@ function hideMessage() {
 }
 
 function showError(message) {
-  showMessage("Error", message, "red");
+  showMessage("Error", message, "error");
 }
 
 function showWarning(message) {
-  showMessage("Warning", message, "yellow");
+  showMessage("Warning", message, "warning");
 }
 
 function resetState() {
@@ -349,6 +363,7 @@ function showElements(elements) {
 }
 
 async function goto(hash, clickEvent) {
+  menu_close();
   if (!hash) hash = "";
   if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
 
@@ -463,8 +478,8 @@ async function fetchRoutes() {
   hideMessage();
   resetState();
   saveHistory();
-  if (!isValidLocation(elements.inputOrigin.value)) showError("Please select start location");
-  else if (!isValidLocation(elements.inputDestination.value)) showError("Please select destination location");
+  if (!isValidLocation(elements.inputOrigin.value)) showMessage("", "Please select start location", "warning");
+  else if (!isValidLocation(elements.inputDestination.value)) showWarning("Please select destination location");
   else if (elements.inputOrigin.value == elements.inputDestination.value)
     showError("Start and destination location cannot be the same");
   else {
@@ -475,7 +490,7 @@ async function fetchRoutes() {
       plans = await getRoutePlans();
       if (!plans) showError("Failed to fetch schedule information");
       else if (plans.length == 0) {
-        showMessage("", "No itineraries found. Try select another date and/or locations.", "yellow");
+        showMessage("", "No itineraries found. Try select another date and/or locations.", "warning");
         plans = null;
       } else {
         // force sort
@@ -623,17 +638,17 @@ function updateTimelines() {
     return;
   }
 
-  if (elements.tabRoutesTimelines.hidden) return;
+  if (elements.tabRoutesTimelines.hidden || elements.tabRoutesTimelines.clientWidth == 0) return;
   const currentColoring = document.getElementById("color-option").value;
   if (
     tabsState.timelinesSort == currentSort &&
     tabsState.timelinesColoring == currentColoring &&
-    tabsState.screenWidth == screen.width
+    tabsState.timelineWidth == elements.tabRoutesTimelines.clientWidth
   )
     return;
   tabsState.timelinesSort = currentSort;
   tabsState.timelinesColoring = currentColoring;
-  tabsState.screenWidth = screen.width;
+  tabsState.timelineWidth == elements.tabRoutesTimelines.clientWidth;
   d3.select(elements.timeline).select("svg").remove();
   let chartRows = [];
   let coloringKeys = new Set();
@@ -699,7 +714,7 @@ function updateTimelines() {
     colorScale = d3.scaleOrdinal().range(d3.scaleOrdinal(d3.schemeAccent).range()).domain(Array.from(coloringKeys));
   }
 
-  const width = elements.timeline.clientWidth - 40; // FIXME: magic number
+  const width = elements.timeline.clientWidth - 10; // FIXME: magic number (righht margin?)
 
   const chart = d3
     .timeline()
@@ -928,25 +943,37 @@ function inputValue(input) {
   return value;
 }
 
+function outputsize(e) {
+  const target = e[0].target;
+  if (target.clientWidth != 0)
+  {
+    console.log(target, target.clientWidth);
+    window.setTimeout(updateTabsData, 0);
+  }
+ }
+
 function init() {
   window.addEventListener("error", (event) => {
-    showMessage(event.type, event.message, "red");
+    showMessage(event.type, event.message, event.type);
   });
 
   if (screen.orientation) {
     screen.orientation.onchange = (event) => {
-      updateTabsData();
+      window.setTimeout(updateTabsData, 0);
     };
   } else {
     // FIXME: deprecated
     window.onorientationchange = (event) => {
-      updateTabsData();
+      window.setTimeout(updateTabsData, 0);
     };
   }
 
   window.onresize = () => {
-    updateTabsData();
+    window.setTimeout(updateTabsData, 0);
   };
+  new ResizeObserver(outputsize).observe(elements.routesCard);
+  new ResizeObserver(outputsize).observe(elements.timeline);
+  
 
   window.onhashchange = (event) => {
     goto(new URL(event.newURL).hash);
@@ -971,7 +998,7 @@ function init() {
       if (e.code == "Enter") submit();
     });
     elements.timelineSwitch.addEventListener("change", (e) => {
-      showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
+      window.setTimeout(function () {showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table")}, 0);
     });
     for (const input of document.getElementsByTagName("input")) {
       input.default = inputValue(input);
