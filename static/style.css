@@ -77,3 +77,18 @@ input {
 #menu-button.pressed {
   background-color: #f1f1f1; /* light-gray */
 }
+
+input[type=date]{
+  height: 42px;
+  font-size: 16px;
+  vertical-align: middle;
+  background-color: white;
+  padding: 0.5em;
+ }
+  
+
+@supports (-webkit-touch-callout: none) {
+  input[type=date]{
+    height: 40px;
+  }
+}
