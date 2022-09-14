@@ -1,5 +1,5 @@
 git fetch
 git reset --hard HEAD
-git merge origin/deploy
+git merge
 
 sudo systemctl restart ferry-planner.service
