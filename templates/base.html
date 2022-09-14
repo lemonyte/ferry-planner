@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% block head %}
+  <title>{% block title %}Ferry Planner{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" type="image/png" href="/static/favicon.ico" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="/static/w3.css" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/switch.css" />
+  <link rel="stylesheet" href="/static/notifications.css" />
+  {% endblock %}
+</head>
+
+<body class=" w3-white" style="min-width: 360px;">
+  <div class="w3-top w3-card">
+    <div class="w3-bar no-print">
+      {% block navbar %}
+
+
+      <div class="w3-white we-padding-small ">
+        <span id="menu-button" class="w3-xlarge w3-padding w3-serife" style="cursor:pointer; vertical-align: middle;"
+          onclick="menu_toggle()"><b>☰</b></span>
+        <b><i><span class="w3-cell-middle w3-serife w3-large" style="text-transform: uppercase">
+          Ferry Planner
+        </span></i></b>
+      </div>
+
+      <div class="w3-bar">
+        <nav class="w3-sidebar w3-bar-block w3-light-gray no-print w3-large" style="display: none; height: auto;"
+          id="menu">
+          <!-- <button onclick="menu_close()" class="w3-bar-item">
+              Menu
+              <span class="w3-right">&times;</span> -->
+          </button>
+          <a href="/" class="w3-bar-item w3-button">
+            <span class="icon"><i class="fa fa-home"></i></span>
+            Home
+          </a>
+          <a href="/about" class="w3-bar-item w3-button">
+            <span class="icon"><i class="fa fa-info-circle"></i></span>
+            About
+          </a>
+          <a href="/docs" class="w3-bar-item w3-button">
+            <span class="icon"><i class="fa fa-code"></i></span>
+            API
+          </a>
+          <a href="https://github.com/LemonPi314/ferry-planner" class="w3-bar-item w3-button">
+            <span class="icon"><i class="fa fa-github"></i></span>
+            GitHub
+          </a>
+        </nav>
+      </div>
+      <script>
+        var menuButton = document.getElementById("menu-button");
+        var menu = document.getElementById("menu");
+        function menu_toggle() { if (menu.style.display == "none") menu_open(); else menu_close(); }
+        function menu_open() { menu.style.display = "block"; menuButton.classList.add("pressed"); }
+        function menu_close() { menu.style.display = "none"; menuButton.classList.remove("pressed"); }
+        window.addEventListener("click", function (e) {
+          if (!menuButton.contains(e.target))
+            menu_close();
+        })
+      </script>
+
+      {% endblock %}
+    </div>
+  </div>
+  <div style="height: 42px;" class="w3-white">
+    <!-- this is a filler div to push down content below floating title bar -->
+  </div>
+
+  {% block content %}
+  {% endblock %}
+
+  <footer>
+    {% block footer %}
+    {% endblock %}
+  </footer>
+
+  {% block scripts %}
+  <script type="text/javascript" src="/static/notifications.js"></script>
+  {% endblock %}
+</body>

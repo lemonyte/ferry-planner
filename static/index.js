@@ -8,10 +8,8 @@ let locations = {};
 let locationsToId = {};
 let locationNames = [];
 let messageHidden = true;
-let tooltip;
 let currentPlan;
 
-// elements
 const elements = {
   body: document.getElementsByTagName("body"),
   inputForm: document.querySelector("#input-form"),
@@ -27,13 +25,17 @@ const elements = {
   scheduleCard: document.querySelector("#schedule-card"),
   scheduleTable: document.querySelector("#schedule-table"),
   timeline: document.querySelector("#timeline"),
+  timelineSwitch: document.querySelector("#timeline-switch"),
   sortOption: document.querySelector("#sort-option"),
   tabRoutesTable: document.querySelector("#tab-routes-table"),
   tabRoutesTimelines: document.querySelector("#tab-routes-timeline"),
   tabRoutesTableHeaderRow: document.querySelector("#tab-routes-table-header-row"),
   debug: document.querySelector("#debug"),
   inputs: document.querySelector("#input-form").querySelectorAll("input, button"),
+  tooltip: document.querySelector("#tooltip"),
 };
+
+const cards = [elements.inputForm, elements.routesCard, elements.scheduleCard];
 
 const columns = {
   Route: "id",
@@ -100,15 +102,29 @@ function debug(text) {
   elements.debug.textContent = `${elements.debug.textContent}${text}\n`;
 }
 
-function showMessage(heading, text, color) {
-  elements.messageCard.hidden = false;
-  messageHidden = false;
-  if (!heading) heading = "";
-  if (heading.length > 0) heading += ": ";
-  elements.messageCard.querySelector("#message-heading").textContent = heading;
-  elements.messageCard.querySelector("#message-content").textContent = text;
-  elements.messageCard.setAttribute("class", `w3-panel w3-card-4 w3-${color}`);
-  debug(`${heading}${text}`);
+// function showMessage(heading, text, color) {
+//   elements.messageCard.hidden = false;
+//   messageHidden = false;
+//   if (!heading) heading = "";
+//   if (heading.length > 0) heading += ": ";
+//   elements.messageCard.querySelector("#message-heading").textContent = heading;
+//   elements.messageCard.querySelector("#message-content").textContent = text;
+//   elements.messageCard.setAttribute("class", `w3-card-4 w3-margin w3-padding w3-${color}`);
+//   debug(`${heading}${text}`);
+// }
+
+function showMessage(heading, text, theme) {
+  window.createNotification({
+    closeOnClick: true,
+    displayCloseButton: false,
+    positionClass: "nfc-top-right",
+    onclick: false,
+    showDuration: 3500,
+    theme: theme,
+  })({
+    title: heading,
+    message: text,
+  });
 }
 
 function hideMessage() {
@@ -118,11 +134,11 @@ function hideMessage() {
 }
 
 function showError(message) {
-  showMessage("Error", message, "red");
+  showMessage("Error", message, "error");
 }
 
 function showWarning(message) {
-  showMessage("Warning", message, "yellow");
+  showMessage("Warning", message, "warning");
 }
 
 function resetState() {
@@ -180,6 +196,9 @@ function initInput(input) {
   input.addEventListener("focusout", (event) => {
     autoComplete(event.target);
   });
+  input.addEventListener("focusin", (event) => {
+    event.target.setSelectionRange(0, event.target.value.length);
+  });
 }
 
 function onInput() {
@@ -187,7 +206,7 @@ function onInput() {
 }
 
 function escapeRegex(string) {
-  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 }
 
 function autoComplete(input) {
@@ -198,7 +217,7 @@ function autoComplete(input) {
       locationName = locations[value];
     } else {
       // find name containing entered text, this is also the 1st shown in filtered drop down list
-      let r = new RegExp(escapeRegex(value), "i");
+      const r = new RegExp(escapeRegex(value), "i");
       for (const name of locationNames) {
         if (name.search(r) >= 0) {
           locationName = name;
@@ -215,7 +234,7 @@ function autoComplete(input) {
 
 function getOptions(excludeDefaults) {
   let options = {};
-  for (const input of document.getElementsByTagName("input")) {
+  for (const input of elements.inputForm.getElementsByTagName("input")) {
     const value = inputValue(input);
     if (excludeDefaults == true && value == input.default) continue;
     options[input.id] = value;
@@ -293,13 +312,27 @@ function urlToOptions(url) {
   return options;
 }
 
+function trim(str, ch) {
+  var start = 0;
+  var end = str.length;
+  while (start < end && str[start] === ch) ++start;
+  while (end > start && str[end - 1] === ch) --end;
+  return start > 0 || end < str.length ? str.substring(start, end) : str;
+}
+
+function trimEnd(str, ch) {
+  var end = str.length;
+  while (end > 0 && str[end - 1] === ch) --end;
+  return end < str.length ? str.substring(0, end) : str;
+}
+
 function saveHistory(options, hash) {
   if (!options) options = getOptions(true);
   if (hash) options["hash"] = hash;
   url = optionsToUrl(options);
 
   // don't push duplicate states
-  if (url.href == window.location.href.trimEnd("#")) {
+  if (trimEnd(url.href, "#") == trimEnd(window.location.href, "#")) {
     return;
   }
 
@@ -313,9 +346,24 @@ function validatePlans(options) {
   return true;
 }
 
-async function goto(hash, clickEvent) {
-  //debug(`goto: ${hash}`);
+function welcomeClick() {
+  const moreinfo = document.querySelector("#welcome-more-info");
+  const button = document.querySelector("#welcome-more");
+  const lastState = moreinfo.hidden;
+  moreinfo.hidden = !lastState;
+  button.textContent = `see ${lastState ? "less" : "more"}`;
+}
 
+function showElements(elements) {
+  for (const c of cards) {
+    const show = elements.includes(c);
+    c.hidden = !show;
+    if (show) lastElement = c;
+  }
+}
+
+async function goto(hash, clickEvent) {
+  menu_close();
   if (!hash) hash = "";
   if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
 
@@ -347,6 +395,7 @@ async function goto(hash, clickEvent) {
     }
   }
 
+  if (plans && plans.length == 0) plans = null;
   if (plans == null) hash = "";
   if (hash == "") currentPlan = null;
 
@@ -356,10 +405,33 @@ async function goto(hash, clickEvent) {
     if (currentPlan && row.plan == currentPlan) row.classList.add("selected-row");
   }
 
-  elements.scheduleCard.hidden = currentPlan == null || hash == "routes";
-  elements.routesCard.hidden = hash != "routes";
-  elements.inputForm.hidden = hash != "";
+  if (hash == "") {
+    showElements([elements.inputForm]);
+  } else if (hash == "routes") {
+    const depart_time = new Date(plans[0].depart_time.substring(0, 16));
+    elements.routesCard.querySelector("#routes-card-header").innerHTML =
+      `<div class='card-header'>${elements.inputOrigin.value} to ${elements.inputDestination.value}</div>` +
+      `<div class='card-header-date'>${depart_time.toDateString()}</div>`;
+    showElements([/*elements.inputForm,*/ elements.routesCard]);
+  } else {
+    showElements([elements.scheduleCard]);
+    // window.scrollTo(0,0);
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant",
+    });
+    // elements.scheduleCard.scrollIntoView({
+    //   block: "start",
+    //   inline: "nearest",
+    //   behavior: "smooth",
+    // });
+  }
 
+  /*  elements.inputForm.hidden = hash != "" && hash != "routes";
+  elements.routesCard.hidden = hash != "routes";
+  elements.scheduleCard.hidden = currentPlan == null || hash == "routes";
+*/
   //if (window.location.hash != hash)
   //  window.location.hash = hash;
   saveHistory(null, hash);
@@ -406,18 +478,19 @@ async function fetchRoutes() {
   hideMessage();
   resetState();
   saveHistory();
-  if (!isValidLocation(elements.inputOrigin.value)) showError("Please select start location");
-  else if (!isValidLocation(elements.inputDestination.value)) showError("Please select destination location");
+  if (!isValidLocation(elements.inputOrigin.value)) showMessage("", "Please select start location", "warning");
+  else if (!isValidLocation(elements.inputDestination.value)) showWarning("Please select destination location");
   else if (elements.inputOrigin.value == elements.inputDestination.value)
     showError("Start and destination location cannot be the same");
   else {
     try {
+      elements.inputForm.hidden = true;
       elements.loadingSpinner.hidden = false;
-      for (const e of elements.inputs) e.disabled = true;
+      //for (const e of elements.inputs) e.disabled = true;
       plans = await getRoutePlans();
       if (!plans) showError("Failed to fetch schedule information");
       else if (plans.length == 0) {
-        showMessage("", "No itineraries found. Try select another date and/or locations.", "yellow");
+        showMessage("", "No itineraries found. Try select another date and/or locations.", "warning");
         plans = null;
       } else {
         // force sort
@@ -432,7 +505,7 @@ async function fetchRoutes() {
       showError(error.message);
     } finally {
       elements.loadingSpinner.hidden = true;
-      for (const e of elements.inputs) e.disabled = false;
+      //for (const e of elements.inputs) e.disabled = false;
     }
   }
 }
@@ -442,7 +515,7 @@ function secondsToString(seconds) {
   hours = dateObj.getUTCHours();
   minutes = dateObj.getUTCMinutes();
   seconds = dateObj.getSeconds();
-  let timeString =
+  const timeString =
     hours.toString().padStart(2, "0") +
     ":" +
     minutes.toString().padStart(2, "0") +
@@ -560,18 +633,23 @@ function updateRoutesTable() {
 }
 
 function updateTimelines() {
-  if (elements.tabRoutesTimelines.hidden) return;
+  if (!d3) {
+    elements.timeline.innerHTML = "<h4>D3 library not found</h4>";
+    return;
+  }
+
+  if (elements.tabRoutesTimelines.hidden || elements.tabRoutesTimelines.clientWidth == 0) return;
   const currentColoring = document.getElementById("color-option").value;
   if (
     tabsState.timelinesSort == currentSort &&
     tabsState.timelinesColoring == currentColoring &&
-    tabsState.screenWidth == screen.width
+    tabsState.timelineWidth == elements.tabRoutesTimelines.clientWidth
   )
     return;
   tabsState.timelinesSort = currentSort;
   tabsState.timelinesColoring = currentColoring;
-  tabsState.screenWidth = screen.width;
-  d3.select("#timeline").select("svg").remove();
+  tabsState.timelineWidth == elements.tabRoutesTimelines.clientWidth;
+  d3.select(elements.timeline).select("svg").remove();
   let chartRows = [];
   let coloringKeys = new Set();
   for (const plan of plans) {
@@ -597,7 +675,7 @@ function updateTimelines() {
             if (landGroup && landGroup.indexOf("(") > 0)
               landGroup = landGroup.substring(0, landGroup.indexOf("(")).trim();
 
-            //label = location.id.length == 3 ? location.id : location.name;
+            // label = location.id.length == 3 ? location.id : location.name;
           }
         }
         if (activityInfo.icon) label = `<tspan class="${activityInfo.iconClass}">${activityInfo.icon}<tspan>` + label;
@@ -636,7 +714,9 @@ function updateTimelines() {
     colorScale = d3.scaleOrdinal().range(d3.scaleOrdinal(d3.schemeAccent).range()).domain(Array.from(coloringKeys));
   }
 
-  let chart = d3
+  const width = elements.timeline.clientWidth - 10; // FIXME: magic number (righht margin?)
+
+  const chart = d3
     .timeline()
     .colors(colorScale)
     .colorProperty("_color")
@@ -645,18 +725,18 @@ function updateTimelines() {
     .tickFormat({
       format: d3.timeFormat("%I %p"),
       tickTime: d3.timeHours,
+      numTicks: width / 100,
       tickInterval: 3,
-      tickSize: 1,
+      tickSize: 4,
     })
     .stack();
 
-  const width = elements.timeline.clientWidth - 40; // FIXME: magic number
-  const svg = d3.select("#timeline").append("svg").attr("width", width).datum(chartRows).call(chart);
+  const svg = d3.select(elements.timeline).append("svg").attr("width", width).datum(chartRows).call(chart);
 
   updateLegend(chart, coloringKeys, currentColoring, document.getElementById("timeline-legend"));
 
   svg.selectAll(".timeline-label").html((d, i) => {
-    return `<a href="#${plans[i].hash}" class="button2" style="fill:blue;border: 3px solid red;filter: drop-shadow();">Route ${plans[i].id}</a>`;
+    return `<a href="#${plans[i].hash}">Route ${plans[i].id}</a>`;
   });
 
   svg
@@ -666,7 +746,7 @@ function updateTimelines() {
       assignTooltip(e);
       const d = e.__data__;
       if (d && d._label) e.innerHTML = d._label;
-      //if (e.getClientRects()[0].width < e.textLength.baseVal.value)
+      // if (e.getClientRects()[0].width < e.textLength.baseVal.value)
       //    e.innerHTML = '';
     });
 
@@ -694,7 +774,7 @@ function updateLegend(chart, coloringKeys, currentColoring, legendElement) {
 }
 
 function assignTooltip(element) {
-  if (!tooltip) tooltip = d3.select("#tooltip");
+  const tooltip = d3.select(elements.tooltip);
   element.onmousemove = (event) => {
     let n = event.target;
     if (n.nodeName == "tspan") n = n.parentNode;
@@ -709,13 +789,13 @@ function assignTooltip(element) {
     let o = event.target.__data__;
     if (!o) o = event.target.parentNode.__data__;
     if (!o || !o.description) return;
-    //const rect = n.getBoundingClientRect();
+    // const rect = n.getBoundingClientRect();
     tooltip
       .html(timeToString(o.startingTime) + " " + o.description)
       .transition()
       .duration(100)
-      //.style('left', (rect.x) + 'px')
-      //.style('top', (rect.bottom + 3) + 'px')
+      // .style('left', (rect.x) + 'px')
+      // .style('top', (rect.bottom + 3) + 'px')
       .style("opacity", 1);
   };
 }
@@ -730,20 +810,19 @@ function onPlanSelected(id) {
     elements.scheduleTable.removeChild(elements.scheduleTable.firstChild);
   }
 
-  // schedule.appendChild(node = document.createElement('div').className('schedule-header'));
-  document.getElementById("schedule-header").textContent = `${plan.origin.name} to ${plan.destination.name}`;
-  // schedule.appendChild(node = document.createElement('div').className('schedule-via'));
-  document.getElementById("schedule-via").textContent =
+  const depart_time = new Date(plan.depart_time.substring(0, 16));
+  elements.scheduleCard.querySelector("#schedule-header").innerHTML =
+    `<div class='card-header'>${plan.origin.name} to ${plan.destination.name}</div>` +
+    `<div class='card-header-date'>${depart_time.toDateString()} at ${timeToString(depart_time)}</div>`;
+  elements.scheduleCard.querySelector("#schedule-via").textContent =
     "via " + [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))].join(", ");
 
-  const depart_time = new Date(plan.depart_time.substring(0, 16));
-  document.getElementById("schedule-details").innerHTML =
-    `Route ${plan.id}.` +
-    ` Departing:&nbsp;<strong>${depart_time.toDateString()} at ${timeToString(depart_time)}</strong>.` +
-    ` Total time:&nbsp;<strong>${durationToString(plan.duration * 1000)}</strong>.` +
-    ` Driving distance:&nbsp;${plan.driving_distance.toFixed(1)} km.`;
-  // ` <a href="${plan.map_url}" target="_blank">View on Google Maps</a>`;
-  const scheduleMap = document.getElementById("schedule-map");
+  elements.scheduleCard.querySelector("#schedule-details").innerHTML =
+    //`Route ${plan.id}.` +
+    //` Departing:&nbsp;<strong>${depart_time.toDateString()} at ${timeToString(depart_time)}</strong>.` +
+    `Total&nbsp;time:&nbsp;<strong>${durationToString(plan.duration * 1000)}</strong>.` +
+    ` Driving&nbsp;distance:&nbsp;${plan.driving_distance.toFixed(1)}&nbsp;km.`;
+  const scheduleMap = elements.scheduleCard.querySelector("#schedule-map");
   if (plan.map_url && plan.map_url.length > 0) {
     scheduleMap.href = plan.map_url;
     scheduleMap.hidden = false;
@@ -764,7 +843,7 @@ function onPlanSelected(id) {
 
       let desc = t.description;
       if (s.schedule_url && t.type == "TRAVEL" && t.start != t.end)
-        desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 8px!important" href="${s.schedule_url}" target="_blank"><i class="fa fa-list-alt"></i>&nbsp;Schedule</a>`;
+        desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 5px!important" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
       td = document.createElement("td");
       td.innerHTML = desc;
       tr.appendChild(td);
@@ -777,11 +856,6 @@ function onPlanSelected(id) {
       tr.appendChild(td);
     }
   }
-  elements.scheduleCard.scrollIntoView({
-    block: "start",
-    inline: "nearest",
-    behavior: "smooth",
-  });
 }
 
 function sortPlans(sortBy) {
@@ -806,7 +880,7 @@ function showTab(id) {
     currentTab.hidden = true;
   }
   currentTab = document.getElementById(id);
-  currentTab.hidden = false; // .style.display = 'block'/'none';
+  currentTab.hidden = false;
   updateTabsData();
 }
 
@@ -842,7 +916,7 @@ async function onShare() {
     if (!window.navigator.canShare) throw new Error("Browser doesn't support sharing");
     if (!window.navigator.canShare(data)) throw new Error("Browser cannot share data");
     await window.navigator.share(data);
-  } catch (e) {
+  } catch (error) {
     await navigator.clipboard.writeText(window.location.href);
     alert("Link copied to clipboard.");
   }
@@ -869,32 +943,44 @@ function inputValue(input) {
   return value;
 }
 
+function outputsize(e) {
+  const target = e[0].target;
+  if (target.clientWidth != 0)
+  {
+    console.log(target, target.clientWidth);
+    window.setTimeout(updateTabsData, 0);
+  }
+ }
+
 function init() {
   window.addEventListener("error", (event) => {
-    showMessage(event.type, event.message, "red");
+    showMessage(event.type, event.message, event.type);
   });
 
   if (screen.orientation) {
     screen.orientation.onchange = (event) => {
-      updateTabsData();
+      window.setTimeout(updateTabsData, 0);
     };
   } else {
-    // DEPRECATED
+    // FIXME: deprecated
     window.onorientationchange = (event) => {
-      updateTabsData();
+      window.setTimeout(updateTabsData, 0);
     };
   }
 
   window.onresize = () => {
-    updateTabsData();
+    window.setTimeout(updateTabsData, 0);
+  };
+  new ResizeObserver(outputsize).observe(elements.routesCard);
+  new ResizeObserver(outputsize).observe(elements.timeline);
+  
+
+  window.onhashchange = (event) => {
+    goto(new URL(event.newURL).hash);
   };
 
-  window.onhashchange = (e) => {
-    goto(new URL(e.newURL).hash);
-  };
-
-  window.onpopstate = (e) => {
-    applyOptions(e.state ?? urlToOptions(window.location));
+  window.onpopstate = (event) => {
+    applyOptions(event.state ?? urlToOptions(window.location));
   };
 
   resetState();
@@ -908,6 +994,12 @@ function init() {
     elements.inputDate.setAttribute("min", today);
     initInput(elements.inputOrigin);
     initInput(elements.inputDestination);
+    elements.inputDate.addEventListener("keypress", (e) => {
+      if (e.code == "Enter") submit();
+    });
+    elements.timelineSwitch.addEventListener("change", (e) => {
+      window.setTimeout(function () {showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table")}, 0);
+    });
     for (const input of document.getElementsByTagName("input")) {
       input.default = inputValue(input);
     }

@@ -1,15 +1,11 @@
-.timeline-tooltip {
-  line-height: 1;
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #ffffff;
-}
-
 /* prevent form zoom on iOS */
 input {
   font-size: 16px;
+}
+
+.icon {
+  padding-left: 3px;
+  padding-right: 5px;
 }
 
 .hover-underline:hover {
@@ -24,6 +20,15 @@ input {
 
 .selected-row {
   background-color: deepskyblue !important;
+}
+
+.timeline-tooltip {
+  line-height: 1;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
 }
 
 @media print {
@@ -59,4 +64,31 @@ input {
     background-position: center; 
     min-width: 350px;
   }    
+}
+
+.card-header {
+  font-size: 24px;
+}
+
+.card-header-date {
+  font-size: 16px;
+}
+
+#menu-button.pressed {
+  background-color: #f1f1f1; /* light-gray */
+}
+
+input[type=date]{
+  height: 42px;
+  font-size: 16px;
+  vertical-align: middle;
+  background-color: white;
+  padding: 0.5em;
+ }
+  
+
+@supports (-webkit-touch-callout: none) {
+  input[type=date]{
+    height: 40px;
+  }
 }
