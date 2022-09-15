@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from bcferries import classes, find_routes, get_schedule, load_data, locations, make_route_plans
+from bcferries import classes, find_routes, load_data, locations, make_route_plans, schedule_cache
 
 app = FastAPI()
 app.mount('/static', StaticFiles(directory='static'), name='static')
@@ -15,6 +15,7 @@ templates = Jinja2Templates(directory='templates')
 @app.on_event('startup')
 async def init():
     load_data('data/data.json')
+    schedule_cache._refresh_thread.start()
 
 
 @app.get('/', response_class=HTMLResponse)
@@ -44,7 +45,7 @@ async def api_locations():
 
 @app.post('/api/schedule', response_model=classes.FerrySchedule)
 async def api_schedule(options: classes.ScheduleOptions):
-    return get_schedule(options.origin, options.destination, options.date)
+    return schedule_cache.get(options.origin, options.destination, options.date)
 
 
 @app.post('/api/routeplans', response_model=list[classes.RoutePlan])

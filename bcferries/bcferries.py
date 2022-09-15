@@ -1,7 +1,9 @@
-import os
 import json
+import os
+import time
 from datetime import datetime, timedelta
-from typing import Optional, Union
+from threading import Thread
+from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -23,16 +25,12 @@ from .classes import (
     LocationType,
     Route,
     RoutePlan,
-    RoutePlansOptions,
     RoutePlanSegment,
+    RoutePlansOptions,
     Terminal,
     TimeInterval,
     TimeIntervalType,
 )
-
-locations: dict[LocationId, Location] = {}
-connections: dict[ConnectionId, Connection] = {}
-location_connections: dict[LocationId, ConnectionsCache] = {}
 
 
 def load_data(path: str):
@@ -188,7 +186,7 @@ def add_plan_segment(
         if connection.type == ConnectionType.FERRY:
             depature_terminal = connection.origin
             day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
-            schedule = get_schedule(id_from, id_to, day)
+            schedule = schedule_cache.get(id_from, id_to, day)
             for sailing in schedule.sailings:
                 depart_time = day + datetime_to_timedelta(
                     datetime.strptime(sailing.depart_time, '%H:%M:%S')
@@ -341,35 +339,76 @@ def parse_table(table: Tag) -> list[FerrySailing]:
     return sailings
 
 
-def get_schedule(origin_id: str, destination_id: str, date: Optional[Union[str, datetime]] = None) -> FerrySchedule:
-    route = f'{origin_id}-{destination_id}'
-    if not date:
-        schedule_date = datetime.now().date()
-    elif isinstance(date, str):
-        schedule_date = datetime.strptime(date, '%m/%d/%Y').date()
-    else:
-        schedule_date = date.date()
-    cache_dir = f'data/cache/{route}'
-    filepath = f"{cache_dir}/{schedule_date.strftime('%Y-%m-%d')}.json"
-    if os.path.exists(filepath):
-        last_modified = os.path.getmtime(filepath)
-        time_difference = datetime.now() - datetime.fromtimestamp(last_modified)
-        if time_difference.total_seconds() < 24 * 60 * 60:  # refresh once a day
-            schedule = FerrySchedule.parse_file(filepath)
+class ScheduleCache:
+    def __init__(self, path: str = 'data/cache'):
+        self.path = path
+        self.refresh_interval = 60 * 60 * 24
+        self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
+        os.makedirs(self.path, mode=0o755, exist_ok=True)
+
+    def _get_filepath(self, origin: str, destination: str, date: datetime):
+        return f'{self.path}/{origin}-{destination}/{date.date()}.json'
+
+    def get(self, origin: str, destination: str, date: datetime) -> FerrySchedule:
+        filepath = self._get_filepath(origin, destination, date)
+        if os.path.exists(filepath):
+            return FerrySchedule.parse_file(filepath)
+        else:
+            schedule = self.download_schedule(origin, destination, date)
+            self.put(schedule)
             return schedule
-    url = f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={schedule_date.strftime('%m/%d/%Y')}"
-    print(f'fetching url {url}')
-    doc = requests.get(url).text.replace('\u2060', '')
-    soup = BeautifulSoup(markup=doc, features='html.parser')
-    table = soup.find('table', id='dailyScheduleTableOnward')
-    schedule = FerrySchedule(
-        date=schedule_date.isoformat(),
-        origin=origin_id,
-        destination=destination_id,
-        sailings=parse_table(table),  # type: ignore
-        url=url,
-    )
-    os.makedirs(cache_dir, mode=0o755, exist_ok=True)
-    with open(filepath, 'w') as file:
-        file.write(schedule.json(indent=4))
-    return schedule
+
+    def put(self, schedule: FerrySchedule):
+        filepath = self._get_filepath(schedule.origin, schedule.destination, schedule.date)
+        dirpath = os.path.dirname(filepath)
+        if not os.path.exists(dirpath):
+            os.makedirs(dirpath, mode=0o755, exist_ok=True)
+        with open(filepath, 'w') as file:
+            file.write(schedule.json(indent=4))
+
+    def download_schedule(self, origin: str, destination: str, date: datetime) -> FerrySchedule:
+        route = f'{origin}-{destination}'
+        url = f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
+        print(f'fetching url: {url}')
+        doc = requests.get(url).text.replace('\u2060', '')
+        soup = BeautifulSoup(markup=doc, features='html.parser')
+        table = soup.find('table', id='dailyScheduleTableOnward')
+        schedule = FerrySchedule(
+            date=date,
+            origin=origin,
+            destination=destination,
+            sailings=parse_table(table),  # type: ignore
+            url=url,
+        )
+        return schedule
+
+    def refresh_cache(self):
+        ferry_connections = (c for c in connections.values() if c.type == ConnectionType.FERRY)
+        cache_ahead_days = 3
+        current_date = datetime.now().date()
+        current_date = datetime(current_date.year, current_date.month, current_date.day)
+        dates = []
+        for i in range(cache_ahead_days):
+            dates.append(current_date + timedelta(days=i))
+        for subdir, dirnames, filenames in os.walk(self.path):
+            for filename in filenames:
+                date = datetime.fromisoformat('.'.join(filename.split('.')[:-1]))
+                if date not in dates:
+                    os.remove(f'{subdir}/{filename}')
+        for connection in ferry_connections:
+            for date in dates:
+                filepath = self._get_filepath(connection.origin.id, connection.destination.id, date)
+                if not os.path.exists(filepath):
+                    schedule = self.download_schedule(connection.origin.id, connection.destination.id, date)
+                    self.put(schedule)
+
+    def _refresh_task(self):
+        while True:
+            self.refresh_cache()
+            time.sleep(self.refresh_interval)
+
+
+locations: dict[LocationId, Location] = {}
+connections: dict[ConnectionId, Connection] = {}
+location_connections: dict[LocationId, ConnectionsCache] = {}
+schedule_cache = ScheduleCache()

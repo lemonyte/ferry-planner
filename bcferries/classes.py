@@ -47,7 +47,7 @@ class FerrySailing(BaseModel):
 
 
 class FerrySchedule(BaseModel):
-    date: str
+    date: datetime
     origin: str
     destination: str
     sailings: list[FerrySailing]
