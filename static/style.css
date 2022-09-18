@@ -3,6 +3,20 @@ input {
   font-size: 16px;
 }
 
+input[type="date"] {
+  height: 42px;
+  font-size: 16px;
+  vertical-align: middle;
+  background-color: white;
+  padding: 0.5em;
+}
+
+@supports (-webkit-touch-callout: none) {
+  input[type="date"] {
+    height: 40px;
+  }
+}
+
 .icon {
   padding-left: 3px;
   padding-right: 5px;
@@ -36,59 +50,50 @@ input {
   .no-print * {
     display: none !important;
   }
-}
 
-/* @media (any-pointer: none) {
-  .hide-no-poiner,
-  .hide-no-poiner * {
-    display: none !important;
-  }
-} */
-
-@media (max-width: 512px) {
-  .m-font75 {
-    font-size: 75%;
-  }
-
-  .m-hide-c {
-    display: none;
+/* https://stackoverflow.com/a/46302531 */
+  * {
+    -webkit-print-color-adjust: exact !important; /*Chrome, Safari */
+    color-adjust: exact !important; /*Firefox*/
   }
 }
 
 @media screen {
   .background-image {
-    background-image: url(/static/bc-ferries-1920.jpg); 
-    background-attachment: fixed; 
-    background-size: cover; 
-    background-repeat: no-repeat; 
-    background-position: center; 
+    background-image: url(/static/bc-ferries-1920.jpg);
+    background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
     min-width: 350px;
-  }    
+  }
 }
 
 .card-header {
   font-size: 24px;
+  padding-top: 4px;
 }
 
 .card-header-date {
   font-size: 16px;
+  padding-bottom: 8px;
 }
 
 #menu-button.pressed {
   background-color: #f1f1f1; /* light-gray */
 }
 
-input[type=date]{
-  height: 42px;
-  font-size: 16px;
-  vertical-align: middle;
-  background-color: white;
-  padding: 0.5em;
- }
-  
+.fp-table {
+  border-top: 1px solid #ccc !important ;
+}
 
-@supports (-webkit-touch-callout: none) {
-  input[type=date]{
-    height: 40px;
+@media (min-width: 993px) {
+  .fp-table-container {
+    padding: 0px 8px 8px 8px !important;
+  }
+  .fp-table {
+    border: 1px solid #ccc !important ;
   }
 }
+
+

@@ -407,12 +407,16 @@ async function goto(hash, clickEvent) {
 
   if (hash == "") {
     showElements([elements.inputForm]);
+    document.title = "Ferry Planner";
   } else if (hash == "routes") {
     const depart_time = new Date(plans[0].depart_time.substring(0, 16));
     elements.routesCard.querySelector("#routes-card-header").innerHTML =
       `<div class='card-header'>${elements.inputOrigin.value} to ${elements.inputDestination.value}</div>` +
       `<div class='card-header-date'>${depart_time.toDateString()}</div>`;
     showElements([/*elements.inputForm,*/ elements.routesCard]);
+    document.title = `${elements.inputOrigin.value} to ${
+      elements.inputDestination.value
+    } on ${depart_time.toDateString()}`;
   } else {
     showElements([elements.scheduleCard]);
     // window.scrollTo(0,0);
@@ -426,6 +430,9 @@ async function goto(hash, clickEvent) {
     //   inline: "nearest",
     //   behavior: "smooth",
     // });
+    document.title = `${elements.inputOrigin.value} to ${elements.inputDestination.value} on ${new Date(
+      currentPlan.depart_time
+    ).toDateString()} at ${timeToString(currentPlan.depart_time)}`;
   }
 
   /*  elements.inputForm.hidden = hash != "" && hash != "routes";
@@ -589,7 +596,7 @@ function updateRoutesTable() {
 
     let td;
     td = document.createElement("td");
-    td.textContent = `Route ${plan.id}`;
+    td.innerHTML = `Route&nbsp;${plan.id}`;
     tr.appendChild(td);
 
     td = document.createElement("td");
@@ -845,6 +852,10 @@ function onPlanSelected(id) {
       if (s.schedule_url && t.type == "TRAVEL" && t.start != t.end)
         desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 5px!important" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
       td = document.createElement("td");
+      if (t.description.includes('Ferry'))
+      {
+        desc = `<span class="icon"><i class="fa fa-ship w3-text-blue"></i></span> ` + desc;
+      }
       td.innerHTML = desc;
       tr.appendChild(td);
 
@@ -890,13 +901,13 @@ function toggleShow(id) {
 }
 
 function onPrint(card) {
-  elements.routesCard.classList.add("no-print");
-  elements.scheduleCard.classList.add("no-print");
-  document.getElementById(card).classList.remove("no-print");
+  //elements.routesCard.classList.add("no-print");
+  //elements.scheduleCard.classList.add("no-print");
+  //document.getElementById(card).classList.remove("no-print");
   print();
 }
 
-async function onShare() {
+function onShare() {
   try {
     const data = {
       url: window.location.href,
@@ -915,10 +926,20 @@ async function onShare() {
 
     if (!window.navigator.canShare) throw new Error("Browser doesn't support sharing");
     if (!window.navigator.canShare(data)) throw new Error("Browser cannot share data");
-    await window.navigator.share(data);
+    window.navigator.share(data).then();
   } catch (error) {
-    await navigator.clipboard.writeText(window.location.href);
-    alert("Link copied to clipboard.");
+    if (!navigator.clipboard) {
+      showError(`Cannot copy link to clipboard`);
+    } else {
+      navigator.clipboard
+        .writeText(window.location.href)
+        .then(() => {
+          alert("Link copied to clipboard");
+        })
+        .catch((r) => {
+          showError(`Cannot copy link to clipboard: ${r}`);
+        });
+    }
   }
 }
 
@@ -945,12 +966,11 @@ function inputValue(input) {
 
 function outputsize(e) {
   const target = e[0].target;
-  if (target.clientWidth != 0)
-  {
+  if (target.clientWidth != 0) {
     console.log(target, target.clientWidth);
     window.setTimeout(updateTabsData, 0);
   }
- }
+}
 
 function init() {
   window.addEventListener("error", (event) => {
@@ -973,7 +993,6 @@ function init() {
   };
   new ResizeObserver(outputsize).observe(elements.routesCard);
   new ResizeObserver(outputsize).observe(elements.timeline);
-  
 
   window.onhashchange = (event) => {
     goto(new URL(event.newURL).hash);
@@ -982,6 +1001,12 @@ function init() {
   window.onpopstate = (event) => {
     applyOptions(event.state ?? urlToOptions(window.location));
   };
+
+  // for insecure context clipboard and sharing are unavailable
+  if (!navigator.clipboard) {
+    elements.scheduleCard.querySelector("#share-button").style.display = "none";
+   }
+
 
   resetState();
   loadLocations();
@@ -998,7 +1023,9 @@ function init() {
       if (e.code == "Enter") submit();
     });
     elements.timelineSwitch.addEventListener("change", (e) => {
-      window.setTimeout(function () {showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table")}, 0);
+      window.setTimeout(function () {
+        showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
+      }, 0);
     });
     for (const input of document.getElementsByTagName("input")) {
       input.default = inputValue(input);

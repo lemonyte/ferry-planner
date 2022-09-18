@@ -15,13 +15,13 @@
   {% endblock %}
 </head>
 
-<body class=" w3-white" style="min-width: 360px;">
+<body class="w3-white background-image" style="min-width: 360px;">
   <div class="w3-top w3-card">
-    <div class="w3-bar no-print">
+    <div class="w3-bar">
       {% block navbar %}
 
 
-      <div class="w3-white we-padding-small ">
+      <div class="w3-white no-print">
         <span id="menu-button" class="w3-xlarge w3-padding w3-serife" style="cursor:pointer; vertical-align: middle;"
           onclick="menu_toggle()"><b>☰</b></span>
         <b><i><span class="w3-cell-middle w3-serife w3-large" style="text-transform: uppercase">
@@ -30,8 +30,7 @@
       </div>
 
       <div class="w3-bar">
-        <nav class="w3-sidebar w3-bar-block w3-light-gray no-print w3-large" style="display: none; height: auto;"
-          id="menu">
+        <nav id="menu" class="w3-sidebar w3-bar-block w3-light-gray no-print w3-large w3-card" style="display: none; height: auto;">
           <!-- <button onclick="menu_close()" class="w3-bar-item">
               Menu
               <span class="w3-right">&times;</span> -->
@@ -69,12 +68,14 @@
       {% endblock %}
     </div>
   </div>
-  <div style="height: 42px;" class="w3-white">
+  <div style="height: 42px;" class="">
     <!-- this is a filler div to push down content below floating title bar -->
   </div>
 
+  <div id="content" class="w3-auto">
   {% block content %}
   {% endblock %}
+  </div>
 
   <footer>
     {% block footer %}
