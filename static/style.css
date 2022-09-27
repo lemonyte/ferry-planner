@@ -87,13 +87,26 @@ input[type="date"] {
   border-top: 1px solid #ccc !important ;
 }
 
-@media (min-width: 993px) {
-  .fp-table-container {
-    padding: 0px 8px 8px 8px !important;
-  }
-  .fp-table {
-    border: 1px solid #ccc !important ;
-  }
+.fp-input-text {
+  float: left;
+  width: 100%;
+}
+
+.fp-input-non-text {
+   width: 100%;
+}
+
+@media (min-width: 600px) {
+  .fp-input-text { width: 49.9999%; }
 }
 
 
+@media (min-width: 993px) { 
+  .fp-table-container { padding: 0px 8px 8px 8px !important; }
+  .fp-table { border: 1px solid #ccc !important ; }
+}
+
+@media (min-width: 1120px) { 
+  .fp-input-text { width: 33.3333%; }
+  .fp-input-non-text { width: 33.3333%;}
+}
