@@ -463,6 +463,7 @@ async function getRoutePlans() {
         via.add(lg);
       }
     }
+    if (via.size > 1) via.delete('Mainland');
     if (via.size < 2) plan.via = Array.from(via);
     if (via.size > 1) plan.via = [Array.from(via)[1]];
     plan.origin = plan.segments[0].connection.origin;
@@ -999,6 +1000,9 @@ function init() {
   };
 
   window.onpopstate = (event) => {
+    if (!locations) { 
+      loadLocations().then(() => {});
+    }
     applyOptions(event.state ?? urlToOptions(window.location));
   };
 
