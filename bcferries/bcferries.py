@@ -344,6 +344,7 @@ class ScheduleCache:
         self.path = path
         self.refresh_interval = 60 * 60 * 24
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
+        self.cache = {}
         os.makedirs(self.path, mode=0o755, exist_ok=True)
 
     def _get_filepath(self, origin: str, destination: str, date: datetime):
@@ -351,8 +352,14 @@ class ScheduleCache:
 
     def get(self, origin: str, destination: str, date: datetime) -> FerrySchedule:
         filepath = self._get_filepath(origin, destination, date)
+        schedule = self.cache.get(filepath, None)
+        if schedule:
+            return schedule
+        print(filepath)
         if os.path.exists(filepath):
-            return FerrySchedule.parse_file(filepath)
+            schedule = FerrySchedule.parse_file(filepath)
+            self.cache[filepath] = schedule
+            return schedule
         else:
             schedule = self.download_schedule(origin, destination, date)
             self.put(schedule)
@@ -360,6 +367,7 @@ class ScheduleCache:
 
     def put(self, schedule: FerrySchedule):
         filepath = self._get_filepath(schedule.origin, schedule.destination, schedule.date)
+        self.cache[filepath] = schedule
         dirpath = os.path.dirname(filepath)
         if not os.path.exists(dirpath):
             os.makedirs(dirpath, mode=0o755, exist_ok=True)
@@ -395,6 +403,7 @@ class ScheduleCache:
                 date = datetime.fromisoformat('.'.join(filename.split('.')[:-1]))
                 if date not in dates:
                     os.remove(f'{subdir}/{filename}')
+        self.cache = {}
         for connection in ferry_connections:
             for date in dates:
                 filepath = self._get_filepath(connection.origin.id, connection.destination.id, date)
