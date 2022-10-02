@@ -1,6 +1,7 @@
 import hashlib
 from copy import deepcopy
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from enum import Enum
 from typing import Literal, Optional, Union
 from urllib.parse import quote
@@ -223,6 +224,17 @@ class RoutePlan(BaseModel):
             for t in first_segment.times:
                 t.start += free_time
                 t.end += free_time
+        
+        if first_segment.connection.type == ConnectionType.CAR and len(segments) == 1:
+            tz = ZoneInfo("America/Vancouver")
+            now = datetime.now().astimezone()
+            local_offset = now.astimezone().utcoffset()
+            bc_offset = tz.utcoffset(now)
+            tz_diff = bc_offset - local_offset
+            current_time_bc = datetime.now() - first_segment.times[0].start + tz_diff
+            for t in first_segment.times:
+                t.start += current_time_bc
+                t.end += current_time_bc
 
         # add free time to segments
         for i in range(len(segments) - 1):
