@@ -7,7 +7,7 @@ This website is a tool that calculates possible routes between two destinations 
 - [Python 3.9](https://www.python.org/downloads/) or higher
 - [`fastapi`](https://pypi.org/project/fastapi/)
 - [`jinja2`](https://pypi.org/project/Jinja2/)
-- [`requests`](https://pypi.org/project/requests/)
+- [`httpx`](https://pypi.org/project/httpx/)
 - [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)
 
 ## Usage
