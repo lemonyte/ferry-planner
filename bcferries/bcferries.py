@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from threading import Thread
 from typing import Optional
 
-import requests
+import httpx
 from bs4 import BeautifulSoup, Tag
 
 from .classes import (
@@ -378,7 +378,7 @@ class ScheduleCache:
         route = f'{origin}-{destination}'
         url = f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
         print(f'fetching url: {url}')
-        doc = requests.get(url).text.replace('\u2060', '')
+        doc = httpx.get(url).text.replace('\u2060', '')
         soup = BeautifulSoup(markup=doc, features='html.parser')
         table = soup.find('table', id='dailyScheduleTableOnward')
         schedule = FerrySchedule(
