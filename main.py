@@ -68,4 +68,4 @@ async def api_update():
 
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exception):
-    return templates.TemplateResponse('404.html', {'request': request})
+    return templates.TemplateResponse('404.html', {'request': request}, 404)
