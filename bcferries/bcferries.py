@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import time
@@ -365,7 +366,26 @@ class ScheduleCache:
         )
         return schedule
 
-    def refresh_cache(self):
+    async def download_schedule_async(self, origin: str, destination: str, date: datetime, *, client: httpx.AsyncClient) -> FerrySchedule:
+        route = f"{origin}-{destination}"
+        url = (
+            f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
+        )
+        print(f"[INFO] fetching schedule: {route}:{date.strftime('%m/%d/%Y')}")
+        doc = (await client.get(url)).text.replace("\u2060", "")
+        print(f"[INFO] fetched schedule: {route}:{date.strftime('%m/%d/%Y')}")
+        soup = BeautifulSoup(markup=doc, features="html.parser")
+        table = soup.find("table", id="dailyScheduleTableOnward")
+        schedule = FerrySchedule(
+            date=date,
+            origin=origin,
+            destination=destination,
+            sailings=parse_table(table),  # type: ignore
+            url=url,
+        )
+        return schedule
+
+    async def refresh_cache(self):
         ferry_connections = (c for c in connections.values() if c.type == ConnectionType.FERRY)
         cache_ahead_days = 3
         current_date = datetime.now().date()
@@ -378,16 +398,23 @@ class ScheduleCache:
                 date = datetime.fromisoformat(".".join(filename.split(".")[:-1]))
                 if date not in dates:
                     os.remove(f"{subdir}/{filename}")
-        for connection in ferry_connections:
-            for date in dates:
-                filepath = self._get_filepath(connection.origin.id, connection.destination.id, date)
-                if not os.path.exists(filepath):
-                    schedule = self.download_schedule(connection.origin.id, connection.destination.id, date)
-                    self.put(schedule)
+        tasks = []
+        async with httpx.AsyncClient() as client:
+            for connection in ferry_connections:
+                for date in dates:
+                    filepath = self._get_filepath(connection.origin.id, connection.destination.id, date)
+                    if not os.path.exists(filepath):
+                        # schedule = self.download_schedule(connection.origin.id, connection.destination.id, date)
+                        # self.put(schedule)
+                        tasks.append(asyncio.ensure_future(self.download_schedule_async(connection.origin.id, connection.destination.id, date, client=client)))
+            schedules = await asyncio.gather(*tasks)
+            for schedule in schedules:
+                self.put(schedule)
+        print("[INFO] finished refreshing cache")
 
     def _refresh_task(self):
         while True:
-            self.refresh_cache()
+            asyncio.run(self.refresh_cache())
             time.sleep(self.refresh_interval)
 
 
