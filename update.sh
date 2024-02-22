@@ -1,8 +1,7 @@
-git fetch
-git reset --hard HEAD
-git merge
+git fetch --all
+git reset --hard origin/main
 
-source .venv/bin/activate
+. .venv/bin/activate
 pip install -r requirements.txt
 pip install uvicorn[standard]
 
