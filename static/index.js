@@ -451,24 +451,34 @@ async function getRoutePlans() {
   plans.options = options;
 
   // pre-process plans data
+  land_groups = new Set()
   for (let i = 0; i < plans.length; i++) {
     let plan = plans[i];
     plan.id = i + 1;
     let via = new Set();
     for (const s of plan.segments) {
-      let lg = s.connection.origin.land_group;
-      if (lg) {
-        const pos = lg.indexOf(" (");
-        if (pos > 0) lg = lg.substring(0, pos).trim();
-        via.add(lg);
+      if (s.connection.type == "FERRY") {
+        let lg = s.connection.destination.land_group;
+        if (lg) {
+          const pos = lg.indexOf(" (");
+          if (pos > 0) lg = lg.substring(0, pos).trim();
+          land_groups.add(lg);
+          via.add(lg);
+        }
       }
     }
-    if (via.size > 1) via.delete('Mainland');
-    if (via.size < 2) plan.via = Array.from(via);
-    if (via.size > 1) plan.via = [Array.from(via)[1]];
+    plan.via = Array.from(via);
+    if (plan.via.length > 1)
+      plan.via.pop()
     plan.origin = plan.segments[0].connection.origin;
     plan.destination = plan.segments.slice(-1)[0].connection.destination;
   }
+  
+  // delete "via" that are common for all routes
+  land_groups.forEach(lg => { 
+    if (Array.from(plans).every(p => p.via.includes(lg))) 
+      plans.forEach(p => {if (p.via.length > 1) p.via = p.via.filter(l => l != lg)});
+  });
 
   return plans;
 }
