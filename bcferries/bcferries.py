@@ -407,14 +407,15 @@ class ScheduleCache:
                 date = datetime.fromisoformat(".".join(filename.split(".")[:-1]))
                 if date not in dates:
                     os.remove(f"{subdir}/{filename}")
+        # clear cache
+        self.cache = {}
+        # download new schedules
         tasks = []
         async with httpx.AsyncClient() as client:
             for connection in ferry_connections:
                 for date in dates:
                     filepath = self._get_filepath(connection.origin.id, connection.destination.id, date)
                     if not os.path.exists(filepath):
-                        # schedule = self.download_schedule(connection.origin.id, connection.destination.id, date)
-                        # self.put(schedule)
                         tasks.append(asyncio.ensure_future(self.download_schedule_async(connection.origin.id, connection.destination.id, date, client=client)))
             schedules = await asyncio.gather(*tasks)
             for schedule in schedules:
