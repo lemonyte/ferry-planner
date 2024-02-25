@@ -604,8 +604,10 @@ function updateRoutesTable() {
     tr.setAttribute("onclick", `javascript: goto(this.plan.hash, event);`);
     tr.classList.add("routes-table-row");
     tr.plan = plan;
+    if (new Date(plan.depart_time) < Date.now() - 60000)
+      tr.classList.add("w3-text-grey");
 
-    let td;
+      let td;
     td = document.createElement("td");
     td.innerHTML = `Route&nbsp;${plan.id}`;
     tr.appendChild(td);
@@ -832,8 +834,8 @@ function onPlanSelected(id) {
   elements.scheduleCard.querySelector("#schedule-header").innerHTML =
     `<div class='card-header'>${plan.origin.name} to ${plan.destination.name}</div>` +
     `<div class='card-header-date'>${depart_time.toDateString()} at ${timeToString(depart_time)}</div>`;
-  elements.scheduleCard.querySelector("#schedule-via").textContent =
-    "via " + [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))].join(", ");
+  var via = [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))];
+  elements.scheduleCard.querySelector("#schedule-via").textContent =  via.length > 0 ? "via " + via.join(", ") : "";
 
   elements.scheduleCard.querySelector("#schedule-details").innerHTML =
     //`Route ${plan.id}.` +
@@ -852,6 +854,8 @@ function onPlanSelected(id) {
     for (const t of s.times) {
       const tr = document.createElement("tr");
       elements.scheduleTable.appendChild(tr);
+      if (new Date(t.start) < Date.now() - 60000)
+        tr.classList.add("w3-text-grey");
 
       let td;
       td = document.createElement("td");
