@@ -349,6 +349,8 @@ class ScheduleCache:
             return schedule
 
     def put(self, schedule: FerrySchedule):
+        if not schedule:
+            return
         filepath = self._get_filepath(schedule.origin, schedule.destination, schedule.date)
         self.cache[filepath] = schedule
         dirpath = os.path.dirname(filepath)
@@ -357,13 +359,17 @@ class ScheduleCache:
         with open(filepath, "w", encoding="utf-8") as file:
             file.write(schedule.json(indent=4))
 
-    def download_schedule(self, origin: str, destination: str, date: datetime) -> FerrySchedule:
+    def download_schedule(self, origin: str, destination: str, date: datetime) -> FerrySchedule | None:
         route = f"{origin}-{destination}"
         url = (
             f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
         )
         print(f"fetching url: {url}")
-        doc = httpx.get(url).text.replace("\u2060", "")
+        try:
+            doc = httpx.get(url).text.replace("\u2060", "")
+        except Exception as err:
+            print(err)
+            return None
         soup = BeautifulSoup(markup=doc, features="html.parser")
         table = soup.find("table", id="dailyScheduleTableOnward")
         schedule = FerrySchedule(
