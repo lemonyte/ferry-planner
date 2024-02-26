@@ -367,7 +367,7 @@ class ScheduleCache:
         print(f"fetching url: {url}")
         try:
             doc = httpx.get(url).text.replace("\u2060", "")
-        except Exception as err:
+        except httpx.ConnectTimeout as err:
             print(err)
             return None
         soup = BeautifulSoup(markup=doc, features="html.parser")
@@ -381,13 +381,17 @@ class ScheduleCache:
         )
         return schedule
 
-    async def download_schedule_async(self, origin: str, destination: str, date: datetime, *, client: httpx.AsyncClient) -> FerrySchedule:
+    async def download_schedule_async(self, origin: str, destination: str, date: datetime, *, client: httpx.AsyncClient) -> FerrySchedule | None:
         route = f"{origin}-{destination}"
         url = (
             f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
         )
         print(f"[INFO] fetching schedule: {route}:{date.strftime('%m/%d/%Y')}")
-        doc = (await client.get(url)).text.replace("\u2060", "")
+        try:
+            doc = (await client.get(url)).text.replace("\u2060", "")
+        except httpx.ConnectTimeout as err:
+            print(err)
+            return None
         print(f"[INFO] fetched schedule: {route}:{date.strftime('%m/%d/%Y')}")
         soup = BeautifulSoup(markup=doc, features="html.parser")
         table = soup.find("table", id="dailyScheduleTableOnward")
