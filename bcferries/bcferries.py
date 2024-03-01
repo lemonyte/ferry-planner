@@ -130,8 +130,11 @@ def find_routes_recurse(  # noqa: C901, PLR0913, PLR0912
             continue
         if connection.type == ConnectionType.CAR and last_connection_type == ConnectionType.CAR:
             continue  # Drive only shortest way between terminals.
-        if (connection.type == ConnectionType.FERRY and connection.destination.land_group
-                                            and connection.destination.land_group in lands):
+        if (
+            connection.type == ConnectionType.FERRY
+            and connection.destination.land_group
+            and connection.destination.land_group in lands
+        ):
             continue
         if connection.type == ConnectionType.FERRY and connection.origin.land_group:
             lands.append(connection.origin.land_group)
@@ -186,8 +189,17 @@ def add_plan_segment(
         connection_id = f"{id_from}-{id_to}"
         connection = connections[connection_id]
         if connection.type == ConnectionType.FERRY and isinstance(connection, FerryConnection):
-                res = add_ferry_connection(route, destination_index, segments, start_time, plans, options, id_from,
-                               id_to, connection)
+            res = add_ferry_connection(
+                route,
+                destination_index,
+                segments,
+                start_time,
+                plans,
+                options,
+                id_from,
+                id_to,
+                connection,
+            )
         if connection.type == ConnectionType.CAR and isinstance(connection, CarConnection):
             if not options.show_all and connection.duration > 6 * 60 * 60:
                 return False
@@ -201,7 +213,8 @@ def add_plan_segment(
                     start=start_time,
                     end=arrive_time,
                     description=f"Drive {round(connection.distance)} km to {connection.destination.name}",
-                ))
+                ),
+            )
             segments.append(segment)
             res = add_plan_segment(
                 route,
@@ -216,6 +229,7 @@ def add_plan_segment(
         del segments[delete_start:]
     return res
 
+
 def add_ferry_connection(
     route: Route,
     destination_index: int,
@@ -225,7 +239,8 @@ def add_ferry_connection(
     options: RoutePlansOptions,
     id_from: str,
     id_to: str,
-    connection: FerryConnection) -> bool:
+    connection: FerryConnection,
+) -> bool:
     res = False
     depature_terminal = connection.origin
     day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -270,21 +285,24 @@ def add_ferry_connection(
                 description += f"{options.buffer} minutes "
             description += f"before {deadline_name}"
             segment.times.append(
-                        TimeInterval(
-                            type=TimeIntervalType.WAIT,
-                            start=deadline_time,
-                            end=depart_time,
-                            description=description,
-                        ))
+                TimeInterval(
+                    type=TimeIntervalType.WAIT,
+                    start=deadline_time,
+                    end=depart_time,
+                    description=description,
+                ),
+            )
         segment.times.append(
-                    TimeInterval(
-                        type=TimeIntervalType.TRAVEL,
-                        start=depart_time,
-                        end=arrive_time,
-                        description=f"Ferry sailing from {connection.origin.name} to {connection.destination.name}",
-                    ))
+            TimeInterval(
+                type=TimeIntervalType.TRAVEL,
+                start=depart_time,
+                end=arrive_time,
+                description=f"Ferry sailing from {connection.origin.name} to {connection.destination.name}",
+            ),
+        )
         segments.append(segment)
-        if (add_plan_segment(
+        if (
+            add_plan_segment(
                 route,
                 destination_index + 1,
                 segments,
@@ -293,7 +311,7 @@ def add_ferry_connection(
                 options,
             )
             is False
-                ):
+        ):
             break
         delete_start = destination_index - 1
         del segments[delete_start:]
@@ -388,12 +406,13 @@ class ScheduleCache:
         return self.parse_schedule_html(origin, destination, date, url, doc)
 
     async def download_schedule_async(
-            self,
-            origin: str,
-            destination: str,
-            date: datetime,
-            *,
-            client: httpx.AsyncClient) -> FerrySchedule | None:
+        self,
+        origin: str,
+        destination: str,
+        date: datetime,
+        *,
+        client: httpx.AsyncClient,
+    ) -> FerrySchedule | None:
         route = f"{origin}-{destination}"
         url = (
             f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
@@ -408,12 +427,13 @@ class ScheduleCache:
         return self.parse_schedule_html(origin, destination, date, url, doc)
 
     def parse_schedule_html(
-            self,
-            origin: str,
-            destination: str,
-            date: datetime,
-            url: str,
-            html: str) -> FerrySchedule | None:
+        self,
+        origin: str,
+        destination: str,
+        date: datetime,
+        url: str,
+        html: str,
+    ) -> FerrySchedule | None:
         soup = BeautifulSoup(markup=html, features="html.parser")
         table = soup.find("table", id="dailyScheduleTableOnward")
         if not isinstance(table, Tag):
@@ -446,11 +466,16 @@ class ScheduleCache:
                 for date in dates:
                     filepath = self._get_filepath(connection.origin.id, connection.destination.id, date)
                     if not filepath.exists:
-                        tasks.append(asyncio.ensure_future(self.download_schedule_async(
-                            connection.origin.id,
-                            connection.destination.id,
-                            date,
-                            client=client)))
+                        tasks.append(
+                            asyncio.ensure_future(
+                                self.download_schedule_async(
+                                    connection.origin.id,
+                                    connection.destination.id,
+                                    date,
+                                    client=client,
+                                ),
+                            ),
+                        )
             schedules = await asyncio.gather(*tasks)
             for schedule in schedules:
                 self.put(schedule)

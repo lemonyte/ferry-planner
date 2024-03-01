@@ -104,20 +104,21 @@ class City(Location):
     def map_parameter(self) -> str:
         return f"{self.name},{self.province},{self.country}"
 
+
 class Connection(BaseModel):
     id: ConnectionId
-    origin: Location = None # type: ignore[None]
-    destination: Location = None # type: ignore[None]
-    duration: int = None # type: ignore[None]
+    origin: Location = None  # type: ignore[None]
+    destination: Location = None  # type: ignore[None]
+    duration: int = None  # type: ignore[None]
     distance: float
     fuel: float
     type: ConnectionType
 
 
 class FerryConnection(Connection):
-    origin: Terminal = None # type: ignore[None]
-    destination: Terminal = None # type: ignore[None]
-    duration: int = None # type: ignore[None]
+    origin: Terminal = None  # type: ignore[None]
+    destination: Terminal = None  # type: ignore[None]
+    duration: int = None  # type: ignore[None]
     distance: float = 0.2
     fuel: float = 0.2
     type: Literal[ConnectionType.FERRY] = ConnectionType.FERRY
@@ -201,11 +202,14 @@ class RoutePlan(BaseModel):
     map_url: str | None = None
 
     def init(self, _segments: list[RoutePlanSegment]) -> None:
-        segments: list[RoutePlanSegment] = [RoutePlanSegment(
-                    connection=segment.connection,
-                    times=deepcopy(segment.times),
-                    schedule_url=segment.schedule_url,
-                ) for segment in _segments]
+        segments: list[RoutePlanSegment] = [
+            RoutePlanSegment(
+                connection=segment.connection,
+                times=deepcopy(segment.times),
+                schedule_url=segment.schedule_url,
+            )
+            for segment in _segments
+        ]
         if len(segments) == 0:
             return  # can we be here?
 
@@ -224,7 +228,7 @@ class RoutePlan(BaseModel):
             now = datetime.now().astimezone()
             local_offset = now.astimezone().utcoffset()
             bc_offset = tz.utcoffset(now)
-            if (local_offset and bc_offset):
+            if local_offset and bc_offset:
                 tz_diff = bc_offset - local_offset
                 current_time_bc = now - first_segment.times[0].start.astimezone() + tz_diff
                 for t in first_segment.times:
