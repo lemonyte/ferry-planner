@@ -382,7 +382,7 @@ class ScheduleCache:
         print(f"fetching url: {url}")
         try:
             doc = httpx.get(url).text.replace("\u2060", "")
-        except Exception as err:
+        except httpx.ConnectTimeout as err:
             print(err)
             return None
         return self.parse_schedule_html(origin, destination, date, url, doc)
@@ -399,7 +399,11 @@ class ScheduleCache:
             f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
         )
         print(f"[INFO] fetching schedule: {route}:{date.strftime('%m/%d/%Y')}")
-        doc = (await client.get(url)).text.replace("\u2060", "")
+        try:
+            doc = (await client.get(url)).text.replace("\u2060", "")
+        except httpx.ConnectTimeout as err:
+            print(err)
+            return None
         print(f"[INFO] fetched schedule: {route}:{date.strftime('%m/%d/%Y')}")
         return self.parse_schedule_html(origin, destination, date, url, doc)
 
