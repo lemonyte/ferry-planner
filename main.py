@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -21,9 +20,6 @@ from bcferries.classes import (
     RoutePlansOptions,
     ScheduleOptions,
 )
-
-if TYPE_CHECKING:
-    from starlette.responses import Response
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
