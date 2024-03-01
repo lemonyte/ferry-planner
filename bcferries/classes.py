@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import hashlib
 from copy import deepcopy
 from datetime import datetime
-from zoneinfo import ZoneInfo
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Literal
 from urllib.parse import quote
 
 from pydantic import BaseModel, validator
+from zoneinfo import ZoneInfo
 
 ConnectionId = str
 LocationId = str
@@ -14,7 +16,7 @@ Route = list[str]
 
 
 class ConnectionsCache:
-    def __init__(self):
+    def __init__(self) -> None:
         self.connections = {}
         self.city_connections = {}
 
@@ -43,7 +45,7 @@ class FerrySailing(BaseModel):
     depart_time: str
     arrive_time: str
     duration: str
-    # price: float
+    # TODO: price: float
 
 
 class FerrySchedule(BaseModel):
@@ -58,7 +60,7 @@ class Location(BaseModel):
     id: LocationId
     name: str
     type: LocationType
-    land_group: Optional[str] = None
+    land_group: str | None = None
 
     def map_parameter(self) -> str:
         raise NotImplementedError
@@ -70,19 +72,19 @@ class Terminal(Location):
     address: str
     coordinates: str  # String format "{latitude:float},{longitude:float}".
     type: Literal[LocationType.TERMINAL] = LocationType.TERMINAL
-    veh_close: Optional[int] = None  # Vehicles check-in close time in minutes.
-    foot_close: Optional[int] = None  # Foot passangers check-in close time in minutes.
-    res_open: Optional[int] = None  # Booking check-in open time in minutes.
-    res_close: Optional[int] = None  # Booking check-in close time in minutes.
-    res_peak_extra: Optional[int] = None  # Booking check-in extra time required at peak season.
-    assured_open: Optional[int] = None  # Assured loading check-in open time in minutes.
-    assured_close: Optional[int] = None  # Assured loading check-in close time in minutes.
-    hostled_open: Optional[int] = None  # Hostled vehicles check-in open time in minutes.
-    hostled_close: Optional[int] = None  # Hostled vehicles check-in close time in minutes.
+    veh_close: int | None = None  # Vehicles check-in close time in minutes.
+    foot_close: int | None = None  # Foot passangers check-in close time in minutes.
+    res_open: int | None = None  # Booking check-in open time in minutes.
+    res_close: int | None = None  # Booking check-in close time in minutes.
+    res_peak_extra: int | None = None  # Booking check-in extra time required at peak season.
+    assured_open: int | None = None  # Assured loading check-in open time in minutes.
+    assured_close: int | None = None  # Assured loading check-in close time in minutes.
+    hostled_open: int | None = None  # Hostled vehicles check-in open time in minutes.
+    hostled_close: int | None = None  # Hostled vehicles check-in close time in minutes.
 
     # Add "terminal" text to name to avoid confusion with cities.
     @validator("name")
-    def _validate_name(cls, value: str):
+    def _validate_name(cls, value: str) -> str:  # noqa: N805
         if "terminal" in value.lower():
             return value
         if value.endswith(")"):
@@ -100,23 +102,22 @@ class City(Location):
     type: Literal[LocationType.CITY] = LocationType.CITY
 
     def map_parameter(self) -> str:
-        return ",".join([self.name, self.province, self.country])
-
+        return f"{self.name},{self.province},{self.country}"
 
 class Connection(BaseModel):
     id: ConnectionId
-    origin: Union[Terminal, City] = None  # temp
-    destination: Union[Terminal, City] = None  # temp
-    duration: int = None  # temp
+    origin: Location = None # type: ignore[None]
+    destination: Location = None # type: ignore[None]
+    duration: int = None # type: ignore[None]
     distance: float
     fuel: float
     type: ConnectionType
 
 
 class FerryConnection(Connection):
-    origin: Terminal = None  # temp
-    destination: Terminal = None  # temp
-    duration: int = None  # temp
+    origin: Terminal = None # type: ignore[None]
+    destination: Terminal = None # type: ignore[None]
+    duration: int = None # type: ignore[None]
     distance: float = 0.2
     fuel: float = 0.2
     type: Literal[ConnectionType.FERRY] = ConnectionType.FERRY
@@ -141,7 +142,7 @@ class TimeInterval(BaseModel):
     description: str
     type: TimeIntervalType
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.start.strftime('%H:%M')} {self.description}"
 
 
@@ -150,9 +151,10 @@ class RoutesOptions(BaseModel):
     destination: str
 
     @validator("destination")
-    def _validate_route(cls, value: str, values: dict) -> str:
-        if "origin" in values.keys() and value == values["origin"]:
-            raise ValueError("origin and destination cannot be the same")
+    def _validate_route(cls, value: str, values: dict) -> str:  # noqa: N805
+        if "origin" in values and value == values["origin"]:
+            msg = "origin and destination cannot be the same"
+            raise ValueError(msg)
         return value
 
 
@@ -160,9 +162,9 @@ class ScheduleOptions(RoutesOptions):
     date: datetime
 
     @validator("date", pre=True)
-    def _parse_date(cls, value: Union[str, datetime]) -> datetime:
+    def _parse_date(cls, value: str | datetime) -> datetime:  # noqa: N805
         if isinstance(value, str):
-            value = datetime.strptime(value, "%Y-%m-%d")
+            value = datetime.strptime(value, "%Y-%m-%d")  # noqa: DTZ007
         return value
 
 
@@ -174,43 +176,36 @@ class RoutePlansOptions(ScheduleOptions):
     buffer: int = 15
 
     @validator("date")
-    def _validate_date(cls, value: Optional[datetime]) -> datetime:
+    def _validate_date(cls, value: datetime | None) -> datetime:  # noqa: N805
         if not value:
-            value = datetime.now()
+            value = datetime.now()  # noqa: DTZ005
         # if value.date() < datetime.now().date():
         #     raise ValueError("date cannot be in the past")
         return value
 
 
 class RoutePlanSegment(BaseModel):
-    connection: Union[FerryConnection, CarConnection, AirConnection, BusConnection]  # FIXME
+    connection: FerryConnection | CarConnection | AirConnection | BusConnection  # TODO: FIXME
     times: list[TimeInterval] = []
-    schedule_url: Optional[str] = None
+    schedule_url: str | None = None
 
 
 class RoutePlan(BaseModel):
-    segments: list[RoutePlanSegment] = None  # temp
-    hash: str = None  # temp
-    duration: int = None  # temp
-    depart_time: datetime = None  # temp
-    arrive_time: datetime = None  # temp
+    segments: list[RoutePlanSegment] = None  # type: ignore[None]
+    hash: str = None  # type: ignore[None]
+    duration: int = None  # type: ignore[None]
+    depart_time: datetime = None  # type: ignore[None]
+    arrive_time: datetime = None  # type: ignore[None]
     driving_duration: int = 0
     driving_distance: float = 0
-    map_url: Optional[str] = None
+    map_url: str | None = None
 
-    def init(self, _segments: list[RoutePlanSegment]):
-        # if not values.get('segments'):  # FIXME: hack
-        #     values['segments'] = []
-        #     return values
-        segments: list[RoutePlanSegment] = []
-        for segment in _segments:
-            segments.append(
-                RoutePlanSegment(
+    def init(self, _segments: list[RoutePlanSegment]) -> None:
+        segments: list[RoutePlanSegment] = [RoutePlanSegment(
                     connection=segment.connection,
                     times=deepcopy(segment.times),
                     schedule_url=segment.schedule_url,
-                )
-            )
+                ) for segment in _segments]
         if len(segments) == 0:
             return  # can we be here?
 
@@ -222,17 +217,19 @@ class RoutePlan(BaseModel):
             for time in first_segment.times:
                 time.start += free_time
                 time.end += free_time
-        
+
+        # If the only segment is car travel, make sure start time is in Vancouver time zone
         if first_segment.connection.type == ConnectionType.CAR and len(segments) == 1:
             tz = ZoneInfo("America/Vancouver")
             now = datetime.now().astimezone()
             local_offset = now.astimezone().utcoffset()
             bc_offset = tz.utcoffset(now)
-            tz_diff = bc_offset - local_offset
-            current_time_bc = datetime.now() - first_segment.times[0].start + tz_diff
-            for t in first_segment.times:
-                t.start += current_time_bc
-                t.end += current_time_bc
+            if (local_offset and bc_offset):
+                tz_diff = bc_offset - local_offset
+                current_time_bc = now - first_segment.times[0].start.astimezone() + tz_diff
+                for t in first_segment.times:
+                    t.start += current_time_bc
+                    t.end += current_time_bc
 
         # Add free time to segments.
         for i in range(len(segments) - 1):
@@ -246,7 +243,7 @@ class RoutePlan(BaseModel):
                         start=free_start,
                         end=free_end,
                         description="Free time",
-                    )
+                    ),
                 )
 
         # Add departure.
@@ -272,13 +269,14 @@ class RoutePlan(BaseModel):
                 start=arrive_time,
                 end=arrive_time,
                 description=f"Arrive at {last_segment.connection.destination.name}",
-            )
+            ),
         )
 
         self.duration = int((arrive_time - depart_time).total_seconds())
-        driving_distance = 0.0
-        hash = hashlib.md5()
+
         # Calculate distance and hash.
+        driving_distance = 0.0
+        hash = hashlib.md5()  # noqa: S324
         for segment in segments:
             driving_distance += segment.connection.distance
             hash.update(segment.connection.destination.id.encode("utf-8"))
@@ -292,9 +290,7 @@ class RoutePlan(BaseModel):
 
         # Create Google Maps URL.
         url = "https://www.google.com/maps/dir/?api=1&origin={origin}&destination={destination}&waypoints={waypoints}"
-        waypoints = []
-        for segment in segments[1:]:
-            waypoints.append(segment.connection.origin.map_parameter())
+        waypoints = [segment.connection.origin.map_parameter() for segment in segments[1:]]
         self.map_url = url.format(
             origin=quote(first_segment.connection.origin.map_parameter()),
             destination=quote(last_segment.connection.destination.map_parameter()),
