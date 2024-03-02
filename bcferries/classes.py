@@ -2,39 +2,26 @@
 from __future__ import annotations
 
 import hashlib
+from abc import ABC
+from collections.abc import MutableSequence, Sequence
 from copy import deepcopy
 from datetime import datetime
 from enum import Enum
-from typing import Literal
+from typing import Self
 from urllib.parse import quote
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, field_validator, model_validator
-from typing_extensions import Self
-from zoneinfo import ZoneInfo
 
 ConnectionId = str
 LocationId = str
-Route = list[str]
+Route = Sequence[str]
 
 
 class ConnectionsCache:
     def __init__(self) -> None:
         self.connections = {}
         self.city_connections = {}
-
-
-# enum classes
-class ConnectionType(Enum):
-    NONE = "NONE"
-    FERRY = "FERRY"
-    CAR = "CAR"
-    BUS = "BUS"
-    AIR = "AIR"
-
-
-class LocationType(Enum):
-    TERMINAL = "TERMINAL"
-    CITY = "CITY"
 
 
 class TimeIntervalType(Enum):
@@ -50,21 +37,20 @@ class FerrySailing(BaseModel):
     depart_time: str
     arrive_time: str
     duration: str
-    # TODO: price: float
+    # TODO: price: float  # noqa: FIX002
 
 
 class FerrySchedule(BaseModel):
     date: datetime
     origin: str
     destination: str
-    sailings: list[FerrySailing]
+    sailings: Sequence[FerrySailing]
     url: str
 
 
-class Location(BaseModel):
+class Location(BaseModel, ABC):
     id: LocationId
     name: str
-    type: LocationType
     land_group: str | None = None
 
     @property
@@ -78,7 +64,6 @@ class Terminal(Location):
     address: str
     coordinates: str
     """String format "{latitude:float},{longitude:float}"."""
-    type: Literal[LocationType.TERMINAL] = LocationType.TERMINAL
     veh_close: int | None = None
     """Vehicles check-in close time in minutes."""
     foot_close: int | None = None
@@ -117,21 +102,19 @@ class City(Location):
     region: str
     province: str
     country: str
-    type: Literal[LocationType.CITY] = LocationType.CITY
 
     @property
     def map_parameter(self) -> str:
         return f"{self.name},{self.province},{self.country}"
 
 
-class Connection(BaseModel):
+class Connection(BaseModel, ABC):
     id: ConnectionId
     origin: Location = None  # type: ignore[None]
     destination: Location = None  # type: ignore[None]
     duration: int = None  # type: ignore[None]
     distance: float
     fuel: float
-    type: ConnectionType
 
 
 class FerryConnection(Connection):
@@ -140,20 +123,19 @@ class FerryConnection(Connection):
     duration: int = None  # type: ignore[None]
     distance: float = 0.2
     fuel: float = 0.2
-    type: Literal[ConnectionType.FERRY] = ConnectionType.FERRY
     bookable: bool = False
 
 
 class CarConnection(Connection):
-    type: Literal[ConnectionType.CAR] = ConnectionType.CAR
+    pass
 
 
 class AirConnection(Connection):
-    type: Literal[ConnectionType.AIR] = ConnectionType.AIR
+    pass
 
 
 class BusConnection(Connection):
-    type: Literal[ConnectionType.BUS] = ConnectionType.BUS
+    pass
 
 
 class TimeInterval(BaseModel):
@@ -200,13 +182,13 @@ class RoutePlansOptions(ScheduleOptions):
 
 
 class RoutePlanSegment(BaseModel):
-    connection: FerryConnection | CarConnection | AirConnection | BusConnection  # TODO: FIXME
-    times: list[TimeInterval] = []
+    connection: Connection
+    times: MutableSequence[TimeInterval] = []  # TODO: make it non-mutable  # noqa: FIX002
     schedule_url: str | None = None
 
 
 class RoutePlan(BaseModel):
-    segments: list[RoutePlanSegment] = None  # type: ignore[None]
+    segments: Sequence[RoutePlanSegment] = None  # type: ignore[None]
     hash: str = None  # type: ignore[None]
     duration: int = None  # type: ignore[None]
     depart_time: datetime = None  # type: ignore[None]
@@ -216,8 +198,8 @@ class RoutePlan(BaseModel):
     map_url: str | None = None
 
     @classmethod
-    def from_segments(cls, _segments: list[RoutePlanSegment], /) -> RoutePlan:
-        segments: list[RoutePlanSegment] = [
+    def from_segments(cls, _segments: Sequence[RoutePlanSegment], /) -> RoutePlan:  # noqa: C901
+        segments = [
             RoutePlanSegment(
                 connection=segment.connection,
                 times=deepcopy(segment.times),
@@ -232,14 +214,14 @@ class RoutePlan(BaseModel):
         # If first segment is driving, we can shift it to second segment
         # in order to arrive just in time for ferry.
         first_segment = segments[0]
-        if first_segment.connection.type == ConnectionType.CAR and len(segments) > 1:
+        if isinstance(first_segment.connection, CarConnection) and len(segments) > 1:
             free_time = segments[1].times[0].start - first_segment.times[-1].end
             for time in first_segment.times:
                 time.start += free_time
                 time.end += free_time
 
         # If the only segment is car travel, make sure start time is in Vancouver time zone
-        if first_segment.connection.type == ConnectionType.CAR and len(segments) == 1:
+        if isinstance(first_segment.connection, CarConnection) and len(segments) == 1:
             tz = ZoneInfo("America/Vancouver")
             now = datetime.now().astimezone()
             local_offset = now.astimezone().utcoffset()
@@ -299,7 +281,7 @@ class RoutePlan(BaseModel):
             hash.update(segment.connection.destination.id.encode("utf-8"))
             for time in segment.times:
                 hash.update(time.start.isoformat().encode("utf-8"))
-                if time.type == TimeIntervalType.TRAVEL and segment.connection.type == ConnectionType.CAR:
+                if time.type == TimeIntervalType.TRAVEL and isinstance(first_segment.connection, CarConnection):
                     driving_duration += int((time.end - time.start).total_seconds())
 
         # Create Google Maps URL.
