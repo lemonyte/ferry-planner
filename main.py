@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request, Response, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -34,22 +34,22 @@ async def startup() -> None:
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request) -> Response:
+async def root(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/about", response_class=HTMLResponse)
-async def about(request: Request) -> Response:
+async def about(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("about.html", {"request": request})
 
 
 @app.get("/api", response_class=HTMLResponse)
-async def api(request: Request) -> Response:
+async def api(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("api.html", {"request": request})
 
 
 @app.get("/api/locations", response_model=dict[str, str])
-async def api_locations() -> dict:
+async def api_locations() -> dict[str, str]:
     return {loc.id: loc.name for loc in locations.values()}
 
 
@@ -66,7 +66,7 @@ async def api_routeplans(options: RoutePlansOptions) -> list[RoutePlan]:
     return route_plans
 
 
-@app.get("/api/update")
+@app.get("/api/update", response_model=dict[str, str])
 async def api_update() -> dict[str, str]:
     process = await asyncio.create_subprocess_shell("update.sh")
     await process.wait()
@@ -79,7 +79,7 @@ async def api_update() -> dict[str, str]:
 
 
 @app.exception_handler(404)
-async def not_found_handler(request: Request, _: Exception) -> Response:
+async def not_found_handler(request: Request, _: Exception) -> HTMLResponse:
     return templates.TemplateResponse(
         "404.html",
         {"request": request},
