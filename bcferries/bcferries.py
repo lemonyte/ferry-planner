@@ -1,3 +1,4 @@
+# ruff: noqa: DTZ001, DTZ005, DTZ007
 from __future__ import annotations
 
 import asyncio
@@ -97,7 +98,7 @@ def find_routes(origin_id: str, destination_id: str) -> list[Route]:
     return routes
 
 
-def find_routes_recurse(  # noqa: C901, PLR0913, PLR0912
+def find_routes_recurse(
     next_point: str,
     end_point: str,
     routes: list[Route],
@@ -247,8 +248,8 @@ def add_ferry_connection(
     if not schedule:
         return False
     for sailing in schedule.sailings:
-        depart_time = day + datetime_to_timedelta(datetime.strptime(sailing.depart_time, "%H:%M:%S"))  # noqa: DTZ007
-        arrive_time = day + datetime_to_timedelta(datetime.strptime(sailing.arrive_time, "%H:%M:%S"))  # noqa: DTZ007
+        depart_time = day + datetime_to_timedelta(datetime.strptime(sailing.depart_time, "%H:%M:%S"))
+        arrive_time = day + datetime_to_timedelta(datetime.strptime(sailing.arrive_time, "%H:%M:%S"))
         if arrive_time < depart_time:
             arrive_time += timedelta(days=1)
         if not options.show_all and start_time.date() != arrive_time.date():
@@ -332,16 +333,16 @@ def parse_table(table: Tag) -> list[FerrySailing]:
             tds = row.find_all("td")
             if len(tds) < sailing_row_min_td_count:
                 continue
-            depart_time = datetime.strptime(  # noqa: DTZ007
+            depart_time = datetime.strptime(
                 row.find_all("td")[1].text,
                 "%I:%M %p",
             ).strftime("%H:%M:%S")
-            arrive_time = datetime.strptime(  # noqa: DTZ007
+            arrive_time = datetime.strptime(
                 row.find_all("td")[2].text,
                 "%I:%M %p",
             ).strftime("%H:%M:%S")
             td3 = tds[3].text.strip()
-            duration = datetime.strptime(  # noqa: DTZ007
+            duration = datetime.strptime(
                 td3,
                 "%Hh %Mm",
             ).strftime("%H:%M")
@@ -455,8 +456,8 @@ class ScheduleCache:
     async def refresh_cache(self) -> None:
         ferry_connections = (c for c in connections.values() if c.type == ConnectionType.FERRY)
         cache_ahead_days = 3
-        current_date = datetime.now().date()  # noqa: DTZ005
-        current_date = datetime(current_date.year, current_date.month, current_date.day)  # noqa: DTZ001
+        current_date = datetime.now().date()
+        current_date = datetime(current_date.year, current_date.month, current_date.day)
         dates = [current_date + timedelta(days=i) for i in range(cache_ahead_days)]
         for subdir, _, filenames in os.walk(self.path):
             for filename in filenames:

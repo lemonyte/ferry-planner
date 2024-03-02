@@ -1,3 +1,4 @@
+# ruff: noqa: N805, DTZ005, DTZ007
 from __future__ import annotations
 
 import hashlib
@@ -84,7 +85,7 @@ class Terminal(Location):
 
     # Add "terminal" text to name to avoid confusion with cities.
     @validator("name")
-    def _validate_name(cls, value: str) -> str:  # noqa: N805
+    def _validate_name(cls, value: str) -> str:
         if "terminal" in value.lower():
             return value
         if value.endswith(")"):
@@ -152,7 +153,7 @@ class RoutesOptions(BaseModel):
     destination: str
 
     @validator("destination")
-    def _validate_route(cls, value: str, values: dict) -> str:  # noqa: N805
+    def _validate_route(cls, value: str, values: dict) -> str:
         if "origin" in values and value == values["origin"]:
             msg = "origin and destination cannot be the same"
             raise ValueError(msg)
@@ -163,9 +164,9 @@ class ScheduleOptions(RoutesOptions):
     date: datetime
 
     @validator("date", pre=True)
-    def _parse_date(cls, value: str | datetime) -> datetime:  # noqa: N805
+    def _parse_date(cls, value: str | datetime) -> datetime:
         if isinstance(value, str):
-            value = datetime.strptime(value, "%Y-%m-%d")  # noqa: DTZ007
+            value = datetime.strptime(value, "%Y-%m-%d")
         return value
 
 
@@ -177,9 +178,9 @@ class RoutePlansOptions(ScheduleOptions):
     buffer: int = 15
 
     @validator("date")
-    def _validate_date(cls, value: datetime | None) -> datetime:  # noqa: N805
+    def _validate_date(cls, value: datetime | None) -> datetime:
         if not value:
-            value = datetime.now()  # noqa: DTZ005
+            value = datetime.now()
         # if value.date() < datetime.now().date():
         #     raise ValueError("date cannot be in the past")
         return value
