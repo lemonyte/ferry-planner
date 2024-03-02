@@ -53,11 +53,6 @@ async def api_locations() -> dict:
     return {loc.id: loc.name for loc in locations.values()}
 
 
-# @app.post('/api/routes')
-# async def api_routes(options: classes.RoutesOptions):
-#     return find_routes(options.origin, options.destination, routes)
-
-
 @app.post("/api/schedule", response_model=FerrySchedule)
 async def api_schedule(options: ScheduleOptions) -> FerrySchedule | None:
     return schedule_cache.get(options.origin, options.destination, options.date)
@@ -78,9 +73,8 @@ async def api_update() -> dict[str, str]:
     if process.returncode != 0:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update server, err={process.returncode}",
+            detail=f"Failed to update server, err={process.returncode}",
         )
-    # subprocess.run(["pip", "install", "-r", "requirements.txt"], shell=True, check=True)
     return {"result": "Update successful"}
 
 
