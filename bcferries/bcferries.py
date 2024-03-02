@@ -37,8 +37,7 @@ from .classes import (
 
 
 def load_data(path: Path) -> None:
-    with path.open(encoding="utf-8") as file:
-        data = json.load(file)
+    data = json.loads(path.read_text(encoding="utf-8"))
     add_locations(data.get("terminals"), Terminal)
     add_locations(data.get("cities"), City)
     add_connections(data.get("car_connections_terminal_terminal"), CarConnection)
