@@ -473,10 +473,10 @@ async function getRoutePlans() {
     plan.origin = plan.segments[0].connection.origin;
     plan.destination = plan.segments.slice(-1)[0].connection.destination;
   }
-  
+
   // delete "via" that are common for all routes
-  land_groups.forEach(lg => { 
-    if (Array.from(plans).every(p => p.via.includes(lg))) 
+  land_groups.forEach(lg => {
+    if (Array.from(plans).every(p => p.via.includes(lg)))
       plans.forEach(p => {if (p.via.length > 1) p.via = p.via.filter(l => l != lg)});
   });
 
@@ -1014,7 +1014,7 @@ function init() {
   };
 
   window.onpopstate = (event) => {
-    if (!locations) { 
+    if (!locations) {
       loadLocations().then(() => {});
     }
     applyOptions(event.state ?? urlToOptions(window.location));

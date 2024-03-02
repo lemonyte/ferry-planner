@@ -1,0 +1,13 @@
+[tool.ruff]
+src = ["src"]
+line-length = 119
+target-version = "py311"
+fix = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["A", "D", "T20", "TD002", "TD003", "ANN101", "ANN102"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"

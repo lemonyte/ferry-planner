@@ -101,12 +101,12 @@ input[type="date"] {
 }
 
 
-@media (min-width: 993px) { 
+@media (min-width: 993px) {
   .fp-table-container { padding: 0px 8px 8px 8px !important; }
   .fp-table { border: 1px solid #ccc !important ; }
 }
 
-@media (min-width: 1120px) { 
+@media (min-width: 1120px) {
   .fp-input-text { width: 33.3333%; }
   .fp-input-non-text { width: 33.3333%;}
 }

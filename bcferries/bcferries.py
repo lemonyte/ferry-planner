@@ -20,13 +20,11 @@ from .classes import (
     Connection,
     ConnectionId,
     ConnectionsCache,
-    ConnectionType,
     FerryConnection,
     FerrySailing,
     FerrySchedule,
     Location,
     LocationId,
-    LocationType,
     Route,
     RoutePlan,
     RoutePlanSegment,
@@ -54,7 +52,7 @@ def add_locations(new_locations: dict[LocationId, dict], cls: type[Location]) ->
         return
     for location_id, location_info in new_locations.items():
         location_info["id"] = location_id
-        location = cls.parse_obj(location_info)
+        location = cls.model_validate(location_info)
         locations[location_id] = location
 
 
@@ -80,13 +78,13 @@ def add_connection(connection_id: ConnectionId, connection_info: dict, cls: type
         destination = locations[destination_id]
     except KeyError:
         return
-    connection = cls.parse_obj(connection_info)
+    connection = cls.model_validate(connection_info)
     connection.origin = origin
     connection.destination = destination
     connections[connection_id] = connection
     if not location_connections.get(origin_id):
         location_connections[origin_id] = ConnectionsCache()
-    if destination.type == LocationType.CITY:
+    if isinstance(destination, City):
         location_connections[origin_id].city_connections[destination_id] = connection
     else:
         location_connections[origin_id].connections[destination_id] = connection
@@ -98,14 +96,14 @@ def find_routes(origin_id: str, destination_id: str) -> list[Route]:
     return routes
 
 
-def find_routes_recurse(
+def find_routes_recurse(  # noqa: C901, PLR0912, PLR0913
     next_point: str,
     end_point: str,
     routes: list[Route],
     current_route: list[LocationId] | None = None,
     dead_ends: list[ConnectionId] | None = None,
     lands: list[str] | None = None,
-    last_connection_type: ConnectionType = ConnectionType.NONE,
+    last_connection_type: type[Connection] = Connection,
 ) -> bool:
     if current_route is None:
         current_route = []
@@ -128,15 +126,15 @@ def find_routes_recurse(
     for connection in connections_cache.connections.values():
         if connection.destination.id in current_route or connection.id in dead_ends:
             continue
-        if connection.type == ConnectionType.CAR and last_connection_type == ConnectionType.CAR:
+        if isinstance(connection, CarConnection) and last_connection_type is CarConnection:
             continue  # Drive only shortest way between terminals.
         if (
-            connection.type == ConnectionType.FERRY
+            isinstance(connection, FerryConnection)
             and connection.destination.land_group
             and connection.destination.land_group in lands
         ):
             continue
-        if connection.type == ConnectionType.FERRY and connection.origin.land_group:
+        if isinstance(connection, FerryConnection) and connection.origin.land_group:
             lands.append(connection.origin.land_group)
         else:
             lands.append("")
@@ -147,7 +145,7 @@ def find_routes_recurse(
             current_route,
             dead_ends,
             lands,
-            connection.type,
+            type(connection),
         ):
             res = True
         else:
@@ -167,7 +165,7 @@ def make_route_plans(routes: list[Route], options: RoutePlansOptions) -> list[Ro
     return all_plans
 
 
-def add_plan_segment(
+def add_plan_segment(  # noqa: PLR0913
     route: Route,
     destination_index: int,
     segments: list[RoutePlanSegment],
@@ -180,15 +178,14 @@ def add_plan_segment(
         if destination_index == len(route):
             if not segments:  # empty list?
                 return False  # can we be here?
-            plan = RoutePlan()
-            plan.init(segments)
+            plan = RoutePlan.from_segments(segments)
             plans.append(plan)
             return True
         id_from = route[destination_index - 1]
         id_to = route[destination_index]
         connection_id = f"{id_from}-{id_to}"
         connection = connections[connection_id]
-        if connection.type == ConnectionType.FERRY and isinstance(connection, FerryConnection):
+        if isinstance(connection, FerryConnection):
             res = add_ferry_connection(
                 route,
                 destination_index,
@@ -200,7 +197,7 @@ def add_plan_segment(
                 id_to,
                 connection,
             )
-        if connection.type == ConnectionType.CAR and isinstance(connection, CarConnection):
+        if isinstance(connection, CarConnection):
             if not options.show_all and connection.duration > 6 * 60 * 60:
                 return False
             arrive_time = start_time + timedelta(seconds=connection.duration)
@@ -230,7 +227,7 @@ def add_plan_segment(
     return res
 
 
-def add_ferry_connection(
+def add_ferry_connection(  # noqa: C901, PLR0912, PLR0913
     route: Route,
     destination_index: int,
     segments: list[RoutePlanSegment],
@@ -265,7 +262,6 @@ def add_ferry_connection(
             deadline_name = "assured loading checkin close"
             wait_minutes = depature_terminal.assured_close
         elif depature_terminal.res_close and depature_terminal.res_close > 0 and connection.bookable:
-            # TODO: depature_terminal.res_peak_extra
             deadline_name = "booking checkin close"
             wait_minutes = depature_terminal.res_close
         elif depature_terminal.veh_close and depature_terminal.veh_close > 0:
@@ -316,7 +312,7 @@ def add_ferry_connection(
         delete_start = destination_index - 1
         del segments[delete_start:]
         res = True
-        if not options.show_all and sum(1 for s in segments if s.connection.type == ConnectionType.FERRY) > 0:
+        if not options.show_all and sum(1 for s in segments if isinstance(s.connection, FerryConnection)) > 0:
             break
     return res
 
@@ -386,7 +382,7 @@ class ScheduleCache:
         dirpath = filepath.parent
         if not dirpath.exists():
             dirpath.mkdir(mode=0o755, parents=True, exist_ok=True)
-        filepath.write_text(schedule.json(indent=4), encoding="utf-8")
+        filepath.write_text(schedule.model_dump_json(indent=4), encoding="utf-8")
 
     def download_schedule(self, origin: str, destination: str, date: datetime) -> FerrySchedule | None:
         route = f"{origin}-{destination}"
@@ -418,7 +414,7 @@ class ScheduleCache:
         print(f"[INFO] fetched schedule: {route}:{date.date()}")
         return self.parse_schedule_html(origin, destination, date, url, doc)
 
-    def parse_schedule_html(
+    def parse_schedule_html(  # noqa: PLR0913
         self,
         origin: str,
         destination: str,
@@ -454,7 +450,7 @@ class ScheduleCache:
             self.put(schedule)
 
     async def refresh_cache(self) -> None:
-        ferry_connections = (c for c in connections.values() if c.type == ConnectionType.FERRY)
+        ferry_connections = (c for c in connections.values() if isinstance(c, FerryConnection))
         cache_ahead_days = 3
         current_date = datetime.now().date()
         current_date = datetime(current_date.year, current_date.month, current_date.day)
