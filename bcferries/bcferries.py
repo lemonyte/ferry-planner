@@ -382,15 +382,12 @@ class ScheduleCache:
         return schedule
 
     def put(self, schedule: FerrySchedule) -> None:
-        if not schedule:
-            return
         filepath = self._get_filepath(schedule.origin, schedule.destination, schedule.date)
         self.cache[filepath] = schedule
         dirpath = filepath.parent
         if not dirpath.exists():
             dirpath.mkdir(mode=0o755, parents=True, exist_ok=True)
-        with filepath.open("w", encoding="utf-8") as file:
-            file.write(schedule.json(indent=4))
+        filepath.write_text(schedule.json(indent=4), encoding="utf-8")
 
     def download_schedule(self, origin: str, destination: str, date: datetime) -> FerrySchedule | None:
         route = f"{origin}-{destination}"
@@ -412,18 +409,14 @@ class ScheduleCache:
         date: datetime,
         *,
         client: httpx.AsyncClient,
-    ) -> FerrySchedule | None:
+    ) -> FerrySchedule:
         route = f"{origin}-{destination}"
         url = (
             f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
         )
-        print(f"[INFO] fetching schedule: {route}:{date.strftime('%m/%d/%Y')}")
-        try:
-            doc = (await client.get(url)).text.replace("\u2060", "")
-        except httpx.ConnectTimeout as err:
-            print(err)
-            return None
-        print(f"[INFO] fetched schedule: {route}:{date.strftime('%m/%d/%Y')}")
+        print(f"[INFO] fetching schedule: {route}:{date.date()}")
+        doc = (await client.get(url)).text.replace("\u2060", "")
+        print(f"[INFO] fetched schedule: {route}:{date.date()}")
         return self.parse_schedule_html(origin, destination, date, url, doc)
 
     def parse_schedule_html(
@@ -433,18 +426,33 @@ class ScheduleCache:
         date: datetime,
         url: str,
         html: str,
-    ) -> FerrySchedule | None:
+    ) -> FerrySchedule:
         soup = BeautifulSoup(markup=html, features="html.parser")
         table = soup.find("table", id="dailyScheduleTableOnward")
-        if not isinstance(table, Tag):
-            return None
+        sailings = parse_table(table) if isinstance(table, Tag) else []
         return FerrySchedule(
             date=date,
             origin=origin,
             destination=destination,
-            sailings=parse_table(table),
+            sailings=sailings,
             url=url,
         )
+
+    async def _download_and_save_schedule(
+        self,
+        connection: Connection,
+        date: datetime,
+        *,
+        client: httpx.AsyncClient,
+    ) -> None:
+        schedule = await self.download_schedule_async(
+            connection.origin.id,
+            connection.destination.id,
+            date,
+            client=client,
+        )
+        if schedule:
+            self.put(schedule)
 
     async def refresh_cache(self) -> None:
         ferry_connections = (c for c in connections.values() if c.type == ConnectionType.FERRY)
@@ -468,17 +476,14 @@ class ScheduleCache:
                     if not filepath.exists():
                         tasks.append(
                             asyncio.ensure_future(
-                                self.download_schedule_async(
-                                    connection.origin.id,
-                                    connection.destination.id,
+                                self._download_and_save_schedule(
+                                    connection,
                                     date,
                                     client=client,
                                 ),
                             ),
                         )
-            schedules = await asyncio.gather(*tasks)
-            for schedule in schedules:
-                self.put(schedule)
+            await asyncio.gather(*tasks)
         print("[INFO] finished refreshing cache")
 
     def start_refresh_thread(self) -> None:
