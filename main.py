@@ -30,7 +30,7 @@ templates = Jinja2Templates(directory="templates")
 @app.on_event("startup")
 async def startup() -> None:
     load_data(Path("data/data.json"))
-    schedule_cache._refresh_thread.start()  # noqa: SLF001
+    schedule_cache.start_refresh_thread()
 
 
 @app.get("/", response_class=HTMLResponse)

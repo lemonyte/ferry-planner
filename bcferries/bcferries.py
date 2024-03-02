@@ -481,6 +481,9 @@ class ScheduleCache:
                 self.put(schedule)
         print("[INFO] finished refreshing cache")
 
+    def start_refresh_thread(self) -> None:
+        self._refresh_thread.start()
+
     def _refresh_task(self) -> None:
         while True:
             asyncio.run(self.refresh_cache())
