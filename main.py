@@ -1,4 +1,7 @@
-import subprocess
+from __future__ import annotations
+
+import asyncio
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
@@ -25,64 +28,58 @@ templates = Jinja2Templates(directory="templates")
 
 
 @app.on_event("startup")
-async def startup():
-    load_data("data/data.json")
-    schedule_cache._refresh_thread.start()
+async def startup() -> None:
+    load_data(Path("data/data.json"))
+    schedule_cache.start_refresh_thread()
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
+async def root(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/about", response_class=HTMLResponse)
-async def about(request: Request):
+async def about(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("about.html", {"request": request})
 
 
 @app.get("/api", response_class=HTMLResponse)
-async def api(request: Request):
+async def api(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("api.html", {"request": request})
 
 
 @app.get("/api/locations", response_model=dict[str, str])
-async def api_locations():
+async def api_locations() -> dict[str, str]:
     return {loc.id: loc.name for loc in locations.values()}
 
 
-# @app.post('/api/routes')
-# async def api_routes(options: classes.RoutesOptions):
-#     return find_routes(options.origin, options.destination, routes)
-
-
 @app.post("/api/schedule", response_model=FerrySchedule)
-async def api_schedule(options: ScheduleOptions):
+async def api_schedule(options: ScheduleOptions) -> FerrySchedule | None:
     return schedule_cache.get(options.origin, options.destination, options.date)
 
 
 @app.post("/api/routeplans", response_model=list[RoutePlan])
-async def api_routeplans(options: RoutePlansOptions):
+async def api_routeplans(options: RoutePlansOptions) -> list[RoutePlan]:
     routes = find_routes(options.origin, options.destination)
     route_plans = make_route_plans(routes, options)
     route_plans.sort(key=lambda plan: plan.duration)
     return route_plans
 
 
-@app.get("/api/update")
-async def api_update():
-    try:
-        subprocess.run(["/bin/sh", "update.sh"], shell=True, check=True)
-        # subprocess.run(["pip", "install", "-r", "requirements.txt"], shell=True, check=True)
-        return {"result": "Update successful"}
-    except subprocess.CalledProcessError as exc:
+@app.get("/api/update", response_model=dict[str, str])
+async def api_update() -> dict[str, str]:
+    process = await asyncio.create_subprocess_shell("update.sh")
+    await process.wait()
+    if process.returncode != 0:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update server",
-        ) from exc
+            detail=f"Failed to update server, err={process.returncode}",
+        )
+    return {"result": "Update successful"}
 
 
 @app.exception_handler(404)
-async def not_found_handler(request: Request, _):
+async def not_found_handler(request: Request, _: Exception) -> HTMLResponse:
     return templates.TemplateResponse(
         "404.html",
         {"request": request},
