@@ -387,7 +387,7 @@ class ScheduleCache:
         filepath = self._get_filepath(schedule.origin, schedule.destination, schedule.date)
         self.cache[filepath] = schedule
         dirpath = filepath.parent
-        if not dirpath.exists:
+        if not dirpath.exists():
             dirpath.mkdir(mode=0o755, parents=True, exist_ok=True)
         with filepath.open("w", encoding="utf-8") as file:
             file.write(schedule.json(indent=4))
@@ -465,7 +465,7 @@ class ScheduleCache:
             for connection in ferry_connections:
                 for date in dates:
                     filepath = self._get_filepath(connection.origin.id, connection.destination.id, date)
-                    if not filepath.exists:
+                    if not filepath.exists():
                         tasks.append(
                             asyncio.ensure_future(
                                 self.download_schedule_async(
