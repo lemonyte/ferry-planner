@@ -370,7 +370,6 @@ class ScheduleCache:
         schedule = self.cache.get(filepath, None)
         if schedule:
             return schedule
-        print(filepath)
         if filepath.exists():
             schedule = FerrySchedule.parse_file(filepath)
             self.cache[filepath] = schedule
@@ -396,8 +395,8 @@ class ScheduleCache:
         print(f"fetching url: {url}")
         try:
             doc = httpx.get(url).text.replace("\u2060", "")
-        except httpx.ConnectTimeout as err:
-            print(err)
+        except httpx.ConnectTimeout as exc:
+            print(exc)
             return None
         return self.parse_schedule_html(origin, destination, date, url, doc)
 
