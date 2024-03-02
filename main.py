@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse
@@ -28,7 +29,7 @@ templates = Jinja2Templates(directory="templates")
 
 @app.on_event("startup")
 async def startup() -> None:
-    load_data("data/data.json")
+    load_data(Path("data/data.json"))
     schedule_cache._refresh_thread.start()  # noqa: SLF001
 
 

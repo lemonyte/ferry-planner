@@ -36,8 +36,8 @@ from .classes import (
 )
 
 
-def load_data(path: str) -> None:
-    with Path(path).open(encoding="utf-8") as file:
+def load_data(path: Path) -> None:
+    with path.open(encoding="utf-8") as file:
         data = json.load(file)
     add_locations(data.get("terminals"), Terminal)
     add_locations(data.get("cities"), City)
@@ -356,12 +356,12 @@ def parse_table(table: Tag) -> list[FerrySailing]:
 
 
 class ScheduleCache:
-    def __init__(self, path: str = "data/cache") -> None:
-        self.path = Path(path)
+    def __init__(self, path: Path = Path("data/cache")) -> None:
+        self.path = path
         self.refresh_interval = 60 * 60 * 24
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
         self.cache = {}
-        Path.mkdir(Path(self.path), mode=0o755, exist_ok=True)
+        self.path.mkdir(mode=0o755, parents=True, exist_ok=True)
 
     def _get_filepath(self, origin: str, destination: str, date: datetime) -> Path:
         return self.path / f"{origin}-{destination}" / f"{date.date()}.json"
@@ -372,7 +372,7 @@ class ScheduleCache:
         if schedule:
             return schedule
         print(filepath)
-        if Path.exists(filepath):
+        if filepath.exists():
             schedule = FerrySchedule.parse_file(filepath)
             self.cache[filepath] = schedule
             return schedule
@@ -388,7 +388,7 @@ class ScheduleCache:
         self.cache[filepath] = schedule
         dirpath = filepath.parent
         if not dirpath.exists:
-            Path.mkdir(dirpath, mode=0o755, exist_ok=True)
+            dirpath.mkdir(mode=0o755, parents=True, exist_ok=True)
         with filepath.open("w", encoding="utf-8") as file:
             file.write(schedule.json(indent=4))
 
@@ -457,7 +457,7 @@ class ScheduleCache:
                 date = datetime.fromisoformat(".".join(filename.split(".")[:-1]))
                 if date not in dates:
                     (Path(subdir) / filename).unlink(missing_ok=True)
-        # clear cache
+        # clear memory cache
         self.cache = {}
         # download new schedules
         tasks = []
