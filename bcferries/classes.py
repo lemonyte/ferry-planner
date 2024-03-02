@@ -280,7 +280,7 @@ class RoutePlan(BaseModel):
 
         # Calculate distance and hash.
         driving_distance = 0.0
-        hash = hashlib.md5()  # noqa: S324
+        hash = hashlib.md5(usedforsecurity=False)
         for segment in segments:
             driving_distance += segment.connection.distance
             hash.update(segment.connection.destination.id.encode("utf-8"))
