@@ -54,7 +54,7 @@ def add_locations(new_locations: dict[LocationId, dict], cls: type[Location]) ->
         return
     for location_id, location_info in new_locations.items():
         location_info["id"] = location_id
-        location = cls.parse_obj(location_info)
+        location = cls.model_validate(location_info)
         locations[location_id] = location
 
 
@@ -80,7 +80,7 @@ def add_connection(connection_id: ConnectionId, connection_info: dict, cls: type
         destination = locations[destination_id]
     except KeyError:
         return
-    connection = cls.parse_obj(connection_info)
+    connection = cls.model_validate(connection_info)
     connection.origin = origin
     connection.destination = destination
     connections[connection_id] = connection
@@ -180,8 +180,7 @@ def add_plan_segment(
         if destination_index == len(route):
             if not segments:  # empty list?
                 return False  # can we be here?
-            plan = RoutePlan()
-            plan.init(segments)
+            plan = RoutePlan.from_segments(segments)
             plans.append(plan)
             return True
         id_from = route[destination_index - 1]
@@ -386,7 +385,7 @@ class ScheduleCache:
         dirpath = filepath.parent
         if not dirpath.exists():
             dirpath.mkdir(mode=0o755, parents=True, exist_ok=True)
-        filepath.write_text(schedule.json(indent=4), encoding="utf-8")
+        filepath.write_text(schedule.model_dump_json(indent=4), encoding="utf-8")
 
     def download_schedule(self, origin: str, destination: str, date: datetime) -> FerrySchedule | None:
         route = f"{origin}-{destination}"
