@@ -440,13 +440,19 @@ class ScheduleCache:
         *,
         client: httpx.AsyncClient,
     ) -> None:
-        schedule = await self.download_schedule_async(
-            connection.origin.id,
-            connection.destination.id,
-            date,
-            client=client,
-        )
-        if schedule:
+        try:
+            schedule = await self.download_schedule_async(
+                origin=connection.origin.id,
+                destination=connection.destination.id,
+                date=date,
+                client=client,
+            )
+        except httpx.HTTPError as exc:
+            print(
+                "[ERROR] failed to download schedule: "
+                f"{connection.origin.id}-{connection.destination.id}:{date.date()} {exc!r}",
+            )
+        else:
             self.put(schedule)
 
     async def refresh_cache(self) -> None:
