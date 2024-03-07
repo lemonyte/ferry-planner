@@ -453,9 +453,11 @@ class ScheduleCache:
                 f"{connection.origin.id}-{connection.destination.id}:{date.date()} {exc!r}",
             )
         else:
+            self.downloaded_schedules += 1
             self.put(schedule)
 
     async def refresh_cache(self) -> None:
+        self.downloaded_schedules = 0
         ferry_connections = (c for c in connections.values() if isinstance(c, FerryConnection))
         cache_ahead_days = 3
         current_date = datetime.now().date()
@@ -470,7 +472,9 @@ class ScheduleCache:
         self.cache = {}
         # download new schedules
         tasks = []
-        async with httpx.AsyncClient() as client:
+        timeout = httpx.Timeout(5.0, pool=None)
+        limits = httpx.Limits(max_connections=10)
+        async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
             for connection in ferry_connections:
                 for date in dates:
                     filepath = self._get_filepath(connection.origin.id, connection.destination.id, date)
@@ -485,7 +489,7 @@ class ScheduleCache:
                             ),
                         )
             await asyncio.gather(*tasks)
-        print("[INFO] finished refreshing cache")
+        print(f"[INFO] finished refreshing cache, downloaded {self.downloaded_schedules} schedules")
 
     def start_refresh_thread(self) -> None:
         self._refresh_thread.start()
