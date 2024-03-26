@@ -1,2 +1,2 @@
 pre-commit~=3.7.0
-uvicorn[standard]~=0.28.0
+uvicorn[standard]~=0.29.0
