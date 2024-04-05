@@ -478,7 +478,7 @@ async function getRoutePlans() {
   land_groups.forEach((lg) => {
     if (Array.from(plans).every((p) => p.via.includes(lg))) {
       plans.forEach((p) => {
-        if (p.via.length > 1) p.via = p.via.filter((l) => l != lg);
+        if (p.via.length > 1) p.via = p.via.filter((l) => l !== lg);
       });
     }
   });
@@ -611,8 +611,7 @@ function updateRoutesTable() {
       tr.classList.add("w3-text-grey");
     }
 
-    let td;
-    td = document.createElement("td");
+    let td = document.createElement("td");
     td.innerHTML = `Route&nbsp;${plan.id}`;
     tr.appendChild(td);
 
@@ -841,7 +840,7 @@ function onPlanSelected(id) {
     `<div class='card-header'>${plan.origin.name} to ${plan.destination.name}</div>` +
     `<div class='card-header-date'>${depart_time.toDateString()} at ${timeToString(depart_time)}</div>`;
   var via = [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))];
-  elements.scheduleCard.querySelector("#schedule-via").textContent = via.length > 0 ? "via " + via.join(", ") : "";
+  elements.scheduleCard.querySelector("#schedule-via").textContent = via.length > 0 ? `via ${via.join(", ")}` : "";
 
   elements.scheduleCard.querySelector("#schedule-details").innerHTML =
     //`Route ${plan.id}.` +
