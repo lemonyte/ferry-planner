@@ -439,8 +439,9 @@ async function goto(hash, clickEvent) {
   elements.routesCard.hidden = hash != "routes";
   elements.scheduleCard.hidden = currentPlan == null || hash == "routes";
 */
-  //if (window.location.hash != hash)
+  //if (window.location.hash != hash) {
   //  window.location.hash = hash;
+  // }
   saveHistory(null, hash);
 }
 
@@ -451,7 +452,7 @@ async function getRoutePlans() {
   plans.options = options;
 
   // pre-process plans data
-  land_groups = new Set()
+  land_groups = new Set();
   for (let i = 0; i < plans.length; i++) {
     let plan = plans[i];
     plan.id = i + 1;
@@ -468,16 +469,18 @@ async function getRoutePlans() {
       }
     }
     plan.via = Array.from(via);
-    if (plan.via.length > 1)
-      plan.via.pop()
+    if (plan.via.length > 1) plan.via.pop();
     plan.origin = plan.segments[0].connection.origin;
     plan.destination = plan.segments.slice(-1)[0].connection.destination;
   }
 
   // delete "via" that are common for all routes
-  land_groups.forEach(lg => {
-    if (Array.from(plans).every(p => p.via.includes(lg)))
-      plans.forEach(p => {if (p.via.length > 1) p.via = p.via.filter(l => l != lg)});
+  land_groups.forEach((lg) => {
+    if (Array.from(plans).every((p) => p.via.includes(lg))) {
+      plans.forEach((p) => {
+        if (p.via.length > 1) p.via = p.via.filter((l) => l !== lg);
+      });
+    }
   });
 
   return plans;
@@ -498,9 +501,9 @@ async function fetchRoutes() {
   saveHistory();
   if (!isValidLocation(elements.inputOrigin.value)) showMessage("", "Please select start location", "warning");
   else if (!isValidLocation(elements.inputDestination.value)) showWarning("Please select destination location");
-  else if (elements.inputOrigin.value == elements.inputDestination.value)
+  else if (elements.inputOrigin.value == elements.inputDestination.value) {
     showError("Start and destination location cannot be the same");
-  else {
+  } else {
     try {
       elements.inputForm.hidden = true;
       elements.loadingSpinner.hidden = false;
@@ -604,11 +607,11 @@ function updateRoutesTable() {
     tr.setAttribute("onclick", `javascript: goto(this.plan.hash, event);`);
     tr.classList.add("routes-table-row");
     tr.plan = plan;
-    if (new Date(plan.depart_time) < Date.now() - 60000)
+    if (new Date(plan.depart_time) < Date.now() - 60000) {
       tr.classList.add("w3-text-grey");
+    }
 
-      let td;
-    td = document.createElement("td");
+    let td = document.createElement("td");
     td.innerHTML = `Route&nbsp;${plan.id}`;
     tr.appendChild(td);
 
@@ -692,8 +695,9 @@ function updateTimelines() {
               landGroup = null;
               if (location.address.indexOf("Island") > 0 || location.name.indexOf("Island") > 0) landGroup = "Islands";
             }
-            if (landGroup && landGroup.indexOf("(") > 0)
+            if (landGroup && landGroup.indexOf("(") > 0) {
               landGroup = landGroup.substring(0, landGroup.indexOf("(")).trim();
+            }
 
             // label = location.id.length == 3 ? location.id : location.name;
           }
@@ -766,8 +770,9 @@ function updateTimelines() {
       assignTooltip(e);
       const d = e.__data__;
       if (d && d._label) e.innerHTML = d._label;
-      // if (e.getClientRects()[0].width < e.textLength.baseVal.value)
+      // if (e.getClientRects()[0].width < e.textLength.baseVal.value) {
       //    e.innerHTML = '';
+      // }
     });
 
   svg.selectAll("rect")._groups[0].forEach((e) => assignTooltip(e));
@@ -835,7 +840,7 @@ function onPlanSelected(id) {
     `<div class='card-header'>${plan.origin.name} to ${plan.destination.name}</div>` +
     `<div class='card-header-date'>${depart_time.toDateString()} at ${timeToString(depart_time)}</div>`;
   var via = [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))];
-  elements.scheduleCard.querySelector("#schedule-via").textContent =  via.length > 0 ? "via " + via.join(", ") : "";
+  elements.scheduleCard.querySelector("#schedule-via").textContent = via.length > 0 ? `via ${via.join(", ")}` : "";
 
   elements.scheduleCard.querySelector("#schedule-details").innerHTML =
     //`Route ${plan.id}.` +
@@ -854,8 +859,7 @@ function onPlanSelected(id) {
     for (const t of s.times) {
       const tr = document.createElement("tr");
       elements.scheduleTable.appendChild(tr);
-      if (new Date(t.start) < Date.now() - 60000)
-        tr.classList.add("w3-text-grey");
+      if (new Date(t.start) < Date.now() - 60000) tr.classList.add("w3-text-grey");
 
       let td;
       td = document.createElement("td");
@@ -864,11 +868,11 @@ function onPlanSelected(id) {
       tr.appendChild(td);
 
       let desc = t.description;
-      if (s.schedule_url && t.type == "TRAVEL" && t.start != t.end)
+      if (s.schedule_url && t.type == "TRAVEL" && t.start != t.end) {
         desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 5px!important" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
+      }
       td = document.createElement("td");
-      if (t.description.includes('Ferry'))
-      {
+      if (t.description.includes("Ferry")) {
         desc = `<span class="icon"><i class="fa fa-ship w3-text-blue"></i></span> ` + desc;
       }
       td.innerHTML = desc;
@@ -1023,8 +1027,7 @@ function init() {
   // for insecure context clipboard and sharing are unavailable
   if (!navigator.clipboard) {
     elements.scheduleCard.querySelector("#share-button").style.display = "none";
-   }
-
+  }
 
   resetState();
   loadLocations();
