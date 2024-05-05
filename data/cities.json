@@ -1,0 +1,986 @@
+{
+    "smithers": {
+        "region": "North British Columbia",
+        "name": "Smithers",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "smithers"
+    },
+    "queen_charlotte_city": {
+        "region": "Haida Gwaii",
+        "name": "Queen Charlotte City",
+        "land_group": "Graham Island (Haida Gwaii)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "queen_charlotte_city"
+    },
+    "tatla_lake": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Tatla Lake",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "tatla_lake"
+    },
+    "radium_hot_springs": {
+        "region": "Kootenays",
+        "name": "Radium Hot Springs",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "radium_hot_springs"
+    },
+    "qualicum": {
+        "region": "Vancouver Island",
+        "name": "Qualicum",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "qualicum"
+    },
+    "ladysmith": {
+        "region": "Vancouver Island",
+        "name": "Ladysmith",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "ladysmith"
+    },
+    "new_westminster": {
+        "region": "Lower Mainland",
+        "name": "New Westminster",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "new_westminster"
+    },
+    "gibsons": {
+        "region": "Sunshine Coast",
+        "name": "Gibsons",
+        "land_group": "Sunshine Coast",
+        "province": "BC",
+        "country": "Canada",
+        "id": "gibsons"
+    },
+    "port_clements": {
+        "region": "Haida Gwaii",
+        "name": "Port Clements",
+        "land_group": "Graham Island (Haida Gwaii)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "port_clements"
+    },
+    "pitt_meadows": {
+        "region": "Lower Mainland",
+        "name": "Pitt Meadows",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "pitt_meadows"
+    },
+    "dawson_creek": {
+        "region": "North British Columbia",
+        "name": "Dawson Creek",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "dawson_creek"
+    },
+    "invermere": {
+        "region": "Kootenays",
+        "name": "Invermere",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "invermere"
+    },
+    "merritt": {
+        "region": "Thompon Shuswap",
+        "name": "Merritt",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "merritt"
+    },
+    "victoria": {
+        "region": "Vancouver Island",
+        "name": "Victoria",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "victoria"
+    },
+    "delta": {
+        "region": "Lower Mainland",
+        "name": "Delta",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "delta"
+    },
+    "tumbler_ridge": {
+        "region": "North British Columbia",
+        "name": "Tumbler Ridge",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "tumbler_ridge"
+    },
+    "atlin": {
+        "region": "North British Columbia",
+        "name": "Atlin",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "atlin"
+    },
+    "massett": {
+        "region": "Haida Gwaii",
+        "name": "Massett",
+        "land_group": "Graham Island (Haida Gwaii)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "massett"
+    },
+    "powell_river": {
+        "region": "Sunshine Coast (PR)",
+        "name": "Powell River",
+        "land_group": "Sunshine Coast (PR)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "powell_river"
+    },
+    "kelowna": {
+        "region": "Okanagan",
+        "name": "Kelowna",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "kelowna"
+    },
+    "sicamous": {
+        "region": "Thompon Shuswap",
+        "name": "Sicamous",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "sicamous"
+    },
+    "anahim_lake": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Anahim Lake",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "anahim_lake"
+    },
+    "hagensborg": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Hagensborg",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "hagensborg"
+    },
+    "egmont": {
+        "region": "Sunshine Coast",
+        "name": "Egmont",
+        "land_group": "Sunshine Coast",
+        "province": "BC",
+        "country": "Canada",
+        "id": "egmont"
+    },
+    "houston": {
+        "region": "North British Columbia",
+        "name": "Houston",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "houston"
+    },
+    "summerland": {
+        "region": "Okanagan",
+        "name": "Summerland",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "summerland"
+    },
+    "courtenay": {
+        "region": "Vancouver Island",
+        "name": "Courtenay",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "courtenay"
+    },
+    "osoyoos": {
+        "region": "Okanagan",
+        "name": "Osoyoos",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "osoyoos"
+    },
+    "fort_st_james": {
+        "region": "North British Columbia",
+        "name": "Fort St. James",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "fort_st_james"
+    },
+    "pemberton": {
+        "region": "Whistler Region",
+        "name": "Pemberton",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "pemberton"
+    },
+    "hope": {
+        "region": "Lower Mainland",
+        "name": "Hope",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "hope"
+    },
+    "nakusp": {
+        "region": "Kootenays",
+        "name": "Nakusp",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "nakusp"
+    },
+    "ainsworth_hot_springs": {
+        "region": "Kootenays",
+        "name": "Ainsworth Hot Springs",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "ainsworth_hot_springs"
+    },
+    "fairmont_hot_springs": {
+        "region": "Kootenays",
+        "name": "Fairmont Hot Springs",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "fairmont_hot_springs"
+    },
+    "100_mile_house": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "100 Mile House",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "100_mile_house"
+    },
+    "coquitlam": {
+        "region": "Lower Mainland",
+        "name": "Coquitlam",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "coquitlam"
+    },
+    "castlegar": {
+        "region": "Kootenays",
+        "name": "Castlegar",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "castlegar"
+    },
+    "alexis_creek": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Alexis Creek",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "alexis_creek"
+    },
+    "burnaby": {
+        "region": "Lower Mainland",
+        "name": "Burnaby",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "burnaby"
+    },
+    "maple_ridge": {
+        "region": "Lower Mainland",
+        "name": "Maple Ridge",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "maple_ridge"
+    },
+    "lake_country": {
+        "region": "Okanagan",
+        "name": "Lake Country",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "lake_country"
+    },
+    "mission": {
+        "region": "Lower Mainland",
+        "name": "Mission",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "mission"
+    },
+    "lumby": {
+        "region": "Okanagan",
+        "name": "Lumby",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "lumby"
+    },
+    "surrey": {
+        "region": "Lower Mainland",
+        "name": "Surrey",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "surrey"
+    },
+    "gold_river": {
+        "region": "Vancouver Island",
+        "name": "Gold River",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "gold_river"
+    },
+    "golden": {
+        "region": "Kootenays",
+        "name": "Golden",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "golden"
+    },
+    "campbell_river": {
+        "region": "Vancouver Island",
+        "name": "Campbell River",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "campbell_river"
+    },
+    "quesnel": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Quesnel",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "quesnel"
+    },
+    "gillies_bay": {
+        "region": "Sunshine Coast (Texada)",
+        "name": "Gillies Bay",
+        "land_group": "Sunshine Coast (Texada)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "gillies_bay"
+    },
+    "kamloops": {
+        "region": "Thompon Shuswap",
+        "name": "Kamloops",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "kamloops"
+    },
+    "squamish": {
+        "region": "Whistler Region",
+        "name": "Squamish",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "squamish"
+    },
+    "penticton": {
+        "region": "Okanagan",
+        "name": "Penticton",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "penticton"
+    },
+    "skidegate": {
+        "region": "Haida Gwaii",
+        "name": "Skidegate",
+        "land_group": "Graham Island (Haida Gwaii)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "skidegate"
+    },
+    "sandspit_village": {
+        "region": "Haida Gwaii",
+        "name": "Sandspit Village",
+        "land_group": "Moresby Island (Haida Gwaii)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "sandspit_village"
+    },
+    "port_alberni": {
+        "region": "Vancouver Island",
+        "name": "Port Alberni",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "port_alberni"
+    },
+    "van_anda": {
+        "region": "Sunshine Coast (Texada)",
+        "name": "Van Anda",
+        "land_group": "Sunshine Coast (Texada)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "van_anda"
+    },
+    "richmond": {
+        "region": "Lower Mainland",
+        "name": "Richmond",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "richmond"
+    },
+    "ucluelet": {
+        "region": "Vancouver Island",
+        "name": "Ucluelet",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "ucluelet"
+    },
+    "trail": {
+        "region": "Kootenays",
+        "name": "Trail",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "trail"
+    },
+    "keremeos": {
+        "region": "Okanagan",
+        "name": "Keremeos",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "keremeos"
+    },
+    "creston": {
+        "region": "Kootenays",
+        "name": "Creston",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "creston"
+    },
+    "pender_harbour": {
+        "region": "Sunshine Coast",
+        "name": "Pender Harbour",
+        "land_group": "Sunshine Coast",
+        "province": "BC",
+        "country": "Canada",
+        "id": "pender_harbour"
+    },
+    "port_renfrew": {
+        "region": "Vancouver Island",
+        "name": "Port Renfrew",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "port_renfrew"
+    },
+    "logan_lake": {
+        "region": "Thompon Shuswap",
+        "name": "Logan Lake",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "logan_lake"
+    },
+    "lillooet": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Lillooet",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "lillooet"
+    },
+    "port_moody": {
+        "region": "Lower Mainland",
+        "name": "Port Moody",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "port_moody"
+    },
+    "alert_bay": {
+        "region": "Vancouver Island",
+        "name": "Alert Bay",
+        "land_group": "Cormorant Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "alert_bay"
+    },
+    "naramata": {
+        "region": "Okanagan",
+        "name": "Naramata",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "naramata"
+    },
+    "prince_george": {
+        "region": "North British Columbia",
+        "name": "Prince George",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "prince_george"
+    },
+    "roberts_creek": {
+        "region": "Sunshine Coast",
+        "name": "Roberts Creek",
+        "land_group": "Sunshine Coast",
+        "province": "BC",
+        "country": "Canada",
+        "id": "roberts_creek"
+    },
+    "tahsis": {
+        "region": "Vancouver Island",
+        "name": "Tahsis",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "tahsis"
+    },
+    "vancouver": {
+        "region": "Lower Mainland",
+        "name": "Vancouver",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "vancouver"
+    },
+    "north_vancouver": {
+        "region": "Lower Mainland",
+        "name": "North Vancouver",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "north_vancouver"
+    },
+    "tofino": {
+        "region": "Vancouver Island",
+        "name": "Tofino",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "tofino"
+    },
+    "prince_rupert": {
+        "region": "North British Columbia",
+        "name": "Prince Rupert",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "prince_rupert"
+    },
+    "bamfield": {
+        "region": "Vancouver Island",
+        "name": "Bamfield",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "bamfield"
+    },
+    "oliver": {
+        "region": "Okanagan",
+        "name": "Oliver",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "oliver"
+    },
+    "port_mellon": {
+        "region": "Sunshine Coast",
+        "name": "Port Mellon",
+        "land_group": "Sunshine Coast",
+        "province": "BC",
+        "country": "Canada",
+        "id": "port_mellon"
+    },
+    "kaslo": {
+        "region": "Kootenays",
+        "name": "Kaslo",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "kaslo"
+    },
+    "cowichan_valley": {
+        "region": "Vancouver Island",
+        "name": "Cowichan Valley",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "cowichan_valley"
+    },
+    "clinton": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Clinton",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "clinton"
+    },
+    "peachland": {
+        "region": "Okanagan",
+        "name": "Peachland",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "peachland"
+    },
+    "parksville": {
+        "region": "Vancouver Island",
+        "name": "Parksville",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "parksville"
+    },
+    "rossland": {
+        "region": "Kootenays",
+        "name": "Rossland",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "rossland"
+    },
+    "port_mcneill": {
+        "region": "Vancouver Island",
+        "name": "Port McNeill",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "port_mcneill"
+    },
+    "langley": {
+        "region": "Lower Mainland",
+        "name": "Langley",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "langley"
+    },
+    "white_rock": {
+        "region": "Lower Mainland",
+        "name": "White Rock",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "white_rock"
+    },
+    "vanderhoof": {
+        "region": "North British Columbia",
+        "name": "Vanderhoof",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "vanderhoof"
+    },
+    "terrace": {
+        "region": "North British Columbia",
+        "name": "Terrace",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "terrace"
+    },
+    "whistler": {
+        "region": "Whistler Region",
+        "name": "Whistler",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "whistler"
+    },
+    "burns_lake": {
+        "region": "North British Columbia",
+        "name": "Burns Lake",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "burns_lake"
+    },
+    "fort_nelson": {
+        "region": "North British Columbia",
+        "name": "Fort Nelson",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "fort_nelson"
+    },
+    "comox_valley": {
+        "region": "Vancouver Island",
+        "name": "Comox Valley",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "comox_valley"
+    },
+    "chilliwack": {
+        "region": "Lower Mainland",
+        "name": "Chilliwack",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "chilliwack"
+    },
+    "sidney": {
+        "region": "Vancouver Island",
+        "name": "Sidney",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "sidney"
+    },
+    "revelstoke": {
+        "region": "Kootenays",
+        "name": "Revelstoke",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "revelstoke"
+    },
+    "kimberley": {
+        "region": "Kootenays",
+        "name": "Kimberley",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "kimberley"
+    },
+    "nimpo_lake": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Nimpo Lake",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "nimpo_lake"
+    },
+    "nanaimo": {
+        "region": "Vancouver Island",
+        "name": "Nanaimo",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "nanaimo"
+    },
+    "port_hardy": {
+        "region": "Vancouver Island",
+        "name": "Port Hardy",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "port_hardy"
+    },
+    "cache_creek": {
+        "region": "Thompon Shuswap",
+        "name": "Cache Creek",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "cache_creek"
+    },
+    "williams_lake": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Williams Lake",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "williams_lake"
+    },
+    "slocan_valley": {
+        "region": "Kootenays",
+        "name": "Slocan Valley",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "slocan_valley"
+    },
+    "shuswap_lake": {
+        "region": "Thompon Shuswap",
+        "name": "Shuswap Lake",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "shuswap_lake"
+    },
+    "nelson": {
+        "region": "Kootenays",
+        "name": "Nelson",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "nelson"
+    },
+    "salmon_arm": {
+        "region": "Thompon Shuswap",
+        "name": "Salmon Arm",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "salmon_arm"
+    },
+    "kaleden": {
+        "region": "Okanagan",
+        "name": "Kaleden",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "kaleden"
+    },
+    "sooke": {
+        "region": "Vancouver Island",
+        "name": "Sooke",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "sooke"
+    },
+    "ashcroft": {
+        "region": "Thompon Shuswap",
+        "name": "Ashcroft",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "ashcroft"
+    },
+    "fort_st_john": {
+        "region": "North British Columbia",
+        "name": "Fort St. John",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "fort_st_john"
+    },
+    "tsawwassen": {
+        "region": "Lower Mainland",
+        "name": "Tsawwassen",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "tsawwassen"
+    },
+    "cranbrook": {
+        "region": "Kootenays",
+        "name": "Cranbrook",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "cranbrook"
+    },
+    "okanagan_falls": {
+        "region": "Okanagan",
+        "name": "Okanagan Falls",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "okanagan_falls"
+    },
+    "bella_coola": {
+        "region": "Cariboo Chilcotin Coast",
+        "name": "Bella Coola",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "bella_coola"
+    },
+    "abbotsford": {
+        "region": "Lower Mainland",
+        "name": "Abbotsford",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "abbotsford"
+    },
+    "tlell": {
+        "region": "Haida Gwaii",
+        "name": "Tlell",
+        "land_group": "Graham Island (Haida Gwaii)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "tlell"
+    },
+    "halfmoon_bay": {
+        "region": "Sunshine Coast",
+        "name": "Halfmoon Bay",
+        "land_group": "Sunshine Coast",
+        "province": "BC",
+        "country": "Canada",
+        "id": "halfmoon_bay"
+    },
+    "fernie": {
+        "region": "Kootenays",
+        "name": "Fernie",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "fernie"
+    },
+    "comox": {
+        "region": "Vancouver Island",
+        "name": "Comox",
+        "land_group": "Vancouver Island",
+        "province": "BC",
+        "country": "Canada",
+        "id": "comox"
+    },
+    "sechelt": {
+        "region": "Sunshine Coast",
+        "name": "Sechelt",
+        "land_group": "Sunshine Coast",
+        "province": "BC",
+        "country": "Canada",
+        "id": "sechelt"
+    },
+    "west_vancouver": {
+        "region": "Lower Mainland",
+        "name": "West Vancouver",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "west_vancouver"
+    },
+    "lund": {
+        "region": "Sunshine Coast (PR)",
+        "name": "Lund",
+        "land_group": "Sunshine Coast (PR)",
+        "province": "BC",
+        "country": "Canada",
+        "id": "lund"
+    },
+    "harrison_hot_spring": {
+        "region": "Lower Mainland",
+        "name": "Harrison Hot Spring",
+        "land_group": "Mainland",
+        "province": "BC",
+        "country": "Canada",
+        "id": "harrison_hot_spring"
+    }
+}
