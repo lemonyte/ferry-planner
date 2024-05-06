@@ -6,8 +6,15 @@ from typing import TYPE_CHECKING, TypeVar
 
 from pydantic import BaseModel
 
-from .connection import AirConnection, BusConnection, CarConnection, Connection, ConnectionId, FerryConnection
-from .location import City, Location, LocationId, Terminal
+from ferry_planner.connection import (
+    AirConnection,
+    BusConnection,
+    CarConnection,
+    Connection,
+    ConnectionId,
+    FerryConnection,
+)
+from ferry_planner.location import City, Location, LocationId, Terminal
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, MutableMapping

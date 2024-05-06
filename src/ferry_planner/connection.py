@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from pydantic import BaseModel, ValidationInfo, model_validator
 
-from .location import Airport, BusStop, Location, Terminal
+from ferry_planner.location import Airport, BusStop, Location, Terminal
 
 if TYPE_CHECKING:
-    from .data import LocationDB
+    from ferry_planner.data import LocationDB
 
 ConnectionId = str
 

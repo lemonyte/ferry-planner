@@ -11,9 +11,9 @@ import httpx
 from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
 
-from .connection import Connection, FerryConnection
-from .location import LocationId, Terminal
-from .util import datetime_to_timedelta
+from ferry_planner.connection import Connection, FerryConnection
+from ferry_planner.location import LocationId, Terminal
+from ferry_planner.util import datetime_to_timedelta
 
 
 class FerrySailing(BaseModel):

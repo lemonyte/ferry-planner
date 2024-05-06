@@ -12,14 +12,14 @@ from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
 
-from .connection import CarConnection, Connection, FerryConnection
-from .location import City, Location
-from .util import datetime_to_timedelta
+from ferry_planner.connection import CarConnection, Connection, FerryConnection
+from ferry_planner.location import City, Location
+from ferry_planner.util import datetime_to_timedelta
 
 if TYPE_CHECKING:
-    from .data import ConnectionDB
-    from .options import RoutePlansOptions
-    from .schedule import ScheduleGetter
+    from ferry_planner.data import ConnectionDB
+    from ferry_planner.options import RoutePlansOptions
+    from ferry_planner.schedule import ScheduleGetter
 
 Route = Sequence[Location]
 

@@ -11,15 +11,15 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .connection import FerryConnection
-from .data import ConnectionDB, LocationDB
-from .location import Location, LocationId
+from ferry_planner.connection import FerryConnection
+from ferry_planner.data import ConnectionDB, LocationDB
+from ferry_planner.location import Location, LocationId
 
 # The options imports must be outside the TYPE_CHECKING block
 # because FastAPI/Pydantic uses the type hints at runtime for validation.
-from .options import RoutePlansOptions, ScheduleOptions  # noqa: TCH001
-from .route import RouteBuilder, RoutePlan, RoutePlanBuilder
-from .schedule import FerrySchedule, ScheduleDB
+from ferry_planner.options import RoutePlansOptions, ScheduleOptions  # noqa: TCH001
+from ferry_planner.route import RouteBuilder, RoutePlan, RoutePlanBuilder
+from ferry_planner.schedule import FerrySchedule, ScheduleDB
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
