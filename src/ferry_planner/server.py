@@ -4,10 +4,10 @@ import asyncio
 from collections.abc import Mapping, Sequence
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from fastapi import FastAPI, HTTPException, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -61,9 +61,16 @@ async def api_locations() -> Mapping[LocationId, Location]:
     return location_db.dict()
 
 
-@app.post("/api/schedule", response_model=FerrySchedule)
-async def api_schedule(options: ScheduleOptions) -> FerrySchedule | None:
-    return schedule_cache.get(options.origin, options.destination, options.date)
+@app.post(
+    "/api/ferry_schedule",
+    response_model=FerrySchedule,
+    responses={404: {"model": Literal["Schedule not found"]}},
+)
+async def api_schedule(options: ScheduleOptions) -> FerrySchedule | Response:
+    schedule = schedule_cache.get(options.origin, options.destination, options.date)
+    if schedule is None:
+        return Response(status_code=status.HTTP_404_NOT_FOUND, content="Schedule not found")
+    return schedule
 
 
 @app.post("/api/routeplans", response_model=Sequence[RoutePlan])
