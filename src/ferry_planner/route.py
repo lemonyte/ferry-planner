@@ -143,12 +143,12 @@ class RoutePlan(BaseModel):
         # Calculate distance and hash.
         driving_duration = 0
         driving_distance = 0.0
-        hash = hashlib.sha1(usedforsecurity=False)
+        plan_hash = hashlib.sha1(usedforsecurity=False)
         for segment in segments:
             driving_distance += segment.connection.distance
-            hash.update(segment.connection.destination.id.encode("utf-8"))
+            plan_hash.update(segment.connection.destination.id.encode("utf-8"))
             for time in segment.times:
-                hash.update(time.start.isoformat().encode("utf-8"))
+                plan_hash.update(time.start.isoformat().encode("utf-8"))
                 if time.type == TimeIntervalType.TRAVEL and isinstance(first_segment.connection, CarConnection):
                     driving_duration += int((time.end - time.start).total_seconds())
 
@@ -163,7 +163,7 @@ class RoutePlan(BaseModel):
 
         return cls(
             segments=segments,
-            hash=hash.hexdigest(),
+            hash=plan_hash.hexdigest(),
             duration=int((arrive_time - depart_time).total_seconds()),
             depart_time=depart_time,
             arrive_time=arrive_time,
