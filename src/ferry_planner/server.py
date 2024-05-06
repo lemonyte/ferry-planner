@@ -11,6 +11,7 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from .connection import FerryConnection
 from .data import ConnectionDB, LocationDB
 from .location import Location, LocationId
 
@@ -36,7 +37,9 @@ app.mount("/static", StaticFiles(directory=ROOT_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=ROOT_DIR / "templates")
 location_db = LocationDB.from_files()
 connection_db = ConnectionDB.from_files(location_db=location_db)
-schedule_cache = ScheduleDB(connection_db=connection_db)
+schedule_cache = ScheduleDB(
+    ferry_connections=[connection for connection in connection_db.all() if isinstance(connection, FerryConnection)],
+)
 route_builder = RouteBuilder(connection_db)
 route_plan_builder = RoutePlanBuilder(connection_db)
 
