@@ -1,4 +1,6 @@
-from abc import ABC
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
 
 from pydantic import BaseModel, field_validator
 
@@ -11,8 +13,18 @@ class Location(BaseModel, ABC):
     land_group: str | None = None
 
     @property
+    @abstractmethod
+    def map_parameter(self) -> str: ...
+
+
+class City(Location):
+    region: str
+    province: str
+    country: str
+
+    @property
     def map_parameter(self) -> str:
-        raise NotImplementedError
+        return f"{self.name},{self.province},{self.country}"
 
 
 class Terminal(Location):
@@ -20,7 +32,7 @@ class Terminal(Location):
     info_url: str
     address: str
     coordinates: str
-    """String format "{latitude:float},{longitude:float}"."""
+    """String format `"{latitude:float},{longitude:float}"`."""
     veh_close: int | None = None
     """Vehicles check-in close time in minutes."""
     foot_close: int | None = None
@@ -55,11 +67,9 @@ class Terminal(Location):
         return self.coordinates
 
 
-class City(Location):
-    region: str
-    province: str
-    country: str
+class Airport(Location):
+    pass
 
-    @property
-    def map_parameter(self) -> str:
-        return f"{self.name},{self.province},{self.country}"
+
+class BusStop(Location):
+    pass

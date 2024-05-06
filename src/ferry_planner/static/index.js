@@ -172,11 +172,12 @@ async function fetchApiData(request, body, method = "GET") {
 
 async function loadLocations() {
   locations = await fetchApiData("/locations");
+
   for (const id in locations) {
-    locationsToId[locations[id]] = id;
+    locationsToId[locations[id].name] = id;
   }
 
-  locationNames = Object.values(locations);
+  locationNames = Object.values(locations).map((location) => location.name);
   locationNames.sort((a, b) => a.localeCompare(b));
 
   const locationsList = document.getElementById("locations");
@@ -214,7 +215,7 @@ function autoComplete(input) {
   if (value != "" && !isValidLocation(value)) {
     let locationName = value;
     if (value in locations) {
-      locationName = locations[value];
+      locationName = locations[value].name;
     } else {
       // find name containing entered text, this is also the 1st shown in filtered drop down list
       const r = new RegExp(escapeRegex(value), "i");

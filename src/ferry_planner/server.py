@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Mapping
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -10,19 +11,21 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .data import load_data, locations
-from .route import RoutePlan, find_routes, make_route_plans
+from .data import ConnectionDB, LocationDB
+from .location import Location, LocationId
+
+# The options imports must be outside the TYPE_CHECKING block
+# because FastAPI/Pydantic uses the type hints at runtime for validation.
+from .options import RoutePlansOptions, ScheduleOptions  # noqa: TCH001
+from .route import RouteBuilder, RoutePlan, RoutePlanBuilder
 from .schedule import FerrySchedule, ScheduleCache
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-    from .options import RoutePlansOptions, ScheduleOptions
-
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    load_data(Path("data/data.json"))
     schedule_cache.start_refresh_thread()
     yield
 
@@ -31,7 +34,11 @@ app = FastAPI(lifespan=lifespan)
 ROOT_DIR = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=ROOT_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=ROOT_DIR / "templates")
-schedule_cache = ScheduleCache()
+location_db = LocationDB.from_files()
+connection_db = ConnectionDB.from_files(location_db=location_db)
+schedule_cache = ScheduleCache(connection_db=connection_db)
+route_builder = RouteBuilder(connection_db)
+route_plan_builder = RoutePlanBuilder(connection_db)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -49,9 +56,9 @@ async def api(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("api.html", {"request": request})
 
 
-@app.get("/api/locations", response_model=dict[str, str])
-async def api_locations() -> dict[str, str]:
-    return {loc.id: loc.name for loc in locations.values()}
+@app.get("/api/locations", response_model=Mapping[LocationId, Location])
+async def api_locations() -> Mapping[LocationId, Location]:
+    return location_db.dict()
 
 
 @app.post("/api/schedule", response_model=FerrySchedule)
@@ -61,8 +68,10 @@ async def api_schedule(options: ScheduleOptions) -> FerrySchedule | None:
 
 @app.post("/api/routeplans", response_model=list[RoutePlan])
 async def api_routeplans(options: RoutePlansOptions) -> list[RoutePlan]:
-    routes = find_routes(options.origin, options.destination)
-    route_plans = make_route_plans(routes, options, schedule_cache.get)
+    origin = location_db.by_id(options.origin)
+    destination = location_db.by_id(options.destination)
+    routes = route_builder.find_routes(origin, destination)
+    route_plans = list(route_plan_builder.make_route_plans(routes, options, schedule_cache.get))
     route_plans.sort(key=lambda plan: plan.duration)
     return route_plans
 

@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
 
 from .connection import Connection, FerryConnection
-from .data import connections
+from .data import ConnectionDB
 
 
 class FerrySailing(BaseModel):
@@ -30,9 +30,13 @@ class FerrySchedule(BaseModel):
     url: str
 
 
+ScheduleGetter = Callable[[str, str, datetime], FerrySchedule | None]
+
+
 class ScheduleCache:
-    def __init__(self, path: Path = Path("data/cache")) -> None:
+    def __init__(self, *, path: Path = Path("data/schedule_cache"), connection_db: ConnectionDB) -> None:
         self.path = path
+        self.connection_db = connection_db
         self.refresh_interval = 60 * 60 * 24
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
         self.cache = {}
@@ -47,7 +51,7 @@ class ScheduleCache:
         if schedule:
             return schedule
         if filepath.exists():
-            schedule = FerrySchedule.parse_file(filepath)
+            schedule = FerrySchedule.model_validate_json(filepath.read_text(encoding="utf-8"))
             self.cache[filepath] = schedule
             return schedule
         schedule = self.download_schedule(origin, destination, date)
@@ -74,7 +78,7 @@ class ScheduleCache:
         except httpx.ConnectTimeout as exc:
             print(exc)
             return None
-        return self.parse_schedule_html(origin, destination, date, url, doc)
+        return parse_schedule_html(origin, destination, date, url, doc)
 
     async def download_schedule_async(
         self,
@@ -91,26 +95,7 @@ class ScheduleCache:
         print(f"[INFO] fetching schedule: {route}:{date.date()}")
         doc = (await client.get(url)).text.replace("\u2060", "")
         print(f"[INFO] fetched schedule: {route}:{date.date()}")
-        return self.parse_schedule_html(origin, destination, date, url, doc)
-
-    def parse_schedule_html(  # noqa: PLR0913
-        self,
-        origin: str,
-        destination: str,
-        date: datetime,
-        url: str,
-        html: str,
-    ) -> FerrySchedule:
-        soup = BeautifulSoup(markup=html, features="html.parser")
-        table = soup.find("table", id="dailyScheduleTableOnward")
-        sailings = parse_table(table) if isinstance(table, Tag) else []
-        return FerrySchedule(
-            date=date,
-            origin=origin,
-            destination=destination,
-            sailings=sailings,
-            url=url,
-        )
+        return parse_schedule_html(origin, destination, date, url, doc)
 
     async def _download_and_save_schedule(
         self,
@@ -137,7 +122,9 @@ class ScheduleCache:
 
     async def refresh_cache(self) -> None:
         self.downloaded_schedules = 0
-        ferry_connections = (c for c in connections.values() if isinstance(c, FerryConnection))
+        ferry_connections = (
+            connection for connection in self.connection_db.all() if isinstance(connection, FerryConnection)
+        )
         cache_ahead_days = 3
         current_date = datetime.now().date()
         current_date = datetime(current_date.year, current_date.month, current_date.day)
@@ -179,7 +166,7 @@ class ScheduleCache:
             time.sleep(self.refresh_interval)
 
 
-def parse_table(table: Tag) -> list[FerrySailing]:
+def parse_sailing_table(table: Tag) -> list[FerrySailing]:
     sailings = []
     sailing_row_min_td_count = 3
     if table and table.tbody:
@@ -209,4 +196,20 @@ def parse_table(table: Tag) -> list[FerrySailing]:
     return sailings
 
 
-ScheduleGetter = Callable[[str, str, datetime], FerrySchedule | None]
+def parse_schedule_html(
+    origin: str,
+    destination: str,
+    date: datetime,
+    url: str,
+    html: str,
+) -> FerrySchedule:
+    soup = BeautifulSoup(markup=html, features="html.parser")
+    table = soup.find("table", id="dailyScheduleTableOnward")
+    sailings = parse_sailing_table(table) if isinstance(table, Tag) else []
+    return FerrySchedule(
+        date=date,
+        origin=origin,
+        destination=destination,
+        sailings=sailings,
+        url=url,
+    )
