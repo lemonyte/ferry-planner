@@ -81,7 +81,13 @@ async def api_routeplans(options: RoutePlansOptions) -> Sequence[RoutePlan]:
     origin = location_db.by_id(options.origin)
     destination = location_db.by_id(options.destination)
     routes = route_builder.find_routes(origin, destination)
-    route_plans = list(route_plan_builder.make_route_plans(routes, options, schedule_cache.get))
+    route_plans = list(
+        route_plan_builder.make_route_plans(
+            routes=routes,
+            options=options,
+            schedule_getter=schedule_cache.get,
+        ),
+    )
     route_plans.sort(key=lambda plan: plan.duration)
     return route_plans
 
