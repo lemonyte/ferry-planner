@@ -33,7 +33,7 @@ class FerrySchedule(BaseModel):
 ScheduleGetter = Callable[[str, str, datetime], FerrySchedule | None]
 
 
-class ScheduleCache:
+class ScheduleDB:
     def __init__(self, *, path: Path = Path("data/schedule_cache"), connection_db: ConnectionDB) -> None:
         self.path = path
         self.connection_db = connection_db

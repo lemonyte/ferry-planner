@@ -18,7 +18,7 @@ from .location import Location, LocationId
 # because FastAPI/Pydantic uses the type hints at runtime for validation.
 from .options import RoutePlansOptions, ScheduleOptions  # noqa: TCH001
 from .route import RouteBuilder, RoutePlan, RoutePlanBuilder
-from .schedule import FerrySchedule, ScheduleCache
+from .schedule import FerrySchedule, ScheduleDB
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -36,7 +36,7 @@ app.mount("/static", StaticFiles(directory=ROOT_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=ROOT_DIR / "templates")
 location_db = LocationDB.from_files()
 connection_db = ConnectionDB.from_files(location_db=location_db)
-schedule_cache = ScheduleCache(connection_db=connection_db)
+schedule_cache = ScheduleDB(connection_db=connection_db)
 route_builder = RouteBuilder(connection_db)
 route_plan_builder = RoutePlanBuilder(connection_db)
 
