@@ -144,7 +144,7 @@ class ScheduleDB:
         date: datetime,
         *,
         client: httpx.AsyncClient,
-    ) -> None:
+    ) -> bool:
         schedule = await self.download_schedule_async(
             origin=connection.origin.id,
             destination=connection.destination.id,
@@ -152,11 +152,11 @@ class ScheduleDB:
             client=client,
         )
         if schedule is not None:
-            self.downloaded_schedules += 1
             self.put(schedule)
+            return True
+        return False
 
     async def refresh_cache(self) -> None:
-        self.downloaded_schedules = 0
         current_date = datetime.now().date()
         current_date = datetime(current_date.year, current_date.month, current_date.day)
         dates = [current_date + timedelta(days=i) for i in range(self.cache_ahead_days)]
@@ -185,10 +185,10 @@ class ScheduleDB:
                                 ),
                             ),
                         )
-            await asyncio.gather(*tasks)
+            downloaded_schedules = sum(await asyncio.gather(*tasks))
         print(
             f"[{self.__class__.__name__}:INFO] finished refreshing cache, "
-            f"downloaded {self.downloaded_schedules} schedules",
+            f"downloaded {downloaded_schedules} schedules",
         )
 
     def start_refresh_thread(self) -> None:
