@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -66,8 +66,8 @@ async def api_schedule(options: ScheduleOptions) -> FerrySchedule | None:
     return schedule_cache.get(options.origin, options.destination, options.date)
 
 
-@app.post("/api/routeplans", response_model=list[RoutePlan])
-async def api_routeplans(options: RoutePlansOptions) -> list[RoutePlan]:
+@app.post("/api/routeplans", response_model=Sequence[RoutePlan])
+async def api_routeplans(options: RoutePlansOptions) -> Sequence[RoutePlan]:
     origin = location_db.by_id(options.origin)
     destination = location_db.by_id(options.destination)
     routes = route_builder.find_routes(origin, destination)
@@ -76,8 +76,8 @@ async def api_routeplans(options: RoutePlansOptions) -> list[RoutePlan]:
     return route_plans
 
 
-@app.get("/api/update", response_model=dict[str, str])
-async def api_update() -> dict[str, str]:
+@app.get("/api/update", response_model=Mapping[str, str])
+async def api_update() -> Mapping[str, str]:
     process = await asyncio.create_subprocess_shell("update.sh")
     await process.wait()
     if process.returncode != 0:
