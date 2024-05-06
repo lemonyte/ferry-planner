@@ -57,7 +57,7 @@ class ScheduleDB:
 
     def get(self, origin: LocationId, destination: LocationId, date: datetime) -> FerrySchedule | None:
         filepath = self._get_filepath(origin, destination, date)
-        schedule = self.cache.get(filepath, None)
+        schedule = self.cache.get(filepath)
         if schedule:
             return schedule
         if filepath.exists():
