@@ -42,7 +42,7 @@ class Terminal(Location):
     res_close: int | None = None
     """Booking check-in close time in minutes."""
     res_peak_extra: int | None = None
-    """Booking check-in extra time required at peak season."""
+    """Booking check-in extra time required at peak season in minutes."""
     assured_open: int | None = None
     """Assured loading check-in open time in minutes."""
     assured_close: int | None = None
