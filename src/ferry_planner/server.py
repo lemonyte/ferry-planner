@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    schedule_cache.start_refresh_thread()
+    schedule_db.start_refresh_thread()
     yield
 
 
@@ -37,7 +37,7 @@ app.mount("/static", StaticFiles(directory=ROOT_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=ROOT_DIR / "templates")
 location_db = LocationDB.from_files()
 connection_db = ConnectionDB.from_files(location_db=location_db)
-schedule_cache = ScheduleDB(
+schedule_db = ScheduleDB(
     ferry_connections=[connection for connection in connection_db.all() if isinstance(connection, FerryConnection)],
 )
 route_builder = RouteBuilder(connection_db)
@@ -70,7 +70,7 @@ async def api_locations() -> Mapping[LocationId, Location]:
     responses={404: {"model": Literal["Schedule not found"]}},
 )
 async def api_schedule(options: ScheduleOptions) -> FerrySchedule | Response:
-    schedule = schedule_cache.get(options.origin, options.destination, options.date)
+    schedule = schedule_db.get(options.origin, options.destination, options.date)
     if schedule is None:
         return Response(status_code=status.HTTP_404_NOT_FOUND, content="Schedule not found")
     return schedule
@@ -85,7 +85,7 @@ async def api_routeplans(options: RoutePlansOptions) -> Sequence[RoutePlan]:
         route_plan_builder.make_route_plans(
             routes=routes,
             options=options,
-            schedule_getter=schedule_cache.get,
+            schedule_getter=schedule_db.get,
         ),
     )
     route_plans.sort(key=lambda plan: plan.duration)
