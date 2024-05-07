@@ -31,10 +31,8 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
 
-app = FastAPI(lifespan=lifespan)
 ROOT_DIR = Path(__file__).parent
-app.mount("/static", StaticFiles(directory=ROOT_DIR / "static"), name="static")
-templates = Jinja2Templates(directory=ROOT_DIR / "templates")
+
 location_db = LocationDB.from_files()
 connection_db = ConnectionDB.from_files(location_db=location_db)
 schedule_db = ScheduleDB(
@@ -42,6 +40,9 @@ schedule_db = ScheduleDB(
 )
 route_builder = RouteBuilder(connection_db)
 route_plan_builder = RoutePlanBuilder(connection_db)
+app = FastAPI(lifespan=lifespan)
+app.mount("/static", StaticFiles(directory=ROOT_DIR / "static"), name="static")
+templates = Jinja2Templates(directory=ROOT_DIR / "templates")
 
 
 @app.get("/", response_class=HTMLResponse)
