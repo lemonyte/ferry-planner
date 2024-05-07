@@ -74,24 +74,12 @@ class ConnectionDB:
                     msg = f"Data file {file} must contain a dictionary"
                     raise ValueError(msg)
                 connections.extend(
-                    [
+                    (
                         connection_type.model_validate(obj, context={"location_db": location_db})
-                        for obj in cls.fix_connections(data.values(), location_db=location_db)
-                    ],
+                        for obj in data.values()
+                    ),
                 )
         return cls(connections)
-
-    @staticmethod
-    def fix_connections(connections: Iterable[dict], /, *, location_db: LocationDB) -> Iterable[dict]:
-        for connection in connections:
-            try:
-                origin = location_db.by_id(connection["origin_id"])
-                destination = location_db.by_id(connection["destination_id"])
-            except KeyError:
-                continue
-            connection["origin"] = origin
-            connection["destination"] = destination
-        return connections
 
     def dict(self) -> MutableMapping[ConnectionId, Connection[Location, Location]]:
         return self._connections.copy()
