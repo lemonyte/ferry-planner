@@ -36,7 +36,9 @@ ROOT_DIR = Path(__file__).parent
 location_db = LocationDB.from_files()
 connection_db = ConnectionDB.from_files(location_db=location_db)
 schedule_db = ScheduleDB(
-    ferry_connections=[connection for connection in connection_db.all() if isinstance(connection, FerryConnection)],
+    ferry_connections=tuple(
+        connection for connection in connection_db.all() if isinstance(connection, FerryConnection)
+    ),
 )
 route_builder = RouteBuilder(connection_db)
 route_plan_builder = RoutePlanBuilder(connection_db)
