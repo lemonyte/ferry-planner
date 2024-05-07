@@ -95,7 +95,7 @@ class ScheduleDB:
             return None
         doc = response.text.replace("\u2060", "")
         print(f"[{self.__class__.__name__}:INFO] fetched schedule: {route}:{date.date()}")
-        sailings = parse_schedule_html(html=doc, date=date)
+        sailings = set(parse_schedule_html(html=doc, date=date))
         return FerrySchedule(
             date=date,
             origin=origin,
@@ -129,7 +129,7 @@ class ScheduleDB:
             return None
         doc = response.text.replace("\u2060", "")
         print(f"[{self.__class__.__name__}:INFO] fetched schedule: {route}:{date.date()}")
-        sailings = parse_schedule_html(html=doc, date=date)
+        sailings = set(parse_schedule_html(html=doc, date=date))
         return FerrySchedule(
             date=date,
             origin=origin,
