@@ -397,13 +397,13 @@ class RoutePlanBuilder:
                     description += f"{options.buffer} minutes "
                 description += f"before {deadline_name}"
                 times = (
-                    *times,
                     TimeInterval(
                         type=TimeIntervalType.WAIT,
                         start=deadline_time,
                         end=depart_time,
                         description=description,
                     ),
+                    *times,
                 )
             segments.append(
                 RoutePlanSegment(
