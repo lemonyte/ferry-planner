@@ -513,7 +513,7 @@ async function fetchRoutes() {
     try {
       elements.inputForm.hidden = true;
       elements.loadingSpinner.hidden = false;
-      //for (const e of elements.inputs) e.disabled = true;
+      //for (const element of elements.inputs) element.disabled = true;
       plans = await getRoutePlans();
       if (!plans) showError("Failed to fetch schedule information");
       else if (plans.length == 0) {
@@ -532,7 +532,7 @@ async function fetchRoutes() {
       showError(error.message);
     } finally {
       elements.loadingSpinner.hidden = true;
-      //for (const e of elements.inputs) e.disabled = false;
+      //for (const element of elements.inputs) element.disabled = false;
     }
   }
 }
@@ -772,17 +772,17 @@ function updateTimelines() {
   svg
     .selectAll("text")
     .style("cursor", "default")
-    ._groups[0].forEach((e) => {
-      assignTooltip(e);
-      const d = e.__data__;
-      if (d && d._label) e.innerHTML = d._label;
-      // if (e.getClientRects()[0].width < e.textLength.baseVal.value) {
-      //    e.innerHTML = '';
+    ._groups[0].forEach((element) => {
+      assignTooltip(element);
+      const d = element.__data__;
+      if (d && d._label) element.innerHTML = d._label;
+      // if (element.getClientRects()[0].width < element.textLength.baseVal.value) {
+      //    element.innerHTML = '';
       // }
     });
 
-  svg.selectAll("rect")._groups[0].forEach((e) => assignTooltip(e));
-  svg.selectAll("tspan")._groups[0].forEach((e) => assignTooltip(e));
+  svg.selectAll("rect")._groups[0].forEach((element) => assignTooltip(element));
+  svg.selectAll("tspan")._groups[0].forEach((element) => assignTooltip(element));
 }
 
 function updateLegend(chart, coloringKeys, currentColoring, legendElement) {
@@ -989,10 +989,9 @@ function inputValue(input) {
   return value;
 }
 
-function outputsize(e) {
-  const target = e[0].target;
+function outputsize(event) {
+  const target = event[0].target;
   if (target.clientWidth != 0) {
-    console.log(target, target.clientWidth);
     window.setTimeout(updateTabsData, 0);
   }
 }
@@ -1046,10 +1045,10 @@ function init() {
     elements.inputDate.setAttribute("min", today);
     initInput(elements.inputOrigin);
     initInput(elements.inputDestination);
-    elements.inputDate.addEventListener("keypress", (e) => {
-      if (e.code == "Enter") submit();
+    elements.inputDate.addEventListener("keypress", (event) => {
+      if (event.code == "Enter") submit();
     });
-    elements.timelineSwitch.addEventListener("change", (e) => {
+    elements.timelineSwitch.addEventListener("change", (event) => {
       window.setTimeout(function () {
         showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
       }, 0);
