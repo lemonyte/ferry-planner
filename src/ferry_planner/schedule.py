@@ -43,11 +43,12 @@ class ScheduleDB:
         ferry_connections: Iterable[FerryConnection],
         cache_dir: Path = Path("data/schedule_cache"),
         cache_ahead_days: int = 3,
+        refresh_interval: int = 60 * 60 * 24,  # 24 hours
     ) -> None:
         self.ferry_connections = ferry_connections
         self.cache_dir = cache_dir
         self.cache_ahead_days = cache_ahead_days
-        self.refresh_interval = 60 * 60 * 24
+        self.refresh_interval = refresh_interval
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
         self._mem_cache = {}
         self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
