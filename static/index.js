@@ -313,15 +313,15 @@ function urlToOptions(url) {
 }
 
 function trim(str, ch) {
-  var start = 0;
-  var end = str.length;
+  let start = 0;
+  let end = str.length;
   while (start < end && str[start] === ch) ++start;
   while (end > start && str[end - 1] === ch) --end;
   return start > 0 || end < str.length ? str.substring(start, end) : str;
 }
 
 function trimEnd(str, ch) {
-  var end = str.length;
+  let end = str.length;
   while (end > 0 && str[end - 1] === ch) --end;
   return end < str.length ? str.substring(0, end) : str;
 }
@@ -839,7 +839,7 @@ function onPlanSelected(id) {
   elements.scheduleCard.querySelector("#schedule-header").innerHTML =
     `<div class='card-header'>${plan.origin.name} to ${plan.destination.name}</div>` +
     `<div class='card-header-date'>${depart_time.toDateString()} at ${timeToString(depart_time)}</div>`;
-  var via = [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))];
+  const via = [...new Set(plan.segments.slice(0, -1).map((s) => s.connection.destination.name))];
   elements.scheduleCard.querySelector("#schedule-via").textContent = via.length > 0 ? `via ${via.join(", ")}` : "";
 
   elements.scheduleCard.querySelector("#schedule-details").innerHTML =
