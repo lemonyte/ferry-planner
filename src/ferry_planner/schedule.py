@@ -49,7 +49,7 @@ class ScheduleDB:
         self.cache_ahead_days = cache_ahead_days
         self.refresh_interval = 60 * 60 * 24
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
-        self.cache = {}
+        self._mem_cache = {}
         self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
 
     def _get_filepath(self, origin: LocationId, destination: LocationId, date: datetime) -> Path:
@@ -57,12 +57,12 @@ class ScheduleDB:
 
     def get(self, origin: LocationId, destination: LocationId, date: datetime) -> FerrySchedule | None:
         filepath = self._get_filepath(origin, destination, date)
-        schedule = self.cache.get(filepath)
+        schedule = self._mem_cache.get(filepath)
         if schedule:
             return schedule
         if filepath.exists():
             schedule = FerrySchedule.model_validate_json(filepath.read_text(encoding="utf-8"))
-            self.cache[filepath] = schedule
+            self._mem_cache[filepath] = schedule
             return schedule
         schedule = self.download_schedule(origin, destination, date)
         if schedule:
@@ -71,7 +71,7 @@ class ScheduleDB:
 
     def put(self, schedule: FerrySchedule) -> None:
         filepath = self._get_filepath(schedule.origin, schedule.destination, schedule.date)
-        self.cache[filepath] = schedule
+        self._mem_cache[filepath] = schedule
         dirpath = filepath.parent
         if not dirpath.exists():
             dirpath.mkdir(mode=0o755, parents=True, exist_ok=True)
@@ -166,7 +166,7 @@ class ScheduleDB:
                 if date not in dates:
                     (Path(subdir) / filename).unlink(missing_ok=True)
         # clear memory cache
-        self.cache = {}
+        self._mem_cache = {}
         # download new schedules
         tasks = []
         timeout = httpx.Timeout(5.0, pool=None)
