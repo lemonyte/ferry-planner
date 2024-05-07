@@ -410,9 +410,15 @@ async function goto(hash, clickEvent) {
     document.title = "Ferry Planner";
   } else if (hash == "routes") {
     const depart_time = new Date(plans[0].depart_time.substring(0, 16));
-    elements.routesCard.querySelector("#routes-card-header").innerHTML =
-      `<div class='card-header'>${elements.inputOrigin.value} to ${elements.inputDestination.value}</div>` +
-      `<div class='card-header-date'>${depart_time.toDateString()}</div>`;
+    const cardHeader = document.createElement("div");
+    cardHeader.className = "card-header";
+    cardHeader.innerText = `${elements.inputOrigin.value} to ${elements.inputDestination.value}`;
+    const cardHeaderDate = document.createElement("div");
+    cardHeaderDate.className = "card-header-date";
+    cardHeaderDate.innerText = depart_time.toDateString();
+    const routesCardHeader = elements.routesCard.querySelector("#routes-card-header");
+    routesCardHeader.innerText = "";
+    routesCardHeader.appendChild(cardHeader).appendChild(cardHeaderDate);
     showElements([/*elements.inputForm,*/ elements.routesCard]);
     document.title = `${elements.inputOrigin.value} to ${
       elements.inputDestination.value
