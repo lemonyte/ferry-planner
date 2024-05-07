@@ -1,6 +1,6 @@
 # Ferry Planner
 
-This website is a tool that calculates possible routes between two destinations with BC Ferries sailings.
+This website is a tool that calculates possible routes between two destinations with [BC Ferries](https://bcferries.com) sailings.
 
 ## Requirements
 
@@ -12,8 +12,9 @@ This website is a tool that calculates possible routes between two destinations 
 To host the website locally, install uvicorn and run it with the following commands:
 
 ```bash
+pip install -e .
 pip install uvicorn[standard]
-uvicorn main:app --reload
+uvicorn ferry_planner.server:app --reload
 ```
 
 ## Disclaimer
