@@ -73,7 +73,7 @@ async def api_locations() -> Mapping[LocationId, Location]:
     responses={404: {"model": Literal["Schedule not found"]}},
 )
 async def api_schedule(options: ScheduleOptions) -> FerrySchedule | Response:
-    schedule = schedule_db.get(options.origin, options.destination, options.date)
+    schedule = schedule_db.get(options.origin, options.destination, date=options.date)
     if schedule is None:
         return Response(status_code=status.HTTP_404_NOT_FOUND, content="Schedule not found")
     return schedule
@@ -83,7 +83,7 @@ async def api_schedule(options: ScheduleOptions) -> FerrySchedule | Response:
 async def api_routeplans(options: RoutePlansOptions) -> Sequence[RoutePlan]:
     origin = location_db.by_id(options.origin)
     destination = location_db.by_id(options.destination)
-    routes = route_builder.find_routes(origin, destination)
+    routes = route_builder.find_routes(origin=origin, destination=destination)
     route_plans = list(
         route_plan_builder.make_route_plans(
             routes=routes,

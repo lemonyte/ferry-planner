@@ -177,7 +177,7 @@ class RouteBuilder:
     def __init__(self, connection_db: ConnectionDB, /) -> None:
         self.connection_db = connection_db
 
-    def find_routes(self, origin: Location, destination: Location) -> Iterator[Route]:
+    def find_routes(self, *, origin: Location, destination: Location) -> Iterator[Route]:
         routes = []
         self._find_routes_recurse(next_point=origin, end_point=destination, routes=routes)
         yield from routes
@@ -351,7 +351,7 @@ class RoutePlanBuilder:
         res = False
         depature_terminal = connection.origin
         day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
-        schedule = schedule_getter(connection.origin.id, connection.destination.id, day)
+        schedule = schedule_getter(connection.origin.id, connection.destination.id, date=day)
         if not schedule:
             return False
         for sailing in schedule.sailings:
