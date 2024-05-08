@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel
 
 from ferry_planner.connection import CarConnection, Connection, FerryConnection
+from ferry_planner.data import ConnectionNotFoundError
 from ferry_planner.location import City, Location
 from ferry_planner.utils import datetime_to_timedelta
 
@@ -205,9 +206,10 @@ class RouteBuilder:
             del current_route[-1]
             return True
         if isinstance(end_point, City):
+            # Check if a connection exists between the current location and the end point.
             try:
                 _ = self.connection_db.from_to_location(next_point, end_point)
-            except KeyError:
+            except ConnectionNotFoundError:
                 pass
             else:
                 current_route.append(end_point)

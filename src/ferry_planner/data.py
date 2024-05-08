@@ -25,7 +25,19 @@ OriginT = TypeVar("OriginT", bound=Location)
 DestinationT = TypeVar("DestinationT", bound=Location)
 
 
-def load_from_json(file: Path, data_type: type[ModelT]) -> Iterator[ModelT]:
+class LocationNotFoundError(Exception):
+    def __init__(self, location_id: LocationId, *args: Iterable) -> None:
+        self.location_id = location_id
+        super().__init__(f"Location not found with ID {location_id}", *args)
+
+
+class ConnectionNotFoundError(Exception):
+    def __init__(self, connection_id: ConnectionId, *args: Iterable) -> None:
+        self.connection_id = connection_id
+        super().__init__(f"Connection not found with ID {connection_id}", *args)
+
+
+def load_from_json(file: Path, /, *, data_type: type[ModelT]) -> Iterator[ModelT]:
     data = json.loads(file.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         msg = f"Data file '{file}' must contain a dictionary"
@@ -40,8 +52,8 @@ class LocationDB:
     @classmethod
     def from_files(cls) -> LocationDB:
         locations = []
-        locations.extend(load_from_json(Path("data/cities.json"), City))
-        locations.extend(load_from_json(Path("data/terminals.json"), Terminal))
+        locations.extend(load_from_json(Path("data/cities.json"), data_type=City))
+        locations.extend(load_from_json(Path("data/terminals.json"), data_type=Terminal))
         return cls(locations)
 
     def dict(self) -> MutableMapping[LocationId, Location]:
@@ -51,7 +63,10 @@ class LocationDB:
         yield from self._locations.values()
 
     def by_id(self, location_id: LocationId, /) -> Location:
-        return self._locations[location_id]
+        location = self._locations.get(location_id)
+        if location is None:
+            raise LocationNotFoundError(location_id)
+        return location
 
 
 class ConnectionDB:
@@ -102,7 +117,11 @@ class ConnectionDB:
 
     def from_to_location(self, origin: OriginT, destination: DestinationT, /) -> Connection[OriginT, DestinationT]:
         """Get a connection between two locations."""
-        return self._connections[f"{origin.id}-{destination.id}"]
+        connection_id = f"{origin.id}-{destination.id}"
+        connection = self._connections.get(connection_id)
+        if connection is None:
+            raise ConnectionNotFoundError(connection_id)
+        return connection
 
     def with_location(
         self,
