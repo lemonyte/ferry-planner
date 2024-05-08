@@ -2,10 +2,11 @@
 import asyncio
 import os
 import time
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Iterable, Iterator
 from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Thread
+from typing import Protocol
 
 import httpx
 from bs4 import BeautifulSoup, Tag
@@ -33,7 +34,15 @@ class FerrySchedule(BaseModel):
     url: str
 
 
-ScheduleGetter = Callable[[LocationId, LocationId, datetime], FerrySchedule | None]
+class ScheduleGetter(Protocol):
+    def __call__(
+        self,
+        origin_id: LocationId,
+        destination_id: LocationId,
+        /,
+        *,
+        date: datetime,
+    ) -> FerrySchedule | None: ...
 
 
 class ScheduleDB:
