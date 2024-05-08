@@ -12,8 +12,8 @@ import httpx
 from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
 
-from ferry_planner.connection import Connection, FerryConnection
-from ferry_planner.location import LocationId, Terminal
+from ferry_planner.connection import FerryConnection
+from ferry_planner.location import LocationId
 from ferry_planner.utils import datetime_to_timedelta
 
 
@@ -62,11 +62,25 @@ class ScheduleDB:
         self._mem_cache = {}
         self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
 
-    def _get_filepath(self, origin: LocationId, destination: LocationId, date: datetime) -> Path:
-        return self.cache_dir / f"{origin}-{destination}" / f"{date.date()}.json"
+    def _get_filepath(
+        self,
+        origin_id: LocationId,
+        destination_id: LocationId,
+        /,
+        *,
+        date: datetime,
+    ) -> Path:
+        return self.cache_dir / f"{origin_id}-{destination_id}" / f"{date.date()}.json"
 
-    def get(self, origin: LocationId, destination: LocationId, date: datetime) -> FerrySchedule | None:
-        filepath = self._get_filepath(origin, destination, date)
+    def get(
+        self,
+        origin_id: LocationId,
+        destination_id: LocationId,
+        /,
+        *,
+        date: datetime,
+    ) -> FerrySchedule | None:
+        filepath = self._get_filepath(origin_id, destination_id, date=date)
         schedule = self._mem_cache.get(filepath)
         if schedule:
             return schedule
@@ -74,21 +88,32 @@ class ScheduleDB:
             schedule = FerrySchedule.model_validate_json(filepath.read_text(encoding="utf-8"))
             self._mem_cache[filepath] = schedule
             return schedule
-        schedule = self.download_schedule(origin, destination, date)
+        schedule = self.download_schedule(origin_id, destination_id, date=date)
         if schedule:
             self.put(schedule)
         return schedule
 
-    def put(self, schedule: FerrySchedule) -> None:
-        filepath = self._get_filepath(schedule.origin, schedule.destination, schedule.date)
+    def put(self, schedule: FerrySchedule, /) -> None:
+        filepath = self._get_filepath(
+            schedule.origin,
+            schedule.destination,
+            date=schedule.date,
+        )
         self._mem_cache[filepath] = schedule
         dirpath = filepath.parent
         if not dirpath.exists():
             dirpath.mkdir(mode=0o755, parents=True, exist_ok=True)
         filepath.write_text(schedule.model_dump_json(indent=4), encoding="utf-8")
 
-    def download_schedule(self, origin: LocationId, destination: LocationId, date: datetime) -> FerrySchedule | None:
-        route = f"{origin}-{destination}"
+    def download_schedule(
+        self,
+        origin_id: LocationId,
+        destination_id: LocationId,
+        /,
+        *,
+        date: datetime,
+    ) -> FerrySchedule | None:
+        route = f"{origin_id}-{destination_id}"
         url = (
             f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
         )
@@ -108,21 +133,22 @@ class ScheduleDB:
         sailings = set(parse_schedule_html(html=doc, date=date))
         return FerrySchedule(
             date=date,
-            origin=origin,
-            destination=destination,
+            origin=origin_id,
+            destination=destination_id,
             sailings=sailings,
             url=url,
         )
 
     async def download_schedule_async(
         self,
-        origin: LocationId,
-        destination: LocationId,
-        date: datetime,
+        origin_id: LocationId,
+        destination_id: LocationId,
+        /,
         *,
+        date: datetime,
         client: httpx.AsyncClient,
     ) -> FerrySchedule | None:
-        route = f"{origin}-{destination}"
+        route = f"{origin_id}-{destination_id}"
         url = (
             f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
         )
@@ -142,22 +168,24 @@ class ScheduleDB:
         sailings = set(parse_schedule_html(html=doc, date=date))
         return FerrySchedule(
             date=date,
-            origin=origin,
-            destination=destination,
+            origin=origin_id,
+            destination=destination_id,
             sailings=sailings,
             url=url,
         )
 
     async def _download_and_save_schedule(
         self,
-        connection: Connection[Terminal, Terminal],
-        date: datetime,
+        origin_id: LocationId,
+        destination_id: LocationId,
+        /,
         *,
+        date: datetime,
         client: httpx.AsyncClient,
     ) -> bool:
         schedule = await self.download_schedule_async(
-            origin=connection.origin.id,
-            destination=connection.destination.id,
+            origin_id,
+            destination_id,
             date=date,
             client=client,
         )
@@ -184,13 +212,18 @@ class ScheduleDB:
         async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
             for connection in self.ferry_connections:
                 for date in dates:
-                    filepath = self._get_filepath(connection.origin.id, connection.destination.id, date)
+                    filepath = self._get_filepath(
+                        connection.origin.id,
+                        connection.destination.id,
+                        date=date,
+                    )
                     if not filepath.exists():
                         tasks.append(
                             asyncio.ensure_future(
                                 self._download_and_save_schedule(
-                                    connection,
-                                    date,
+                                    connection.origin.id,
+                                    connection.destination.id,
+                                    date=date,
                                     client=client,
                                 ),
                             ),
