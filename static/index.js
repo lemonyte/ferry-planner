@@ -163,7 +163,7 @@ async function fetchApiData(request, body, method = "GET") {
   // if (response.type) // FIXME: check if valid json
   const responseJson = await response.json();
   if (!response.ok) {
-    msg = response.statusText;
+    let msg = response.statusText;
     if (responseJson && responseJson.detail) msg += " " + JSON.stringify(responseJson.detail);
     throw new Error(msg);
   }
@@ -329,7 +329,7 @@ function trimEnd(str, ch) {
 function saveHistory(options, hash) {
   if (!options) options = getOptions(true);
   if (hash) options["hash"] = hash;
-  url = optionsToUrl(options);
+  const url = optionsToUrl(options);
 
   // don't push duplicate states
   if (trimEnd(url.href, "#") == trimEnd(window.location.href, "#")) {
@@ -358,7 +358,6 @@ function showElements(elements) {
   for (const c of cards) {
     const show = elements.includes(c);
     c.hidden = !show;
-    if (show) lastElement = c;
   }
 }
 
@@ -458,7 +457,7 @@ async function getRoutePlans() {
   plans.options = options;
 
   // pre-process plans data
-  land_groups = new Set();
+  const land_groups = new Set();
   for (let i = 0; i < plans.length; i++) {
     let plan = plans[i];
     plan.id = i + 1;
@@ -538,9 +537,9 @@ async function fetchRoutes() {
 }
 
 function secondsToString(seconds) {
-  dateObj = new Date(seconds * 1000);
-  hours = dateObj.getUTCHours();
-  minutes = dateObj.getUTCMinutes();
+  const dateObj = new Date(seconds * 1000);
+  const hours = dateObj.getUTCHours();
+  const minutes = dateObj.getUTCMinutes();
   seconds = dateObj.getSeconds();
   const timeString =
     hours.toString().padStart(2, "0") +
@@ -555,9 +554,9 @@ function timeToString(time, roundSeconds = true) {
   const dateObj = new Date(time);
   if (roundSeconds) dateObj.setSeconds(0);
   return dateObj.toLocaleTimeString().toLowerCase().replace(":00 ", "");
-  // hours = dateObj.getHours();
-  // minutes = dateObj.getMinutes();
-  // ampm = "am";
+  // let hours = dateObj.getHours();
+  // const minutes = dateObj.getMinutes();
+  // let ampm = "am";
   // if (hours >= 12) {
   //   hours -= 12;
   //   ampm = "pm";
@@ -568,12 +567,11 @@ function timeToString(time, roundSeconds = true) {
 }
 
 function durationToString(time) {
-  dateObj = new Date(time);
-  days = Math.floor(dateObj.getTime() / 60 / 60 / 24 / 1000);
-  hours = dateObj.getUTCHours();
-  minutes = dateObj.getUTCMinutes();
-  seconds = dateObj.getUTCSeconds();
-  timeString = "";
+  const dateObj = new Date(time);
+  const days = Math.floor(dateObj.getTime() / 60 / 60 / 24 / 1000);
+  const hours = dateObj.getUTCHours();
+  const minutes = dateObj.getUTCMinutes();
+  let timeString = "";
   if (days < 1) timeString = "";
   else if (days >= 2) timeString = `${days} days `;
   else timeString = "1 day ";
@@ -791,8 +789,8 @@ function updateLegend(chart, coloringKeys, currentColoring, legendElement) {
   const colorsDomain = chart.colors().domain();
   let legend = "Legend: ";
   for (let i = 0; i < colorsRange.length && i < coloringKeys.length; i++) {
-    n = colorsDomain.indexOf(coloringKeys[i]);
-    c = colorsRange[n];
+    let n = colorsDomain.indexOf(coloringKeys[i]);
+    let c = colorsRange[n];
     legend += `<span>&nbsp;&nbsp;`;
     legend += `<div style="display:inline-block;height:1em;width:1em;vertical-align:middle;background-color:${c}">&nbsp;</div>&nbsp;`;
     if (currentColoring == "activity") {
@@ -1046,7 +1044,7 @@ function init() {
     initInput(elements.inputOrigin);
     initInput(elements.inputDestination);
     elements.inputDate.addEventListener("keypress", (event) => {
-      if (event.code == "Enter") submit();
+      if (event.code === "Enter") submit();
     });
     elements.timelineSwitch.addEventListener("change", (event) => {
       window.setTimeout(function () {
