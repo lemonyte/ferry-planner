@@ -70,12 +70,12 @@ async def api_locations() -> Mapping[LocationId, Location]:
 @app.post(
     "/api/ferry_schedule",
     response_model=FerrySchedule,
-    responses={404: {"model": Literal["Schedule not found"]}},
+    responses={404: {"model": Mapping[Literal["detail"], str]}},
 )
 async def api_schedule(options: ScheduleOptions) -> FerrySchedule | Response:
     schedule = schedule_db.get(options.origin, options.destination, date=options.date)
     if schedule is None:
-        return Response(status_code=status.HTTP_404_NOT_FOUND, content="Schedule not found")
+        return Response(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Schedule not found"})
     return schedule
 
 
