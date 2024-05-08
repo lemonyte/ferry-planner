@@ -1037,8 +1037,8 @@ function init() {
 
   // initialize input controls
   {
-    const d = new Date();
-    const today = `${d.getFullYear()}-${pad(d.getMonth() + 1, 2)}-${pad(d.getDate(), 2)}`;
+    const date = new Date();
+    const today = `${date.getFullYear()}-${pad(date.getMonth() + 1, 2)}-${pad(date.getDate(), 2)}`;
     elements.inputDate.setAttribute("value", today);
     elements.inputDate.setAttribute("min", today);
     initInput(elements.inputOrigin);
@@ -1046,7 +1046,7 @@ function init() {
     elements.inputDate.addEventListener("keypress", (event) => {
       if (event.code === "Enter") submit();
     });
-    elements.timelineSwitch.addEventListener("change", (event) => {
+    elements.timelineSwitch.addEventListener("change", () => {
       window.setTimeout(function () {
         showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
       }, 0);
