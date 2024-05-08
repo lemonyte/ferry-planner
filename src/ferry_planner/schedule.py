@@ -46,21 +46,33 @@ class ScheduleGetter(Protocol):
 
 
 class ScheduleDB:
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *,
         ferry_connections: Iterable[FerryConnection],
+        base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/",
         cache_dir: Path = Path("data/schedule_cache"),
         cache_ahead_days: int = 3,
         refresh_interval: int = 60 * 60 * 24,  # 24 hours
     ) -> None:
         self.ferry_connections = ferry_connections
+        self.base_url = base_url
         self.cache_dir = cache_dir
         self.cache_ahead_days = cache_ahead_days
         self.refresh_interval = refresh_interval
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
         self._mem_cache = {}
         self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
+
+    def _get_download_url(
+        self,
+        origin_id: LocationId,
+        destination_id: LocationId,
+        /,
+        *,
+        date: datetime,
+    ) -> str:
+        return self.base_url + f"{origin_id}-{destination_id}?&scheduleDate={date.strftime('%m/%d/%Y')}"
 
     def _get_filepath(
         self,
@@ -113,10 +125,8 @@ class ScheduleDB:
         *,
         date: datetime,
     ) -> FerrySchedule | None:
+        url = self._get_download_url(origin_id, destination_id, date=date)
         route = f"{origin_id}-{destination_id}"
-        url = (
-            f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
-        )
         print(f"[{self.__class__.__name__}:INFO] fetching schedule: {route}:{date.date()}")
         try:
             response = httpx.get(url)
@@ -148,10 +158,8 @@ class ScheduleDB:
         date: datetime,
         client: httpx.AsyncClient,
     ) -> FerrySchedule | None:
+        url = self._get_download_url(origin_id, destination_id, date=date)
         route = f"{origin_id}-{destination_id}"
-        url = (
-            f"https://www.bcferries.com/routes-fares/schedules/daily/{route}?&scheduleDate={date.strftime('%m/%d/%Y')}"
-        )
         print(f"[{self.__class__.__name__}:INFO] fetching schedule: {route}:{date.date()}")
         try:
             response = await client.get(url)
