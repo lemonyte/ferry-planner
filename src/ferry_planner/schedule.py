@@ -25,6 +25,9 @@ class FerrySailing(BaseModel):
     # TODO: price: float  # noqa: FIX002
     """Price in Canadian dollars (CAD)."""
 
+    def __hash__(self) -> int:
+        return hash((self.departure, self.arrival, self.duration))
+
 
 class FerrySchedule(BaseModel):
     date: datetime
