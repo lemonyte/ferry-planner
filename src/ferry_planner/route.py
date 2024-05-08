@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from ferry_planner.connection import CarConnection, Connection, FerryConnection
 from ferry_planner.location import City, Location
-from ferry_planner.util import datetime_to_timedelta
+from ferry_planner.utils import datetime_to_timedelta
 
 if TYPE_CHECKING:
     from ferry_planner.data import ConnectionDB

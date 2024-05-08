@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from ferry_planner.connection import Connection, FerryConnection
 from ferry_planner.location import LocationId, Terminal
-from ferry_planner.util import datetime_to_timedelta
+from ferry_planner.utils import datetime_to_timedelta
 
 
 class FerrySailing(BaseModel):
