@@ -176,7 +176,7 @@ class RoutePlan(BaseModel):
 
 class RouteBuilder:
     def __init__(self, connection_db: ConnectionDB, /) -> None:
-        self.connection_db = connection_db
+        self._connection_db = connection_db
 
     def find_routes(self, *, origin: Location, destination: Location) -> Iterator[Route]:
         routes = []
@@ -208,7 +208,7 @@ class RouteBuilder:
         if isinstance(end_point, City):
             # Check if a connection exists between the current location and the end point.
             try:
-                _ = self.connection_db.from_to_location(next_point, end_point)
+                _ = self._connection_db.from_to_location(next_point, end_point)
             except ConnectionNotFoundError:
                 pass
             else:
@@ -217,7 +217,7 @@ class RouteBuilder:
                 del current_route[-2:]
                 return True
         res = False
-        for connection in self.connection_db.from_location(next_point):
+        for connection in self._connection_db.from_location(next_point):
             if connection.destination in current_route or connection in dead_ends:
                 continue
             if isinstance(connection, CarConnection) and last_connection_type is CarConnection:
@@ -251,7 +251,7 @@ class RouteBuilder:
 
 class RoutePlanBuilder:
     def __init__(self, connection_db: ConnectionDB, /) -> None:
-        self.connection_db = connection_db
+        self._connection_db = connection_db
 
     def make_route_plans(
         self,
@@ -263,7 +263,7 @@ class RoutePlanBuilder:
         for route in routes:
             route_plans = []
             segments = []
-            self.add_plan_segment(
+            self._add_plan_segment(
                 route=route,
                 destination_index=1,
                 segments=segments,
@@ -274,7 +274,7 @@ class RoutePlanBuilder:
             )
             yield from route_plans
 
-    def add_plan_segment(  # noqa: PLR0913
+    def _add_plan_segment(  # noqa: PLR0913
         self,
         *,
         route: Route,
@@ -295,9 +295,9 @@ class RoutePlanBuilder:
                 return True
             origin = route[destination_index - 1]
             destination = route[destination_index]
-            connection = self.connection_db.from_to_location(origin, destination)
+            connection = self._connection_db.from_to_location(origin, destination)
             if isinstance(connection, FerryConnection):
-                res = self.add_ferry_connection(
+                res = self._add_ferry_connection(
                     route=route,
                     destination_index=destination_index,
                     segments=segments,
@@ -324,7 +324,7 @@ class RoutePlanBuilder:
                     ),
                 )
                 segments.append(RoutePlanSegment(connection=connection, times=times))
-                res = self.add_plan_segment(
+                res = self._add_plan_segment(
                     route=route,
                     destination_index=destination_index + 1,
                     segments=segments,
@@ -338,7 +338,7 @@ class RoutePlanBuilder:
             del segments[delete_start:]
         return res
 
-    def add_ferry_connection(  # noqa: C901, PLR0912, PLR0913
+    def _add_ferry_connection(  # noqa: C901, PLR0912, PLR0913
         self,
         *,
         route: Route,
@@ -415,7 +415,7 @@ class RoutePlanBuilder:
                 ),
             )
             if (
-                self.add_plan_segment(
+                self._add_plan_segment(
                     route=route,
                     destination_index=destination_index + 1,
                     segments=segments,
