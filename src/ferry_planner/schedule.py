@@ -2,7 +2,7 @@
 import asyncio
 import os
 import time
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator, Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Thread
@@ -33,7 +33,7 @@ class FerrySchedule(BaseModel):
     date: datetime
     origin: LocationId
     destination: LocationId
-    sailings: Iterable[FerrySailing]
+    sailings: Sequence[FerrySailing]
     url: str
 
 
@@ -52,7 +52,7 @@ class ScheduleDB:
     def __init__(  # noqa: PLR0913
         self,
         *,
-        ferry_connections: Iterable[FerryConnection],
+        ferry_connections: Sequence[FerryConnection] | set[FerryConnection] | frozenset[FerryConnection],
         base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/",
         cache_dir: Path = Path("data/schedule_cache"),
         cache_ahead_days: int = 3,
@@ -143,7 +143,7 @@ class ScheduleDB:
             return None
         doc = response.text.replace("\u2060", "")
         print(f"[{self.__class__.__name__}:INFO] fetched schedule: {route}:{date.date()}")
-        sailings = set(parse_schedule_html(html=doc, date=date))
+        sailings = tuple(parse_schedule_html(html=doc, date=date))
         return FerrySchedule(
             date=date,
             origin=origin_id,
@@ -176,7 +176,7 @@ class ScheduleDB:
             return None
         doc = response.text.replace("\u2060", "")
         print(f"[{self.__class__.__name__}:INFO] fetched schedule: {route}:{date.date()}")
-        sailings = set(parse_schedule_html(html=doc, date=date))
+        sailings = tuple(parse_schedule_html(html=doc, date=date))
         return FerrySchedule(
             date=date,
             origin=origin_id,
