@@ -4,7 +4,7 @@
 <head>
   {% block head %}
   <title>{% block title %}Ferry Planner{% endblock %}</title>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description"
     content="Easily plan your coastal BC trip. Find the best routes and times to travel, even with multiple ferry connections. Get up-to-date info for any location in BC!" />
@@ -22,13 +22,13 @@
     <div class="w3-bar">
       {% block navbar %}
       <div class="w3-white no-print">
-        <span id="menu-button" class="w3-xlarge w3-padding w3-serife" style="cursor:pointer; vertical-align: middle;"
+        <span id="menu-button" class="w3-xlarge w3-padding w3-serife" style="cursor: pointer; vertical-align: middle;"
           onclick="menuToggle()">
           <b>☰</b>
         </span>
         <b>
           <i>
-            <span class="w3-cell-middle w3-serife w3-large" style="text-transform: uppercase">
+            <span class="w3-cell-middle w3-serife w3-large" style="text-transform: uppercase;">
               Ferry Planner
             </span>
           </i>
@@ -100,7 +100,7 @@
       if (!menuButton.contains(event.target)) {
         menuClose();
       }
-    })
+    });
   </script>
   {% endblock %}
 </body>
