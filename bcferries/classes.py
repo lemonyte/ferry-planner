@@ -24,6 +24,14 @@ class ConnectionsCache:
         self.city_connections = {}
 
 
+class ConnectionType(Enum):
+    NONE = "NONE"
+    CAR = "CAR"
+    FERRY = "FERRY"
+    AIR = "AIR"
+    BUS = "BUS"
+
+
 class TimeIntervalType(Enum):
     FREE = "FREE"
     """Extra time between segments."""
@@ -115,6 +123,7 @@ class Connection(BaseModel, ABC):
     duration: int = None  # type: ignore[None]
     distance: float
     fuel: float
+    type: ConnectionType
 
 
 class FerryConnection(Connection):
@@ -124,18 +133,19 @@ class FerryConnection(Connection):
     distance: float = 0.2
     fuel: float = 0.2
     bookable: bool = False
+    type: ConnectionType = ConnectionType.FERRY
 
 
 class CarConnection(Connection):
-    pass
+    type: ConnectionType = ConnectionType.CAR
 
 
 class AirConnection(Connection):
-    pass
+    type: ConnectionType = ConnectionType.AIR
 
 
 class BusConnection(Connection):
-    pass
+    type: ConnectionType = ConnectionType.BUS
 
 
 class TimeInterval(BaseModel):
