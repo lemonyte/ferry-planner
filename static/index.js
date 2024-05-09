@@ -439,7 +439,7 @@ export async function goto(hash, clickEvent) {
     //   behavior: "smooth",
     // });
     document.title = `${elements.inputOrigin.value} to ${elements.inputDestination.value} on ${new Date(
-      currentPlan.depart_time
+      currentPlan.depart_time,
     ).toDateString()} at ${timeToString(currentPlan.depart_time)}`;
   }
 
@@ -945,7 +945,7 @@ export function onShare() {
       } departing on ${depart_time.toDateString()} at ${timeToString(depart_time)}`;
     } else {
       data.text = `Routes from ${elements.inputOrigin.text} to ${elements.destination.text} on ${new Date(
-        elements.inputDate.value
+        elements.inputDate.value,
       ).toDateString()}`;
     }
 
