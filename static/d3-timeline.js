@@ -77,22 +77,19 @@ export const timeline = () => {
       appendTimeAxisNav(g);
     }
 
-    g.append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate(" + 0 + "," + yPosition + ")")
-      .call(xAxis);
+    g.append("g").attr("class", "axis").attr("transform", `translate(${0},${yPosition})`).call(xAxis);
   }
 
   function appendTimeAxisCalendarYear(nav) {
     let calendarLabel = beginning.getFullYear();
 
     if (beginning.getFullYear() != ending.getFullYear()) {
-      calendarLabel = beginning.getFullYear() + "-" + ending.getFullYear();
+      calendarLabel = `${beginning.getFullYear()}-${ending.getFullYear()}`;
     }
 
     nav
       .append("text")
-      .attr("transform", "translate(" + 20 + ", 0)")
+      .attr("transform", `translate(${20}, 0)`)
       .attr("x", 0)
       .attr("y", 14)
       .attr("class", "calendarYear")
@@ -105,10 +102,7 @@ export const timeline = () => {
     const incrementValue = (width - margin.left) / timelineBlocks;
     const rightNavMargin = width - margin.right - incrementValue + navMargin;
 
-    const nav = g
-      .append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate(0, 20)");
+    const nav = g.append("g").attr("class", "axis").attr("transform", "translate(0, 20)");
 
     if (showAxisCalendarYear) {
       appendTimeAxisCalendarYear(nav);
@@ -116,7 +110,7 @@ export const timeline = () => {
 
     nav
       .append("text")
-      .attr("transform", "translate(" + leftNavMargin + ", 0)")
+      .attr("transform", `translate(${leftNavMargin}, 0)`)
       .attr("x", 0)
       .attr("y", 14)
       .attr("class", "chevron")
@@ -127,7 +121,7 @@ export const timeline = () => {
 
     nav
       .append("text")
-      .attr("transform", "translate(" + rightNavMargin + ", 0)")
+      .attr("transform", `translate(${rightNavMargin}, 0)`)
       .attr("x", 0)
       .attr("y", 14)
       .attr("class", "chevron")
@@ -150,60 +144,33 @@ export const timeline = () => {
   function appendTimeAxisTick(g, xAxis, maxStack) {
     g.append("g")
       .attr("class", "axis")
-      .attr(
-        "transform",
-        "translate(" +
-          0 +
-          "," +
-          (margin.top + (itemHeight + itemMargin) * maxStack) +
-          ")"
-      )
+      .attr("transform", `translate(${0},${margin.top + (itemHeight + itemMargin) * maxStack})`)
       .attr(timeAxisTickFormat.stroke, timeAxisTickFormat.spacing)
-      .call(
-        xAxis
-          .tickFormat("")
-          .tickSize(
-            -(margin.top + (itemHeight + itemMargin) * (maxStack - 1) + 3),
-            0,
-            0
-          )
-      );
+      .call(xAxis.tickFormat("").tickSize(-(margin.top + (itemHeight + itemMargin) * (maxStack - 1) + 3), 0, 0));
   }
 
   function appendBackgroundBar(yAxisMapping, index, g, data, datum) {
-    const greenbarYAxis =
-      (itemHeight + itemMargin) * yAxisMapping[index] + margin.top;
+    const greenbarYAxis = (itemHeight + itemMargin) * yAxisMapping[index] + margin.top;
     g.selectAll("svg")
       .data(data)
       .enter()
       .insert("rect")
       .attr("class", "row-green-bar")
       .attr("x", fullLengthBackgrounds ? 0 : margin.left)
-      .attr(
-        "width",
-        fullLengthBackgrounds ? width : width - margin.right - margin.left
-      )
+      .attr("width", fullLengthBackgrounds ? width : width - margin.right - margin.left)
       .attr("y", greenbarYAxis)
       .attr("height", itemHeight)
-      .attr(
-        "fill",
-        backgroundColor instanceof Function
-          ? backgroundColor(datum, index)
-          : backgroundColor
-      );
+      .attr("fill", backgroundColor instanceof Function ? backgroundColor(datum, index) : backgroundColor);
   }
 
   function appendLabel(gParent, yAxisMapping, index, hasLabel, datum) {
     const fullItemHeight = itemHeight + itemMargin;
-    const rowsDown =
-      margin.top +
-      fullItemHeight / 2 +
-      fullItemHeight * (yAxisMapping[index] || 1);
+    const rowsDown = margin.top + fullItemHeight / 2 + fullItemHeight * (yAxisMapping[index] || 1);
 
     gParent
       .append("text")
       .attr("class", "timeline-label")
-      .attr("transform", "translate(" + labelMargin + "," + rowsDown + ")")
+      .attr("transform", `translate(${labelMargin},${rowsDown})`)
       .text(hasLabel ? labelFunction(datum.label) : datum.id)
       .on("click", (d, i) => {
         click(d, index, datum);
@@ -257,13 +224,9 @@ export const timeline = () => {
           // figure out beginning and ending times if they are unspecified
           datum.times.forEach((time, i) => {
             if (beginning === 0)
-              if (
-                time.startingTime < minTime ||
-                (minTime === 0 && timeIsRelative === false)
-              )
+              if (time.startingTime < minTime || (minTime === 0 && timeIsRelative === false))
                 minTime = time.startingTime;
-            if (ending === 0)
-              if (time.endingTime > maxTime) maxTime = time.endingTime;
+            if (ending === 0) if (time.endingTime > maxTime) maxTime = time.endingTime;
           });
         });
       });
@@ -276,8 +239,7 @@ export const timeline = () => {
       }
     }
 
-    const scaleFactor =
-      (1 / (ending - beginning)) * (width - margin.left - margin.right);
+    const scaleFactor = (1 / (ending - beginning)) * (width - margin.left - margin.right);
 
     // draw the axis
     const xScale = d3
@@ -296,10 +258,7 @@ export const timeline = () => {
     if (tickFormat.tickValues != null) {
       xAxis.tickValues(tickFormat.tickValues);
     } else {
-      xAxis.ticks(
-        tickFormat.numTicks || tickFormat.tickTime,
-        tickFormat.tickInterval
-      );
+      xAxis.ticks(tickFormat.numTicks || tickFormat.tickTime, tickFormat.tickInterval);
     }
 
     // draw the chart
@@ -313,7 +272,7 @@ export const timeline = () => {
         // issue warning about using id per data set. Ids should be individual to data elements
         if (typeof datum.id != "undefined") {
           console.warn(
-            "d3Timeline Warning: Ids per dataset is deprecated in favor of a 'class' key. Ids are now per data element."
+            "d3Timeline Warning: Ids per dataset is deprecated in favor of a 'class' key. Ids are now per data element.",
           );
         }
 
@@ -325,10 +284,7 @@ export const timeline = () => {
 
         groups
           .append((d, i) => {
-            return document.createElementNS(
-              d3.namespaces.svg,
-              "display" in d ? d.display : display
-            );
+            return document.createElementNS(d3.namespaces.svg, "display" in d ? d.display : display);
           })
           .attr("x", getXPos)
           .attr("y", getStackPosition)
@@ -367,17 +323,15 @@ export const timeline = () => {
             click(d, index, datum);
           })
           .attr("class", (d, i) => {
-            return datum.class
-              ? "timelineSeries_" + datum.class
-              : "timelineSeries_" + index;
+            return datum.class ? `timelineSeries_${datum.class}` : `timelineSeries_${index}`;
           })
           .attr("id", (d, i) => {
             // use deprecated id field
             if (datum.id && !d.id) {
-              return "timelineItem_" + datum.id;
+              return `timelineItem_${datum.id}`;
             }
 
-            return d.id ? d.id : "timelineItem_" + index + "_" + i;
+            return d.id ? d.id : `timelineItem_${index}_${i}`;
           });
         groups
           .append("text")
@@ -397,11 +351,7 @@ export const timeline = () => {
         // ;
 
         if (rowSeparatorsColor) {
-          const lineYAxis =
-            itemHeight +
-            itemMargin / 2 +
-            margin.top +
-            (itemHeight + itemMargin) * yAxisMapping[index];
+          const lineYAxis = itemHeight + itemMargin / 2 + margin.top + (itemHeight + itemMargin) * yAxisMapping[index];
           gParent
             .append("svg:line")
             .attr("class", "row-separator")
@@ -422,14 +372,7 @@ export const timeline = () => {
           gParent
             .append("image")
             .attr("class", "timeline-label")
-            .attr(
-              "transform",
-              "translate(" +
-                0 +
-                "," +
-                (margin.top + (itemHeight + itemMargin) * yAxisMapping[index]) +
-                ")"
-            )
+            .attr("transform", `translate(${0},${margin.top + (itemHeight + itemMargin) * yAxisMapping[index]})`)
             .attr("xlink:href", datum.icon)
             .attr("width", margin.left)
             .attr("height", itemHeight);
@@ -444,11 +387,7 @@ export const timeline = () => {
 
         function getStackTextPosition(d, i) {
           if (stacked) {
-            return (
-              margin.top +
-              (itemHeight + itemMargin) * yAxisMapping[index] +
-              itemHeight * 0.75
-            );
+            return margin.top + (itemHeight + itemMargin) * yAxisMapping[index] + itemHeight * 0.75;
           }
           return margin.top + itemHeight * 0.75;
         }
@@ -467,12 +406,9 @@ export const timeline = () => {
 
     if (width > gParentSize.width) {
       let move = () => {
-        const x = Math.min(
-          0,
-          Math.max(gParentSize.width - width, d3.event.transform.x)
-        );
+        const x = Math.min(0, Math.max(gParentSize.width - width, d3.event.transform.x));
         zoom.translate([x, 0]);
-        g.attr("transform", "translate(" + x + ",0)");
+        g.attr("transform", `translate(${x},0)`);
         scroll(x * scaleFactor, xScale);
       };
 
@@ -483,15 +419,9 @@ export const timeline = () => {
 
     if (rotateTicks) {
       g.selectAll(".tick text").attr("transform", (d) => {
-        return (
-          "rotate(" +
-          rotateTicks +
-          ")translate(" +
-          (this.getBBox().width / 2 + 10) +
-          "," + // TODO: change this 10
-          this.getBBox().height / 2 +
-          ")"
-        );
+        return `rotate(${rotateTicks})translate(${this.getBBox().width / 2 + 10},${
+          /* TODO: change this 10 */ this.getBBox().height / 2
+        })`;
       });
     }
 
@@ -619,8 +549,7 @@ export const timeline = () => {
   };
 
   timeline.display = (displayType) => {
-    if (!displayType || DISPLAY_TYPES.indexOf(displayType) == -1)
-      return display;
+    if (!displayType || DISPLAY_TYPES.indexOf(displayType) == -1) return display;
     display = displayType;
     return timeline;
   };
@@ -787,8 +716,7 @@ export const timeline = () => {
   };
 
   timeline.navigate = (navigateBackwards, navigateForwards) => {
-    if (!navigateBackwards && !navigateForwards)
-      return [navigateLeft, navigateRight];
+    if (!navigateBackwards && !navigateForwards) return [navigateLeft, navigateRight];
     navigateLeft = navigateBackwards;
     navigateRight = navigateForwards;
     showAxisNav = !showAxisNav;
