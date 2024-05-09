@@ -1,7 +1,10 @@
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+import { timeline } from "./d3-timeline.js";
+
 // globals
 let plans;
-let timelinesFilled;
-let routesTableFilled;
+// let timelinesFilled;
+// let routesTableFilled;
 let currentTab;
 let currentSort = "duration";
 let locations = {};
@@ -149,8 +152,8 @@ function resetState() {
   tabsState = {};
   currentTab = null;
   plans = null;
-  routesTableFilled = false;
-  timelinesFilled = false;
+  // routesTableFilled = false;
+  // timelinesFilled = false;
 }
 
 async function fetchApiData(request, body, method = "GET") {
@@ -361,7 +364,7 @@ function showElements(elements) {
   }
 }
 
-async function goto(hash, clickEvent) {
+export async function goto(hash, clickEvent) {
   menu_close();
   if (!hash) hash = "";
   if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
@@ -496,7 +499,7 @@ function isValidLocation(name) {
   return name != " " && name in locationsToId;
 }
 
-async function submit() {
+export async function submit() {
   goto("routes");
 }
 
@@ -597,7 +600,7 @@ function updateRoutesTable() {
   let c = 0;
   for (const k in columns) {
     if (c++ == tabsState.columnsCount) break;
-    headerRowHtml += `<th class="w3-center hover-underline" onclick="sortPlans('${columns[k]}')">${k}</th>`;
+    headerRowHtml += `<th class="w3-center hover-underline" onclick="exports.sortPlans('${columns[k]}')">${k}</th>`;
   }
   elements.tabRoutesTableHeaderRow.innerHTML = headerRowHtml;
 
@@ -608,7 +611,7 @@ function updateRoutesTable() {
     const plan = plans[i];
 
     let tr = document.createElement("tr");
-    tr.setAttribute("onclick", `javascript: goto(this.plan.hash, event);`);
+    tr.setAttribute("onclick", `javascript: exports.goto(this.plan.hash, event);`);
     tr.classList.add("routes-table-row");
     tr.plan = plan;
     if (new Date(plan.depart_time) < Date.now() - 60000) {
@@ -659,7 +662,7 @@ function updateRoutesTable() {
   }
 }
 
-function updateTimelines() {
+export function updateTimelines() {
   if (!d3) {
     elements.timeline.innerHTML = "<h4>D3 library not found</h4>";
     return;
@@ -744,8 +747,7 @@ function updateTimelines() {
 
   const width = elements.timeline.clientWidth - 10; // FIXME: magic number (righht margin?)
 
-  const chart = d3
-    .timeline()
+  const chart = timeline()
     .colors(colorScale)
     .colorProperty("_color")
     .showAxisTop()
@@ -892,7 +894,7 @@ function onPlanSelected(id) {
   }
 }
 
-function sortPlans(sortBy) {
+export function sortPlans(sortBy) {
   if (sortBy == currentSort) return;
   plans.sort((a, b) => {
     if (a[sortBy] >= b[sortBy]) return 1;
@@ -918,19 +920,19 @@ function showTab(id) {
   updateTabsData();
 }
 
-function toggleShow(id) {
+export function toggleShow(id) {
   const element = document.getElementById(id);
   element.hidden = !element.hidden;
 }
 
-function onPrint(card) {
+export function onPrint(card) {
   //elements.routesCard.classList.add("no-print");
   //elements.scheduleCard.classList.add("no-print");
   //document.getElementById(card).classList.remove("no-print");
   print();
 }
 
-function onShare() {
+export function onShare() {
   try {
     const data = {
       url: window.location.href,
@@ -1057,7 +1059,7 @@ function init() {
   }
 
   // initialize sort options
-  elements.sortOption.setAttribute("onchange", "sortPlans(this.value);");
+  elements.sortOption.setAttribute("onchange", "exports.sortPlans(this.value);");
   for (const k in columns) {
     const opt = document.createElement("option");
     opt.text = k;

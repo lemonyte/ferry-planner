@@ -1,4 +1,6 @@
-d3.timeline = () => {
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+export const timeline = () => {
   const DISPLAY_TYPES = ["circle", "rect"];
 
   let hover = () => {};

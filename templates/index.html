@@ -37,12 +37,12 @@
         <input class="w3-border" style="width: 9em;" type="date" id="date" title="Travel date" />
       </div>
       <div class="w3-bar-item w3-padding-small w3-cell-middle">
-        <button class="w3-button w3-indigo w3-border w3-round-medium" id="submit" onclick="submit();">
+        <button class="w3-button w3-indigo w3-border w3-round-medium" id="submit" onclick="exports.submit();">
           Search
         </button>
       </div>
       <div class="w3-bar-item w3-padding-small w3-cell-middle w3-right">
-        <button class="w3-button w3-border w3-round-medium" onclick="toggleShow('options');"
+        <button class="w3-button w3-border w3-round-medium" onclick="exports.toggleShow('options');"
           title="Additional options">Options</button>
       </div>
     </div>
@@ -141,7 +141,7 @@
           id="sort-option"></select>
         <label class="w3-bar-item w3-padding-small">Color by:</label>
         <select class="w3-select w3-bar-item w3-padding-small w3-border-bottom" id="color-option"
-          onchange="updateTimelines();">
+          onchange="exports.updateTimelines();">
           <option value="activity">Activity</option>
           <option value="region">Region</option>
         </select>
@@ -167,13 +167,13 @@
             <span class="icon"><i class="fa fa-angle-double-left"></i></span>Routes</a>
         </div>
         <div class="w3-right">
-          <button onclick="onPrint('schedule-card');"
+          <button onclick="exports.onPrint('schedule-card');"
             class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small no-print">
             <span class="icon"><i class="fa fa-print"></i></span>Print</button>
           <a id="schedule-map" target="_blank"
             class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small">
             <span class="icon"><i class="fa fa-map"></i></span>Map</a>
-          <button id="share-button" onclick="onShare();"
+          <button id="share-button" onclick="exports.onShare();"
             class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small no-print">
             <span class="icon"><i class="fa fa-share-alt"></i></span>Share</button>
         </div>
@@ -201,7 +201,17 @@
 
 {% block scripts %}
 {{ super() }}
-<script type="text/javascript" src="https://d3js.org/d3.v7.js"></script>
-<script type="text/javascript" src="/static/d3-timeline.js"></script>
-<script type="text/javascript" src="/static/index.js"></script>
+<script>
+  exports = {};
+</script>
+<script type="module">
+  import { submit, toggleShow, updateTimelines, onPrint, onShare, goto, sortPlans } from "/static/index.js";
+  exports.submit = submit;
+  exports.toggleShow = toggleShow;
+  exports.updateTimelines = updateTimelines;
+  exports.onPrint = onPrint;
+  exports.onShare = onShare;
+  exports.goto = goto;
+  exports.sortPlans = sortPlans;
+</script>
 {% endblock %}
