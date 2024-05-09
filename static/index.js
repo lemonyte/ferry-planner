@@ -365,7 +365,7 @@ function showElements(elements) {
 }
 
 export async function goto(hash, clickEvent) {
-  menu_close();
+  menuClose();
   if (!hash) hash = "";
   if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
 
