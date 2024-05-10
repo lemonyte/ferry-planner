@@ -19,58 +19,51 @@
   </div>
 </div> -->
 
-<div id="input-form" class="w3-white w3-card w3-round w3-margin-small">
+<div id="input-form" class="w3-white w3-card w3-round w3-margin-small w3-padding-small">
   <!-- <div class="w3-padding-small w3-xlarge w3-center">
     Search for routes
   </div> -->
-  <div class="w3-row">
-    <div class="fp-input-text w3-padding-small">
-      <input class="w3-input w3-border" type="text" id="origin" list="locations" placeholder="Select start location"
-        title="Start location" required />
-    </div>
-    <div class="fp-input-text w3-padding-small">
-      <input class="w3-input w3-border" type="text" id="destination" list="locations" placeholder="Select destination"
-        title="Destination location" required />
-    </div>
-    <div class="fp-input-non-text w3-bar">
-      <div class="w3-bar-item w3-padding-small w3-cell-middle">
-        <input class="w3-border" style="width: 9em;" type="date" id="date" title="Travel date" />
+  <div class="w3-round-medium" style="display: flex; flex-direction: row; gap: 10px;">
+    <input class="w3-border w3-padding-small w3-round-medium" style="flex-grow: 1;" type="text" id="origin"
+      list="locations" placeholder="Select start location" title="Start location" required />
+    <button class="w3-button w3-border w3-round-medium w3-padding" id="swap" onclick="exports.swap();">
+      <span class="icon"><i class="fa fa-exchange"></i></span>
+    </button>
+    <input class="w3-padding-small w3-round-medium w3-border" type="text" id="destination" list="locations"
+      placeholder="Select destination" title="Destination location" required />
+    <input class="w3-padding-small w3-round-medium w3-border" style="width: 9em;" type="date" id="date"
+      title="Travel date" />
+    <button class="w3-button w3-indigo w3-border w3-round-medium w3-padding" id="submit" onclick="exports.submit();">
+      Search
+    </button>
+    <button class="w3-button w3-border w3-round-medium w3-padding" onclick="exports.toggleShow('options');"
+      title="Additional options">
+      Options
+    </button>
+  </div>
+  <div id="options" style="margin-top: 10px;" hidden>
+    <div class="w3-border w3-padding w3-round-medium">
+      <div class="w3-cell-middle">
+        <input class="w3-check" type="radio" id="reservation" name="res-type" checked="true" />
+        <label>Assume ferry reservation</label>
       </div>
-      <div class="w3-bar-item w3-padding-small w3-cell-middle">
-        <button class="w3-button w3-indigo w3-border w3-round-medium" id="submit" onclick="exports.submit();">
-          Search
-        </button>
+      <div class="w3-cell-middle">
+        <input class="w3-check" type="radio" id="assured" name="res-type" />
+        <label>Assured loading</label>
       </div>
-      <div class="w3-bar-item w3-padding-small w3-cell-middle w3-right">
-        <button class="w3-button w3-border w3-round-medium" onclick="exports.toggleShow('options');"
-          title="Additional options">Options</button>
+      <div class="w3-cell-middle">
+        <input class="w3-check" type="radio" id="hostled" name="res-type" />
+        <label>Hostled vehicle</label>
       </div>
-    </div>
-
-    <div class="w3-row  " id="options" hidden>
-      <div class="w3-border w3-padding w3-margin-small">
-        <div class="w3-cell-middle">
-          <input class="w3-check" type="radio" id="reservation" name="res-type" checked="true" />
-          <label>Assume ferry reservation</label>
-        </div>
-        <div class="w3-cell-middle">
-          <input class="w3-check" type="radio" id="assured" name="res-type" />
-          <label>Assured loading</label>
-        </div>
-        <div class="w3-cell-middle">
-          <input class="w3-check" type="radio" id="hostled" name="res-type" />
-          <label>Hostled vehicle</label>
-        </div>
-        <div class="w3-cell-middle w3-margin-top">
-          <input class="w3-check" type="checkbox" id="show_all" />
-          <label>Show all possible routes</label>
-        </div>
-        <div class="w3-cell-middle w3-margin-top">
-          Arrive at terminal
-          <input class="w3-padding-small w3-border-0 w3-border-bottom" type="number" id="buffer" min="0" max="60"
-            value="15" />
-          minutes in advance
-        </div>
+      <div class="w3-cell-middle w3-margin-top">
+        <input class="w3-check" type="checkbox" id="show_all" />
+        <label>Show all possible routes</label>
+      </div>
+      <div class="w3-cell-middle w3-margin-top">
+        Arrive at terminal
+        <input class="w3-padding-small w3-border-0 w3-border-bottom" type="number" id="buffer" min="0" max="60"
+          value="15" />
+        minutes in advance
       </div>
     </div>
   </div>
@@ -205,7 +198,7 @@
   exports = {};
 </script>
 <script type="module">
-  import { submit, toggleShow, updateTimelines, onPrint, onShare, goto, sortPlans } from "/static/index.js";
+  import { submit, toggleShow, updateTimelines, onPrint, onShare, goto, sortPlans, swap } from "/static/index.js";
   exports.submit = submit;
   exports.toggleShow = toggleShow;
   exports.updateTimelines = updateTimelines;
@@ -213,5 +206,6 @@
   exports.onShare = onShare;
   exports.goto = goto;
   exports.sortPlans = sortPlans;
+  exports.swap = swap;
 </script>
 {% endblock %}

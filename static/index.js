@@ -968,6 +968,13 @@ export function onShare() {
   }
 }
 
+export function swap() {
+  const origin = elements.inputOrigin.value;
+  elements.inputOrigin.value = elements.inputDestination.value;
+  elements.inputDestination.value = origin;
+  saveHistory(null, window.location.hash);
+}
+
 function pad(num, size) {
   num = num.toString();
   while (num.length < size) num = "0" + num;
