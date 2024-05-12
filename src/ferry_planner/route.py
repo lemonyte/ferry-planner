@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Generator, Iterable, Iterator, Sequence
 from copy import deepcopy
 from datetime import datetime, timedelta
 from enum import Enum
@@ -264,52 +264,49 @@ class RoutePlanBuilder:
         schedule_getter: ScheduleGetter,
     ) -> Iterator[RoutePlan]:
         for route in routes:
-            route_plans = []
-            segments = []
-            self._add_plan_segment(
+            yield from self._add_plan_segment(
                 route=route,
                 destination_index=1,
-                segments=segments,
                 start_time=options.date.replace(hour=0, minute=0, second=0, microsecond=0),
-                plans=route_plans,
                 options=options,
                 schedule_getter=schedule_getter,
             )
-            yield from route_plans
 
-    def _add_plan_segment(  # noqa: PLR0913
+    def _add_plan_segment(  # noqa: PLR0912, PLR0913
         self,
         *,
         route: Route,
         destination_index: int,
-        segments: list[RoutePlanSegment],
         start_time: datetime,
-        plans: list[RoutePlan],
         options: RoutePlansOptions,
         schedule_getter: ScheduleGetter,
-    ) -> bool:
+        segments: list[RoutePlanSegment] | None = None,
+    ) -> Generator[RoutePlan, None, bool]:
+        if segments is None:
+            segments = []
         res = False
         try:
             if destination_index == len(route):
                 if not segments:  # empty list?
                     return False  # can we be here?
-                plan = RoutePlan.from_segments(segments)
-                plans.append(plan)
+                yield RoutePlan.from_segments(segments)
                 return True
             origin = route[destination_index - 1]
             destination = route[destination_index]
             connection = self._connection_db.from_to_location(origin, destination)
             if isinstance(connection, FerryConnection):
-                res = self._add_ferry_connection(
-                    route=route,
-                    destination_index=destination_index,
-                    segments=segments,
-                    start_time=start_time,
-                    plans=plans,
-                    options=options,
-                    connection=connection,
-                    schedule_getter=schedule_getter,
-                )
+                try:
+                    yield from self._add_ferry_connection(
+                        route=route,
+                        destination_index=destination_index,
+                        segments=segments,
+                        start_time=start_time,
+                        options=options,
+                        connection=connection,
+                        schedule_getter=schedule_getter,
+                    )
+                except StopIteration as exc:
+                    res = exc.value
             if isinstance(connection, CarConnection):
                 driving_duration_limit = 6 * 60 * 60
                 # Skip driving segments that are more than 6 hours long.
@@ -327,32 +324,33 @@ class RoutePlanBuilder:
                     ),
                 )
                 segments.append(RoutePlanSegment(connection=connection, times=times))
-                res = self._add_plan_segment(
-                    route=route,
-                    destination_index=destination_index + 1,
-                    segments=segments,
-                    start_time=arrive_time,
-                    plans=plans,
-                    options=options,
-                    schedule_getter=schedule_getter,
-                )
+                try:
+                    yield from self._add_plan_segment(
+                        route=route,
+                        destination_index=destination_index + 1,
+                        segments=segments,
+                        start_time=arrive_time,
+                        options=options,
+                        schedule_getter=schedule_getter,
+                    )
+                except StopIteration as exc:
+                    res = exc.value
         finally:
             delete_start = destination_index - 1
             del segments[delete_start:]
         return res
 
-    def _add_ferry_connection(  # noqa: C901, PLR0912, PLR0913
+    def _add_ferry_connection(  # noqa: C901, PLR0912, PLR0913, PLR0915
         self,
         *,
         route: Route,
         destination_index: int,
         segments: list[RoutePlanSegment],
         start_time: datetime,
-        plans: list[RoutePlan],
         options: RoutePlansOptions,
         connection: FerryConnection,
         schedule_getter: ScheduleGetter,
-    ) -> bool:
+    ) -> Generator[RoutePlan, None, bool]:
         res = False
         depature_terminal = connection.origin
         day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -417,19 +415,18 @@ class RoutePlanBuilder:
                     schedule_url=schedule.url,
                 ),
             )
-            if (
-                self._add_plan_segment(
+            try:
+                yield from self._add_plan_segment(
                     route=route,
                     destination_index=destination_index + 1,
                     segments=segments,
                     start_time=arrive_time,
-                    plans=plans,
                     options=options,
                     schedule_getter=schedule_getter,
                 )
-                is False
-            ):
-                break
+            except StopIteration as exc:
+                if exc.value is False:
+                    break
             delete_start = destination_index - 1
             del segments[delete_start:]
             res = True
