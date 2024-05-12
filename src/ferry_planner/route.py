@@ -48,12 +48,12 @@ class RoutePlanSegment(BaseModel):
     # Pydantic throws an error if the type hint is Connection[Location, Location]
     # and the passed type is FerryConnection (Connection[Terminal, Terminal]).
     connection: Connection
-    times: Sequence[TimeInterval]
+    times: tuple[TimeInterval, ...]
     schedule_url: str | None = None
 
 
 class RoutePlan(BaseModel):
-    segments: Sequence[RoutePlanSegment]
+    segments: tuple[RoutePlanSegment, ...]
     hash: str
     duration: int
     """Total duration in seconds."""
@@ -68,29 +68,30 @@ class RoutePlan(BaseModel):
 
     @classmethod
     def from_segments(cls, _segments: Iterable[RoutePlanSegment], /) -> RoutePlan:  # noqa: C901
-        segments = [
+        segments = tuple(
             RoutePlanSegment(
                 connection=segment.connection,
                 times=deepcopy(segment.times),
                 schedule_url=segment.schedule_url,
             )
             for segment in _segments
-        ]
-        if len(segments) == 0:
+        )
+        segments_len = len(segments)
+        if segments_len == 0:
             msg = "RoutePlan must have at least one segment"
             raise ValueError(msg)
 
         # If first segment is driving, we can shift it to second segment
         # in order to arrive just in time for ferry.
         first_segment = segments[0]
-        if isinstance(first_segment.connection, CarConnection) and len(segments) > 1:
+        if isinstance(first_segment.connection, CarConnection) and segments_len > 1:
             free_time = segments[1].times[0].start - first_segment.times[-1].end
             for time in first_segment.times:
                 time.start += free_time
                 time.end += free_time
 
         # If the only segment is car travel, make sure start time is in Vancouver time zone.
-        if isinstance(first_segment.connection, CarConnection) and len(segments) == 1:
+        if isinstance(first_segment.connection, CarConnection) and segments_len == 1:
             tz = ZoneInfo("America/Vancouver")
             now = datetime.now().astimezone()
             local_offset = now.astimezone().utcoffset()
@@ -103,7 +104,7 @@ class RoutePlan(BaseModel):
                     t.end += current_time_bc
 
         # Add free time to segments.
-        for i in range(len(segments) - 1):
+        for i in range(segments_len - 1):
             free_start = segments[i].times[-1].end
             free_end = segments[i + 1].times[0].start
             free_time = free_end - free_start

@@ -33,7 +33,7 @@ class FerrySchedule(BaseModel):
     date: datetime
     origin: LocationId
     destination: LocationId
-    sailings: Sequence[FerrySailing]
+    sailings: tuple[FerrySailing, ...]
     url: str
 
 
