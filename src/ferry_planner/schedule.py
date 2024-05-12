@@ -230,7 +230,7 @@ class ScheduleDB:
                     )
                     if not filepath.exists():
                         tasks.append(
-                            asyncio.ensure_future(
+                            asyncio.create_task(
                                 self._download_and_save_schedule(
                                     connection.origin.id,
                                     connection.destination.id,
