@@ -8,7 +8,7 @@ let plans;
 let currentTab;
 let currentSort = "duration";
 let locations = {};
-let locationsToId = {};
+const locationsToId = {};
 let locationNames = [];
 let messageHidden = true;
 let currentPlan;
@@ -167,7 +167,7 @@ async function fetchApiData(request, body, method = "GET") {
   const responseJson = await response.json();
   if (!response.ok) {
     let msg = response.statusText;
-    if (responseJson?.detail) msg += " " + JSON.stringify(responseJson.detail);
+    if (responseJson?.detail) msg += ` ${JSON.stringify(responseJson.detail)}`;
     throw new Error(msg);
   }
   return responseJson;
@@ -236,7 +236,7 @@ function autoComplete(input) {
 }
 
 function getOptions(excludeDefaults) {
-  let options = {};
+  const options = {};
   for (const input of elements.inputForm.getElementsByTagName("input")) {
     const value = inputValue(input);
     if (excludeDefaults === true && value === input.default) continue;
@@ -304,11 +304,11 @@ function optionsToUrl(options, url) {
 
 function urlToOptions(url) {
   if (url instanceof Location) url = new URL(url.href);
-  else if (url instanceof string) url = new URL(url);
+  else if (typeof url === "string") url = new URL(url);
   else if (url instanceof URL);
   else throw new Error("Unexpected url type:" + typeof url);
 
-  let options = {};
+  const options = {};
   for (const param of url.searchParams.entries()) options[param[0]] = param[1];
   if (url.hash !== "") options.hash = url.hash;
 
@@ -370,7 +370,7 @@ export async function goto(hash, clickEvent) {
   if (hash.length > 0 && hash[0] === "#") hash = hash.substring(1);
 
   if (clickEvent?.ctrlKey) {
-    let url = new URL(window.location);
+    const url = new URL(window.location);
     url.hash = hash;
     window.open(url, "_blank").focus();
     return;
@@ -455,16 +455,16 @@ export async function goto(hash, clickEvent) {
 
 async function getRoutePlans() {
   currentPlan = null;
-  let options = getOptions();
+  const options = getOptions();
   plans = await fetchApiData("/routeplans", options, "POST");
   plans.options = options;
 
   // pre-process plans data
   const land_groups = new Set();
   for (let i = 0; i < plans.length; i++) {
-    let plan = plans[i];
+    const plan = plans[i];
     plan.id = i + 1;
-    let via = new Set();
+    const via = new Set();
     for (const s of plan.segments) {
       if (s.connection.type === "FERRY") {
         let lg = s.connection.destination.land_group;
@@ -610,7 +610,7 @@ function updateRoutesTable() {
   for (let i = 0; i < plans.length; i++) {
     const plan = plans[i];
 
-    let tr = document.createElement("tr");
+    const tr = document.createElement("tr");
     tr.setAttribute("onclick", "exports.goto(this.plan.hash, event);");
     tr.classList.add("routes-table-row");
     tr.plan = plan;
@@ -681,9 +681,9 @@ export function updateTimelines() {
   tabsState.timelineWidth = elements.tabRoutesTimelines.clientWidth;
   d3.select(elements.timeline).select("svg").remove();
   let chartRows = [];
-  let coloringKeys = new Set();
+  const coloringKeys = new Set();
   for (const plan of plans) {
-    let chartRow = {
+    const chartRow = {
       label: `Route ${plan.id}`,
       times: [],
     };
@@ -790,10 +790,9 @@ function updateLegend(chart, coloringKeys, currentColoring, legendElement) {
   const colorsDomain = chart.colors().domain();
   let legend = "Legend: ";
   for (let i = 0; i < colorsRange.length && i < coloringKeys.length; i++) {
-    let n = colorsDomain.indexOf(coloringKeys[i]);
-    let c = colorsRange[n];
+    const n = colorsDomain.indexOf(coloringKeys[i]);
     legend += "<span>&nbsp;&nbsp;";
-    legend += `<div style="display:inline-block;height:1em;width:1em;vertical-align:middle;background-color:${c}">&nbsp;</div>&nbsp;`;
+    legend += `<div style="display:inline-block;height:1em;width:1em;vertical-align:middle;background-color:${colorsRange[n]}">&nbsp;</div>&nbsp;`;
     if (currentColoring === "activity") {
       const activityInfo = activitiesInfo[coloringKeys[i]];
       legend += `<span class="${activityInfo.iconClass}">${activityInfo.icon}</span>`;
@@ -810,7 +809,7 @@ function assignTooltip(element) {
     if (n.nodeName === "tspan") n = n.parentNode;
     if (n.nodeName === "text") n = n.parentNode;
     const rect = n.getBoundingClientRect();
-    tooltip.style("left", rect.x + window.scrollX + "px").style("top", rect.bottom + window.scrollY + 3 + "px");
+    tooltip.style("left", `${rect.x + window.scrollX}px`).style("top", `${rect.bottom + window.scrollY + 3}px`);
   };
   element.onmouseout = (event) => {
     tooltip.transition().duration(100).style("opacity", 0);
@@ -958,7 +957,7 @@ export function onShare() {
       navigator.clipboard
         .writeText(window.location.href)
         .then(() => {
-          alert("Link copied to clipboard");
+          showMessage("Link copied to clipboard");
         })
         .catch((r) => {
           showError(`Cannot copy link to clipboard: ${r}`);
