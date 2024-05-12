@@ -198,7 +198,7 @@ export const timeline = () => {
         d.forEach((datum, index) => {
           datum.times.forEach((time, j) => {
             if (index === 0 && j === 0) {
-              originTime = time.startingTime; // store the timestamp that will serve as origin
+              const originTime = time.startingTime; // store the timestamp that will serve as origin
               time.startingTime = 0; // set the origin
               time.endingTime = time.endingTime - originTime; // store the relative time (millis)
             } else {
@@ -461,7 +461,7 @@ export const timeline = () => {
           // set bounding rectangle height
           d3.select(gParent._groups[0][0]).attr("height", height);
         } else {
-          throw "height of the timeline is not set";
+          throw new Error("height of the timeline is not set");
         }
       } else {
         if (!height) {
@@ -477,7 +477,7 @@ export const timeline = () => {
         try {
           width = gParentItem.attr("width");
           if (!width) {
-            throw "width of the timeline is not set. As of Firefox 27, timeline().with(x) needs to be explicitly set in order to render";
+            throw new Error("width of the timeline is not set. As of Firefox 27, timeline().with(x) needs to be explicitly set in order to render");
           }
         } catch (err) {
           console.log(err);
