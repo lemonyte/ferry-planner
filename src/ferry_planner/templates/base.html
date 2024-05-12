@@ -4,14 +4,16 @@
 <head>
   {% block head %}
   <title>{% block title %}Ferry Planner{% endblock %}</title>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+    content="Easily plan your coastal BC trip. Find the best routes and times to travel, even with multiple ferry connections. Get up-to-date info for any location in BC!" />
   <link rel="shortcut icon" type="image/png" href="/static/favicon.ico" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   <link rel="stylesheet" href="/static/w3.css" />
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="stylesheet" href="/static/switch.css" />
   <link rel="stylesheet" href="/static/notifications.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   {% endblock %}
 </head>
 
@@ -19,23 +21,27 @@
   <div class="w3-top w3-card">
     <div class="w3-bar">
       {% block navbar %}
-
-
       <div class="w3-white no-print">
-        <span id="menu-button" class="w3-xlarge w3-padding w3-serife" style="cursor:pointer; vertical-align: middle;"
-          onclick="menu_toggle()"><b>☰</b></span>
-        <b><i><span class="w3-cell-middle w3-serife w3-large" style="text-transform: uppercase">
-          Ferry Planner
-        </span></i></b>
+        <span id="menu-button" class="w3-xlarge w3-padding w3-serife" style="cursor: pointer; vertical-align: middle;"
+          onclick="menuToggle()">
+          <b>☰</b>
+        </span>
+        <b>
+          <i>
+            <a href="#" class="w3-cell-middle w3-serife w3-large" style="text-transform: uppercase; text-decoration: none;">
+              Ferry Planner
+            </a>
+          </i>
+        </b>
       </div>
-
       <div class="w3-bar">
-        <nav id="menu" class="w3-sidebar w3-bar-block w3-light-gray no-print w3-large w3-card" style="display: none; height: auto;">
-          <!-- <button onclick="menu_close()" class="w3-bar-item">
+        <nav id="menu" class="w3-sidebar w3-bar-block w3-light-gray no-print w3-large w3-card"
+          style="display: none; height: auto;">
+          <!-- <button onclick="menuClose()" class="w3-bar-item">
               Menu
-              <span class="w3-right">&times;</span> -->
-          </button>
-          <a href="/" class="w3-bar-item w3-button">
+              <span class="w3-right">&times;</span>
+          </button> -->
+          <a href="#" class="w3-bar-item w3-button">
             <span class="icon"><i class="fa fa-home"></i></span>
             Home
           </a>
@@ -53,18 +59,6 @@
           </a>
         </nav>
       </div>
-      <script>
-        var menuButton = document.getElementById("menu-button");
-        var menu = document.getElementById("menu");
-        function menu_toggle() { if (menu.style.display == "none") menu_open(); else menu_close(); }
-        function menu_open() { menu.style.display = "block"; menuButton.classList.add("pressed"); }
-        function menu_close() { menu.style.display = "none"; menuButton.classList.remove("pressed"); }
-        window.addEventListener("click", function (e) {
-          if (!menuButton.contains(e.target))
-            menu_close();
-        })
-      </script>
-
       {% endblock %}
     </div>
   </div>
@@ -73,8 +67,8 @@
   </div>
 
   <div id="content" class="w3-auto">
-  {% block content %}
-  {% endblock %}
+    {% block content %}
+    {% endblock %}
   </div>
 
   <footer>
@@ -83,6 +77,32 @@
   </footer>
 
   {% block scripts %}
-  <script type="text/javascript" src="/static/notifications.js"></script>
+  <script src="/static/notifications.js"></script>
+  <script>
+    const menuButton = document.getElementById("menu-button");
+    const menu = document.getElementById("menu");
+    const menuToggle = () => {
+      if (menu.style.display == "none") {
+        menuOpen();
+      } else {
+        menuClose();
+      }
+    };
+    const menuOpen = () => {
+      menu.style.display = "block";
+      menuButton.classList.add("pressed");
+    };
+    const menuClose = () => {
+      menu.style.display = "none";
+      menuButton.classList.remove("pressed");
+    };
+    window.addEventListener("click", (event) => {
+      if (!menuButton.contains(event.target)) {
+        menuClose();
+      }
+    });
+  </script>
   {% endblock %}
 </body>
+
+</html>
