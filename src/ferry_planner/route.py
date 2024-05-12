@@ -45,7 +45,9 @@ class TimeInterval(BaseModel):
 
 
 class RoutePlanSegment(BaseModel):
-    connection: Connection[Location, Location] | FerryConnection
+    # Pydantic throws an error if the type hint is Connection[Location, Location]
+    # and the passed type is FerryConnection (Connection[Terminal, Terminal]).
+    connection: Connection
     times: Sequence[TimeInterval]
     schedule_url: str | None = None
 
