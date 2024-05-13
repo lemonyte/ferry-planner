@@ -157,12 +157,15 @@ function resetState() {
 }
 
 async function fetchApiData(request, body, method = "GET") {
+  if (!request.startsWith("/")) {
+    request = `/${request}`;
+  }
   const fetchOptions = {
     method,
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },
   };
-  const response = await fetch("/api" + request, fetchOptions);
+  const response = await fetch(`/api${request}`, fetchOptions);
   // if (response.type) // FIXME: check if valid json
   const responseJson = await response.json();
   if (!response.ok) {
@@ -220,9 +223,9 @@ function autoComplete(input) {
       locationName = locations[value];
     } else {
       // find name containing entered text, this is also the 1st shown in filtered drop down list
-      const r = new RegExp(escapeRegex(value), "i");
+      const regexp = new RegExp(escapeRegex(value), "i");
       for (const name of locationNames) {
-        if (name.search(r) >= 0) {
+        if (name.search(regexp) >= 0) {
           locationName = name;
           break;
         }
@@ -259,7 +262,7 @@ async function applyOptions(options) {
     }
     const element = document.getElementById(o);
     if (!element) {
-      debug("Unknown option: " + o);
+      debug(`Unknown option: ${o}`);
       continue;
     }
     const currentValue = inputValue(element);
@@ -306,7 +309,7 @@ function urlToOptions(url) {
   if (url instanceof Location) url = new URL(url.href);
   else if (typeof url === "string") url = new URL(url);
   else if (url instanceof URL);
-  else throw new Error("Unexpected url type:" + typeof url);
+  else throw new Error(`Unexpected url type: ${typeof url}`);
 
   const options = {};
   for (const param of url.searchParams.entries()) options[param[0]] = param[1];
@@ -544,12 +547,9 @@ function secondsToString(seconds) {
   const hours = dateObj.getUTCHours();
   const minutes = dateObj.getUTCMinutes();
   seconds = dateObj.getSeconds();
-  const timeString =
-    hours.toString().padStart(2, "0") +
-    ":" +
-    minutes.toString().padStart(2, "0") +
-    ":" +
-    seconds.toString().padStart(2, "0");
+  const timeString = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`;
   return timeString;
 }
 
@@ -578,15 +578,15 @@ function durationToString(time) {
   if (days < 1) timeString = "";
   else if (days >= 2) timeString = `${days} days `;
   else timeString = "1 day ";
-  timeString += hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0");
+  timeString += `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
   return timeString;
 }
 
 function columnsCount() {
-  const w = window.outerWidth;
-  if (w > 600) return 7;
-  if (w > 500) return 6;
-  if (w > 400) return 5;
+  const width = window.outerWidth;
+  if (width > 600) return 7;
+  if (width > 500) return 6;
+  if (width > 400) return 5;
   return 4;
 }
 
@@ -680,7 +680,7 @@ export function updateTimelines() {
   tabsState.timelinesColoring = currentColoring;
   tabsState.timelineWidth = elements.tabRoutesTimelines.clientWidth;
   d3.select(elements.timeline).select("svg").remove();
-  let chartRows = [];
+  const chartRows = [];
   const coloringKeys = new Set();
   for (const plan of plans) {
     const chartRow = {
@@ -709,7 +709,7 @@ export function updateTimelines() {
             // label = location.id.length === 3 ? location.id : location.name;
           }
         }
-        if (activityInfo.icon) label = `<tspan class="${activityInfo.iconClass}">${activityInfo.icon}<tspan>` + label;
+        if (activityInfo.icon) label = `<tspan class="${activityInfo.iconClass}">${activityInfo.icon}</tspan>${label}`;
 
         const t2 = {
           description: t.description,
@@ -815,12 +815,12 @@ function assignTooltip(element) {
     tooltip.transition().duration(100).style("opacity", 0);
   };
   element.onmouseover = (event) => {
-    let o = event.target.__data__;
-    if (!o) o = event.target.parentNode.__data__;
-    if (!o || !o.description) return;
+    let data = event.target.__data__;
+    if (!data) data = event.target.parentNode.__data__;
+    if (!data || !data.description) return;
     // const rect = n.getBoundingClientRect();
     tooltip
-      .html(timeToString(o.startingTime) + " " + o.description)
+      .html(`${timeToString(data.startingTime)} ${data.description}`)
       .transition()
       .duration(100)
       // .style('left', (rect.x) + 'px')
@@ -975,7 +975,7 @@ export function swap() {
 
 function pad(num, size) {
   num = num.toString();
-  while (num.length < size) num = "0" + num;
+  while (num.length < size) num = `0${num}`;
   return num;
 }
 
