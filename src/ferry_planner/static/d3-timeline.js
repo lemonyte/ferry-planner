@@ -83,7 +83,7 @@ export const timeline = () => {
   function appendTimeAxisCalendarYear(nav) {
     let calendarLabel = beginning.getFullYear();
 
-    if (beginning.getFullYear() != ending.getFullYear()) {
+    if (beginning.getFullYear() !== ending.getFullYear()) {
       calendarLabel = `${beginning.getFullYear()}-${ending.getFullYear()}`;
     }
 
@@ -197,8 +197,8 @@ export const timeline = () => {
       g.each((d, i) => {
         d.forEach((datum, index) => {
           datum.times.forEach((time, j) => {
+            const originTime = time.startingTime; // store the timestamp that will serve as origin
             if (index === 0 && j === 0) {
-              originTime = time.startingTime; // store the timestamp that will serve as origin
               time.startingTime = 0; // set the origin
               time.endingTime = time.endingTime - originTime; // store the relative time (millis)
             } else {
@@ -216,7 +216,7 @@ export const timeline = () => {
       g.each((d, i) => {
         d.forEach((datum, index) => {
           // create y mapping for stacked graph
-          if (stacked && Object.keys(yAxisMapping).indexOf(index) == -1) {
+          if (stacked && Object.keys(yAxisMapping).indexOf(index) === -1) {
             yAxisMapping[index] = maxStack;
             maxStack++;
           }
@@ -255,7 +255,7 @@ export const timeline = () => {
 
     xAxis.tickFormat(tickFormat.format).tickSize(tickFormat.tickSize);
 
-    if (tickFormat.tickValues != null) {
+    if (tickFormat.tickValues !== null) {
       xAxis.tickValues(tickFormat.tickValues);
     } else {
       xAxis.ticks(tickFormat.numTicks || tickFormat.tickTime, tickFormat.tickInterval);
@@ -267,10 +267,10 @@ export const timeline = () => {
       d.forEach((datum, index) => {
         const data = datum.times;
         //data = data.sort((a,b) => {return b.endingTime-a.endingTime;})
-        const hasLabel = typeof datum.label != "undefined";
+        const hasLabel = typeof datum.label !== "undefined";
 
         // issue warning about using id per data set. Ids should be individual to data elements
-        if (typeof datum.id != "undefined") {
+        if (typeof datum.id !== "undefined") {
           console.warn(
             "d3Timeline Warning: Ids per dataset is deprecated in favor of a 'class' key. Ids are now per data element.",
           );
@@ -405,14 +405,14 @@ export const timeline = () => {
     }
 
     if (width > gParentSize.width) {
-      let move = () => {
+      const move = () => {
         const x = Math.min(0, Math.max(gParentSize.width - width, d3.event.transform.x));
         zoom.translate([x, 0]);
         g.attr("transform", `translate(${x},0)`);
         scroll(x * scaleFactor, xScale);
       };
 
-      let zoom = d3.zoom().x(xScale).on("zoom", move);
+      const zoom = d3.zoom().x(xScale).on("zoom", move);
 
       gParent.attr("class", "scrollable").call(zoom);
     }
@@ -461,7 +461,7 @@ export const timeline = () => {
           // set bounding rectangle height
           d3.select(gParent._groups[0][0]).attr("height", height);
         } else {
-          throw "height of the timeline is not set";
+          throw new Error("height of the timeline is not set");
         }
       } else {
         if (!height) {
@@ -477,7 +477,7 @@ export const timeline = () => {
         try {
           width = gParentItem.attr("width");
           if (!width) {
-            throw "width of the timeline is not set. As of Firefox 27, timeline().with(x) needs to be explicitly set in order to render";
+            throw new Error("width of the timeline is not set. As of Firefox 27, timeline().with(x) needs to be explicitly set in order to render");
           }
         } catch (err) {
           console.log(err);
@@ -549,7 +549,7 @@ export const timeline = () => {
   };
 
   timeline.display = (displayType) => {
-    if (!displayType || DISPLAY_TYPES.indexOf(displayType) == -1) return display;
+    if (!displayType || DISPLAY_TYPES.indexOf(displayType) === -1) return display;
     display = displayType;
     return timeline;
   };

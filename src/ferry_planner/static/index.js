@@ -8,7 +8,7 @@ let plans;
 let currentTab;
 let currentSort = "duration";
 let locations = {};
-let locationsToId = {};
+const locationsToId = {};
 let locationNames = [];
 let messageHidden = true;
 let currentPlan;
@@ -123,7 +123,7 @@ function showMessage(heading, text, theme) {
     positionClass: "nfc-top-right",
     onclick: false,
     showDuration: 3500,
-    theme: theme,
+    theme,
   })({
     title: heading,
     message: text,
@@ -131,7 +131,7 @@ function showMessage(heading, text, theme) {
 }
 
 function hideMessage() {
-  if (messageHidden == true) return;
+  if (messageHidden === true) return;
   messageHidden = true;
   elements.messageCard.hidden = true;
 }
@@ -157,17 +157,20 @@ function resetState() {
 }
 
 async function fetchApiData(request, body, method = "GET") {
+  if (!request.startsWith("/")) {
+    request = `/${request}`;
+  }
   const fetchOptions = {
-    method: method,
+    method,
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },
   };
-  const response = await fetch("/api" + request, fetchOptions);
+  const response = await fetch(`/api${request}`, fetchOptions);
   // if (response.type) // FIXME: check if valid json
   const responseJson = await response.json();
   if (!response.ok) {
     let msg = response.statusText;
-    if (responseJson && responseJson.detail) msg += " " + JSON.stringify(responseJson.detail);
+    if (responseJson?.detail) msg += ` ${JSON.stringify(responseJson.detail)}`;
     throw new Error(msg);
   }
   return responseJson;
@@ -215,21 +218,21 @@ function escapeRegex(string) {
 
 function autoComplete(input) {
   const value = input.value.trim();
-  if (value != "" && !isValidLocation(value)) {
+  if (value !== "" && !isValidLocation(value)) {
     let locationName = value;
     if (value in locations) {
       locationName = locations[value].name;
     } else {
       // find name containing entered text, this is also the 1st shown in filtered drop down list
-      const r = new RegExp(escapeRegex(value), "i");
+      const regexp = new RegExp(escapeRegex(value), "i");
       for (const name of locationNames) {
-        if (name.search(r) >= 0) {
+        if (name.search(regexp) >= 0) {
           locationName = name;
           break;
         }
       }
     }
-    if (locationName != value) {
+    if (locationName !== value) {
       input.value = locationName;
       onInput();
     }
@@ -237,13 +240,13 @@ function autoComplete(input) {
 }
 
 function getOptions(excludeDefaults) {
-  let options = {};
+  const options = {};
   for (const input of elements.inputForm.getElementsByTagName("input")) {
     const value = inputValue(input);
-    if (excludeDefaults == true && value == input.default) continue;
+    if (excludeDefaults === true && value === input.default) continue;
     options[input.id] = value;
   }
-  if (currentPlan) options["hash"] = currentPlan.hash;
+  if (currentPlan) options.hash = currentPlan.hash;
   return options;
 }
 
@@ -252,19 +255,19 @@ async function applyOptions(options) {
   let hash = "";
   for (const o in options) {
     const value = options[o];
-    if (value == undefined) continue;
-    if (o == "hash") {
+    if (value === undefined) continue;
+    if (o === "hash") {
       // will apply later below
       hash = value;
       continue;
     }
     const element = document.getElementById(o);
     if (!element) {
-      debug("Unknown option: " + o);
+      debug(`Unknown option: ${o}`);
       continue;
     }
     const currentValue = inputValue(element);
-    if (`${value}` == `${currentValue}`) continue;
+    if (`${value}` === `${currentValue}`) continue;
 
     switch (element.type) {
       case "checkbox":
@@ -292,9 +295,9 @@ function optionsToUrl(options, url) {
   url.hash = "";
   for (const key in options) {
     const value = options[key];
-    if (value != undefined && value != null) {
-      if (key == "hash") {
-        if (value != "") url.hash = value;
+    if (value !== undefined && value !== null) {
+      if (key === "hash") {
+        if (value !== "") url.hash = value;
       } else {
         url.searchParams.append(key, value);
       }
@@ -305,13 +308,13 @@ function optionsToUrl(options, url) {
 
 function urlToOptions(url) {
   if (url instanceof Location) url = new URL(url.href);
-  else if (url instanceof string) url = new URL(url);
+  else if (typeof url === "string") url = new URL(url);
   else if (url instanceof URL);
-  else throw new Error("Unexpected url type:" + typeof url);
+  else throw new Error(`Unexpected url type: ${typeof url}`);
 
-  let options = {};
+  const options = {};
   for (const param of url.searchParams.entries()) options[param[0]] = param[1];
-  if (url.hash != "") options["hash"] = url.hash;
+  if (url.hash !== "") options.hash = url.hash;
 
   return options;
 }
@@ -332,11 +335,11 @@ function trimEnd(str, ch) {
 
 function saveHistory(options, hash) {
   if (!options) options = getOptions(true);
-  if (hash) options["hash"] = hash;
+  if (hash) options.hash = hash;
   const url = optionsToUrl(options);
 
   // don't push duplicate states
-  if (trimEnd(url.href, "#") == trimEnd(window.location.href, "#")) {
+  if (trimEnd(url.href, "#") === trimEnd(window.location.href, "#")) {
     return;
   }
 
@@ -345,8 +348,8 @@ function saveHistory(options, hash) {
 
 function validatePlans(options) {
   if (!plans || !plans.options) return false;
-  for (const k in options) if (k != "hash" && options[k] != plans.options[k]) return false;
-  for (const k in plans.options) if (k != "hash" && options[k] != plans.options[k]) return false;
+  for (const k in options) if (k !== "hash" && options[k] !== plans.options[k]) return false;
+  for (const k in plans.options) if (k !== "hash" && options[k] !== plans.options[k]) return false;
   return true;
 }
 
@@ -368,10 +371,10 @@ function showElements(elements) {
 export async function goto(hash, clickEvent) {
   menuClose();
   if (!hash) hash = "";
-  if (hash.length > 0 && hash[0] == "#") hash = hash.substring(1);
+  if (hash.length > 0 && hash[0] === "#") hash = hash.substring(1);
 
-  if (clickEvent && clickEvent.ctrlKey) {
-    let url = new URL(window.location);
+  if (clickEvent?.ctrlKey) {
+    const url = new URL(window.location);
     url.hash = hash;
     window.open(url, "_blank").focus();
     return;
@@ -381,13 +384,13 @@ export async function goto(hash, clickEvent) {
   const options = getOptions();
   if (!validatePlans(options)) plans = null;
 
-  if (hash != "") {
-    if (plans == null) await fetchRoutes();
-    if (plans != null) {
-      if (hash == "routes") {
+  if (hash !== "") {
+    if (plans === null) await fetchRoutes();
+    if (plans !== null) {
+      if (hash === "routes") {
         /* pass */
       } else {
-        const plan = plans.find((p) => p.hash == hash);
+        const plan = plans.find((p) => p.hash === hash);
         if (plan) {
           onPlanSelected(plan.id);
         } else {
@@ -398,20 +401,20 @@ export async function goto(hash, clickEvent) {
     }
   }
 
-  if (plans && plans.length == 0) plans = null;
-  if (plans == null) hash = "";
-  if (hash == "") currentPlan = null;
+  if (plans && plans.length === 0) plans = null;
+  if (plans === null) hash = "";
+  if (hash === "") currentPlan = null;
 
   // mark selected row in routes table
   for (const row of elements.routesTable.children) {
     row.classList.remove("selected-row");
-    if (currentPlan && row.plan == currentPlan) row.classList.add("selected-row");
+    if (currentPlan && row.plan === currentPlan) row.classList.add("selected-row");
   }
 
-  if (hash == "") {
+  if (hash === "") {
     showElements([elements.inputForm]);
     document.title = "Ferry Planner";
-  } else if (hash == "routes") {
+  } else if (hash === "routes") {
     const depart_time = new Date(plans[0].depart_time.substring(0, 16));
     const cardHeader = document.createElement("div");
     cardHeader.className = "card-header";
@@ -444,11 +447,11 @@ export async function goto(hash, clickEvent) {
     ).toDateString()} at ${timeToString(currentPlan.depart_time)}`;
   }
 
-  /*  elements.inputForm.hidden = hash != "" && hash != "routes";
-  elements.routesCard.hidden = hash != "routes";
-  elements.scheduleCard.hidden = currentPlan == null || hash == "routes";
+  /*  elements.inputForm.hidden = hash !== "" && hash !== "routes";
+  elements.routesCard.hidden = hash !== "routes";
+  elements.scheduleCard.hidden = currentPlan === null || hash === "routes";
 */
-  //if (window.location.hash != hash) {
+  //if (window.location.hash !== hash) {
   //  window.location.hash = hash;
   // }
   saveHistory(null, hash);
@@ -456,18 +459,18 @@ export async function goto(hash, clickEvent) {
 
 async function getRoutePlans() {
   currentPlan = null;
-  let options = getOptions();
+  const options = getOptions();
   plans = await fetchApiData("/routeplans", options, "POST");
   plans.options = options;
 
   // pre-process plans data
   const land_groups = new Set();
   for (let i = 0; i < plans.length; i++) {
-    let plan = plans[i];
+    const plan = plans[i];
     plan.id = i + 1;
-    let via = new Set();
+    const via = new Set();
     for (const s of plan.segments) {
-      if (s.connection.type == "FERRY") {
+      if (s.connection.type === "FERRY") {
         let lg = s.connection.destination.land_group;
         if (lg) {
           const pos = lg.indexOf(" (");
@@ -497,11 +500,11 @@ async function getRoutePlans() {
 
 function isValidLocation(name) {
   name = name.trim();
-  return name != " " && name in locationsToId;
+  return name !== " " && name in locationsToId;
 }
 
 export async function submit() {
-  goto("routes");
+  await goto("routes");
 }
 
 async function fetchRoutes() {
@@ -510,7 +513,7 @@ async function fetchRoutes() {
   saveHistory();
   if (!isValidLocation(elements.inputOrigin.value)) showMessage("", "Please select start location", "warning");
   else if (!isValidLocation(elements.inputDestination.value)) showWarning("Please select destination location");
-  else if (elements.inputOrigin.value == elements.inputDestination.value) {
+  else if (elements.inputOrigin.value === elements.inputDestination.value) {
     showError("Start and destination location cannot be the same");
   } else {
     try {
@@ -519,7 +522,7 @@ async function fetchRoutes() {
       //for (const element of elements.inputs) element.disabled = true;
       plans = await getRoutePlans();
       if (!plans) showError("Failed to fetch schedule information");
-      else if (plans.length == 0) {
+      else if (plans.length === 0) {
         showMessage("", "No itineraries found. Try select another date and/or locations.", "warning");
         plans = null;
       } else {
@@ -545,12 +548,9 @@ function secondsToString(seconds) {
   const hours = dateObj.getUTCHours();
   const minutes = dateObj.getUTCMinutes();
   seconds = dateObj.getSeconds();
-  const timeString =
-    hours.toString().padStart(2, "0") +
-    ":" +
-    minutes.toString().padStart(2, "0") +
-    ":" +
-    seconds.toString().padStart(2, "0");
+  const timeString = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`;
   return timeString;
 }
 
@@ -565,7 +565,7 @@ function timeToString(time, roundSeconds = true) {
   //   hours -= 12;
   //   ampm = "pm";
   // }
-  // if (hours == 0) hours = 12;
+  // if (hours === 0) hours = 12;
   // const timeString = hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0") + ampm;
   // return timeString;
 }
@@ -579,28 +579,28 @@ function durationToString(time) {
   if (days < 1) timeString = "";
   else if (days >= 2) timeString = `${days} days `;
   else timeString = "1 day ";
-  timeString += hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0");
+  timeString += `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
   return timeString;
 }
 
 function columnsCount() {
-  const w = window.outerWidth;
-  if (w > 600) return 7;
-  if (w > 500) return 6;
-  if (w > 400) return 5;
+  const width = window.outerWidth;
+  if (width > 600) return 7;
+  if (width > 500) return 6;
+  if (width > 400) return 5;
   return 4;
 }
 
 function updateRoutesTable() {
   if (elements.tabRoutesTable.hidden) return;
-  if (tabsState.routesTableSort == currentSort && tabsState.columnsCount == columnsCount()) return;
+  if (tabsState.routesTableSort === currentSort && tabsState.columnsCount === columnsCount()) return;
   tabsState.routesTableSort = currentSort;
   tabsState.columnsCount = columnsCount();
 
   let headerRowHtml = "";
   let c = 0;
   for (const k in columns) {
-    if (c++ == tabsState.columnsCount) break;
+    if (c++ === tabsState.columnsCount) break;
     headerRowHtml += `<th class="w3-center hover-underline" onclick="exports.sortPlans('${columns[k]}')">${k}</th>`;
   }
   elements.tabRoutesTableHeaderRow.innerHTML = headerRowHtml;
@@ -611,8 +611,8 @@ function updateRoutesTable() {
   for (let i = 0; i < plans.length; i++) {
     const plan = plans[i];
 
-    let tr = document.createElement("tr");
-    tr.setAttribute("onclick", `javascript: exports.goto(this.plan.hash, event);`);
+    const tr = document.createElement("tr");
+    tr.setAttribute("onclick", "exports.goto(this.plan.hash, event);");
     tr.classList.add("routes-table-row");
     tr.plan = plan;
     if (new Date(plan.depart_time) < Date.now() - 60000) {
@@ -669,22 +669,22 @@ export function updateTimelines() {
     return;
   }
 
-  if (elements.tabRoutesTimelines.hidden || elements.tabRoutesTimelines.clientWidth == 0) return;
+  if (elements.tabRoutesTimelines.hidden || elements.tabRoutesTimelines.clientWidth === 0) return;
   const currentColoring = document.getElementById("color-option").value;
   if (
-    tabsState.timelinesSort == currentSort &&
-    tabsState.timelinesColoring == currentColoring &&
-    tabsState.timelineWidth == elements.tabRoutesTimelines.clientWidth
+    tabsState.timelinesSort === currentSort &&
+    tabsState.timelinesColoring === currentColoring &&
+    tabsState.timelineWidth === elements.tabRoutesTimelines.clientWidth
   )
     return;
   tabsState.timelinesSort = currentSort;
   tabsState.timelinesColoring = currentColoring;
-  tabsState.timelineWidth == elements.tabRoutesTimelines.clientWidth;
+  tabsState.timelineWidth = elements.tabRoutesTimelines.clientWidth;
   d3.select(elements.timeline).select("svg").remove();
-  let chartRows = [];
-  let coloringKeys = new Set();
+  const chartRows = [];
+  const coloringKeys = new Set();
   for (const plan of plans) {
-    let chartRow = {
+    const chartRow = {
       label: `Route ${plan.id}`,
       times: [],
     };
@@ -693,13 +693,13 @@ export function updateTimelines() {
     for (const s of plan.segments) {
       for (const t of s.times) {
         let label = "";
-        const segmentType = t.type == "TRAVEL" ? s.connection.type : t.type;
+        const segmentType = t.type === "TRAVEL" ? s.connection.type : t.type;
         const activityInfo = activitiesInfo[segmentType];
-        if (location == null || t.type == "TRAVEL") {
-          if (location != s.connection.destination) {
+        if (location === null || t.type === "TRAVEL") {
+          if (location !== s.connection.destination) {
             location = s.connection.destination;
             landGroup = location.land_group;
-            if (landGroup == undefined) {
+            if (landGroup === undefined) {
               landGroup = null;
               if (location.address.indexOf("Island") > 0 || location.name.indexOf("Island") > 0) landGroup = "Islands";
             }
@@ -707,14 +707,14 @@ export function updateTimelines() {
               landGroup = landGroup.substring(0, landGroup.indexOf("(")).trim();
             }
 
-            // label = location.id.length == 3 ? location.id : location.name;
+            // label = location.id.length === 3 ? location.id : location.name;
           }
         }
-        if (activityInfo.icon) label = `<tspan class="${activityInfo.iconClass}">${activityInfo.icon}<tspan>` + label;
+        if (activityInfo.icon) label = `<tspan class="${activityInfo.iconClass}">${activityInfo.icon}</tspan>${label}`;
 
         const t2 = {
           description: t.description,
-          segmentType: segmentType,
+          segmentType,
           startingTime: new Date(t.start).getTime(),
           endingTime: new Date(t.end).getTime(),
         };
@@ -722,12 +722,12 @@ export function updateTimelines() {
           t2.label = ""; // just a placeholder now, will be replaced with _label later
           t2._label = label;
         }
-        const colorKey = currentColoring == "activity" ? segmentType : landGroup;
-        if (colorKey != null) {
+        const colorKey = currentColoring === "activity" ? segmentType : landGroup;
+        if (colorKey !== null) {
           coloringKeys.add(colorKey);
           t2._color = colorKey;
         }
-        if (t.end == t.start) {
+        if (t.end === t.start) {
           t2.display = "circle";
           t2._label = ""; // don't show labels for start/finish
           chartRow.times.splice(0, 0, t2);
@@ -740,7 +740,7 @@ export function updateTimelines() {
   }
 
   let colorScale;
-  if (currentColoring == "activity") {
+  if (currentColoring === "activity") {
     colorScale = d3.scaleOrdinal().range(Object.values(activityColorsMap)).domain(Object.keys(activityColorsMap));
   } else {
     colorScale = d3.scaleOrdinal().range(d3.scaleOrdinal(d3.schemeAccent).range()).domain(Array.from(coloringKeys));
@@ -775,8 +775,7 @@ export function updateTimelines() {
     .style("cursor", "default")
     ._groups[0].forEach((element) => {
       assignTooltip(element);
-      const d = element.__data__;
-      if (d && d._label) element.innerHTML = d._label;
+      if (element.__data__?._label) element.innerHTML = element.__data__._label;
       // if (element.getClientRects()[0].width < element.textLength.baseVal.value) {
       //    element.innerHTML = '';
       // }
@@ -792,11 +791,10 @@ function updateLegend(chart, coloringKeys, currentColoring, legendElement) {
   const colorsDomain = chart.colors().domain();
   let legend = "Legend: ";
   for (let i = 0; i < colorsRange.length && i < coloringKeys.length; i++) {
-    let n = colorsDomain.indexOf(coloringKeys[i]);
-    let c = colorsRange[n];
-    legend += `<span>&nbsp;&nbsp;`;
-    legend += `<div style="display:inline-block;height:1em;width:1em;vertical-align:middle;background-color:${c}">&nbsp;</div>&nbsp;`;
-    if (currentColoring == "activity") {
+    const n = colorsDomain.indexOf(coloringKeys[i]);
+    legend += "<span>&nbsp;&nbsp;";
+    legend += `<div style="display:inline-block;height:1em;width:1em;vertical-align:middle;background-color:${colorsRange[n]}">&nbsp;</div>&nbsp;`;
+    if (currentColoring === "activity") {
       const activityInfo = activitiesInfo[coloringKeys[i]];
       legend += `<span class="${activityInfo.iconClass}">${activityInfo.icon}</span>`;
     }
@@ -809,21 +807,21 @@ function assignTooltip(element) {
   const tooltip = d3.select(elements.tooltip);
   element.onmousemove = (event) => {
     let n = event.target;
-    if (n.nodeName == "tspan") n = n.parentNode;
-    if (n.nodeName == "text") n = n.parentNode;
+    if (n.nodeName === "tspan") n = n.parentNode;
+    if (n.nodeName === "text") n = n.parentNode;
     const rect = n.getBoundingClientRect();
-    tooltip.style("left", rect.x + window.scrollX + "px").style("top", rect.bottom + +window.scrollY + 3 + "px");
+    tooltip.style("left", `${rect.x + window.scrollX}px`).style("top", `${rect.bottom + window.scrollY + 3}px`);
   };
   element.onmouseout = (event) => {
     tooltip.transition().duration(100).style("opacity", 0);
   };
   element.onmouseover = (event) => {
-    let o = event.target.__data__;
-    if (!o) o = event.target.parentNode.__data__;
-    if (!o || !o.description) return;
+    let data = event.target.__data__;
+    if (!data) data = event.target.parentNode.__data__;
+    if (!data || !data.description) return;
     // const rect = n.getBoundingClientRect();
     tooltip
-      .html(timeToString(o.startingTime) + " " + o.description)
+      .html(`${timeToString(data.startingTime)} ${data.description}`)
       .transition()
       .duration(100)
       // .style('left', (rect.x) + 'px')
@@ -834,7 +832,7 @@ function assignTooltip(element) {
 
 function onPlanSelected(id) {
   elements.scheduleCard.hidden = false;
-  const plan = plans.find((p) => p.id == id);
+  const plan = plans.find((p) => p.id === id);
   currentPlan = plan;
 
   // clear table
@@ -875,12 +873,12 @@ function onPlanSelected(id) {
       tr.appendChild(td);
 
       let desc = t.description;
-      if (s.schedule_url && t.type == "TRAVEL" && t.start != t.end) {
+      if (s.schedule_url && t.type === "TRAVEL" && t.start !== t.end) {
         desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 5px!important" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
       }
       td = document.createElement("td");
       if (t.description.includes("Ferry")) {
-        desc = `<span class="icon"><i class="fa fa-ship w3-text-blue"></i></span> ` + desc;
+        desc = `<span class="icon"><i class="fa fa-ship w3-text-blue"></i></span> ${desc}`;
       }
       td.innerHTML = desc;
       tr.appendChild(td);
@@ -896,7 +894,7 @@ function onPlanSelected(id) {
 }
 
 export function sortPlans(sortBy) {
-  if (sortBy == currentSort) return;
+  if (sortBy === currentSort) return;
   plans.sort((a, b) => {
     if (a[sortBy] >= b[sortBy]) return 1;
     return -1;
@@ -913,7 +911,7 @@ function updateTabsData() {
 
 function showTab(id) {
   if (currentTab) {
-    if (currentTab.id == id) return;
+    if (currentTab.id === id) return;
     currentTab.hidden = true;
   }
   currentTab = document.getElementById(id);
@@ -955,12 +953,12 @@ export function onShare() {
     window.navigator.share(data).then();
   } catch (error) {
     if (!navigator.clipboard) {
-      showError(`Cannot copy link to clipboard`);
+      showError("Cannot copy link to clipboard");
     } else {
       navigator.clipboard
         .writeText(window.location.href)
         .then(() => {
-          alert("Link copied to clipboard");
+          showMessage("Link copied to clipboard");
         })
         .catch((r) => {
           showError(`Cannot copy link to clipboard: ${r}`);
@@ -978,7 +976,7 @@ export function swap() {
 
 function pad(num, size) {
   num = num.toString();
-  while (num.length < size) num = "0" + num;
+  while (num.length < size) num = `0${num}`;
   return num;
 }
 
@@ -999,7 +997,7 @@ function inputValue(input) {
 
 function outputsize(event) {
   const target = event[0].target;
-  if (target.clientWidth != 0) {
+  if (target.clientWidth !== 0) {
     window.setTimeout(updateTabsData, 0);
   }
 }
@@ -1057,7 +1055,7 @@ function init() {
       if (event.code === "Enter") submit();
     });
     elements.timelineSwitch.addEventListener("change", () => {
-      window.setTimeout(function () {
+      window.setTimeout(() => {
         showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
       }, 0);
     });
