@@ -261,48 +261,42 @@ class RoutePlanBuilder:
         schedule_getter: ScheduleGetter,
     ) -> Iterator[RoutePlan]:
         for route in routes:
-            route_plans = []
-            segments = []
-            self._add_plan_segment(
+            yield from self._add_plan_segment(
                 route=route,
                 destination_index=1,
-                segments=segments,
                 start_time=options.date.replace(hour=0, minute=0, second=0, microsecond=0),
-                plans=route_plans,
                 options=options,
                 schedule_getter=schedule_getter,
             )
-            yield from route_plans
 
     def _add_plan_segment(  # noqa: PLR0913
         self,
         *,
         route: Route,
         destination_index: int,
-        segments: list[RoutePlanSegment],
         start_time: datetime,
-        plans: list[RoutePlan],
         options: RoutePlansOptions,
         schedule_getter: ScheduleGetter,
-    ) -> bool:
-        res = False
+        segments: list[RoutePlanSegment] | None = None,
+    ) -> Generator[RoutePlan, None, bool]:
+        if segments is None:
+            segments = []
+        result = False
         try:
             if destination_index == len(route):
                 if not segments:  # empty list?
                     return False  # can we be here?
-                plan = RoutePlan.from_segments(segments)
-                plans.append(plan)
+                yield RoutePlan.from_segments(segments)
                 return True
             origin = route[destination_index - 1]
             destination = route[destination_index]
             connection = self._connection_db.from_to_location(origin, destination)
             if isinstance(connection, FerryConnection):
-                res = self._add_ferry_connection(
+                result = yield from self._add_ferry_connection(
                     route=route,
                     destination_index=destination_index,
                     segments=segments,
                     start_time=start_time,
-                    plans=plans,
                     options=options,
                     connection=connection,
                     schedule_getter=schedule_getter,
@@ -324,19 +318,18 @@ class RoutePlanBuilder:
                     ),
                 )
                 segments.append(RoutePlanSegment(connection=connection, times=times))
-                res = self._add_plan_segment(
+                result = yield from self._add_plan_segment(
                     route=route,
                     destination_index=destination_index + 1,
                     segments=segments,
                     start_time=arrive_time,
-                    plans=plans,
                     options=options,
                     schedule_getter=schedule_getter,
                 )
         finally:
             delete_start = destination_index - 1
             del segments[delete_start:]
-        return res
+        return result
 
     def _add_ferry_connection(  # noqa: C901, PLR0912, PLR0913
         self,
@@ -345,12 +338,11 @@ class RoutePlanBuilder:
         destination_index: int,
         segments: list[RoutePlanSegment],
         start_time: datetime,
-        plans: list[RoutePlan],
         options: RoutePlansOptions,
         connection: FerryConnection,
         schedule_getter: ScheduleGetter,
-    ) -> bool:
-        res = False
+    ) -> Generator[RoutePlan, None, bool]:
+        result = False
         depature_terminal = connection.origin
         day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
         schedule = schedule_getter(connection.origin.id, connection.destination.id, date=day)
@@ -414,22 +406,19 @@ class RoutePlanBuilder:
                     schedule_url=schedule.url,
                 ),
             )
-            if (
-                self._add_plan_segment(
-                    route=route,
-                    destination_index=destination_index + 1,
-                    segments=segments,
-                    start_time=arrive_time,
-                    plans=plans,
-                    options=options,
-                    schedule_getter=schedule_getter,
-                )
-                is False
-            ):
+            recursion_result = yield from self._add_plan_segment(
+                route=route,
+                destination_index=destination_index + 1,
+                segments=segments,
+                start_time=arrive_time,
+                options=options,
+                schedule_getter=schedule_getter,
+            )
+            if recursion_result is False:
                 break
             delete_start = destination_index - 1
             del segments[delete_start:]
-            res = True
+            result = True
             if not options.show_all and sum(1 for s in segments if isinstance(s.connection, FerryConnection)) > 0:
                 break
-        return res
+        return result
