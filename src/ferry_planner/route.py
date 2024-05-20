@@ -78,7 +78,7 @@ class RoutePlan(BaseModel):
         )
         segments_len = len(segments)
         if segments_len == 0:
-            msg = "RoutePlan must have at least one segment"
+            msg = "route plan must have at least one segment"
             raise ValueError(msg)
 
         # If first segment is driving, we can shift it to second segment
