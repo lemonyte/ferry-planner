@@ -34,7 +34,7 @@ class Connection(BaseModel, ABC, Generic[OriginT_co, DestinationT_co]):
     origin: OriginT_co
     destination: DestinationT_co
     duration: int
-    """Duration in seconds, or None if unknown."""
+    """Duration in seconds."""
     distance: float
     """Distance in kilometers."""
     fuel: float
