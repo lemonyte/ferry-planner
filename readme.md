@@ -4,18 +4,20 @@ This website is a tool that calculates possible routes between two destinations 
 
 ## Requirements
 
-- [Python 3.9](https://www.python.org/downloads/) or higher
+- [Python 3.11](https://www.python.org/downloads/) or higher
 - Packages listed in [`requirements.txt`](requirements.txt)
 
-## Usage
+## Development
 
-To host the website locally, install uvicorn and run it with the following commands:
+To develop this project, install the required packages and run the server with the following commands:
 
 ```bash
 pip install -e .
-pip install uvicorn[standard]
+pip install -r requirements.txt -r requirements-dev.txt
 uvicorn ferry_planner.server:app --reload
 ```
+
+Navigate to <http://localhost:8000> to preview the website.
 
 ## Disclaimer
 
