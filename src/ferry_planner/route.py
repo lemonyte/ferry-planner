@@ -193,14 +193,14 @@ class RouteBuilder:
         end_point: Location,
         routes: list[Route],
         current_route: list[Location] | None = None,
-        dead_ends: list[Connection] | None = None,
+        dead_ends: set[Connection] | None = None,
         lands: list[str] | None = None,
         last_connection_type: type[Connection] = Connection,
     ) -> bool:
         if current_route is None:
             current_route = []
         if dead_ends is None:
-            dead_ends = []
+            dead_ends = set()
         if lands is None:
             lands = []
         current_route.append(next_point)
@@ -246,7 +246,7 @@ class RouteBuilder:
             ):
                 res = True
             else:
-                dead_ends.append(connection)
+                dead_ends.add(connection)
             del lands[-1]
         del current_route[-1]
         return res
