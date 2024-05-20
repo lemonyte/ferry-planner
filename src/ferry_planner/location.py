@@ -12,6 +12,19 @@ class Location(BaseModel, ABC):
     name: str
     land_group: str | None = None
 
+    def __eq__(self, other: object) -> bool:
+        # `isinstance` is not used here because it is much slower and this method
+        # is called many times in the recursive route-finding algorithm.
+        # Further, we don't expect to compare with anything other than Location objects in the
+        # recursive function, so the overhead introduced by `AttributeError` being raised is not relevant.
+        try:
+            return self.id == other.id  # type: ignore[attr-defined]
+        except AttributeError:
+            return False
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
     @property
     @abstractmethod
     def map_parameter(self) -> str: ...

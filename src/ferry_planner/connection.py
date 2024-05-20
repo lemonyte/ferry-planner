@@ -41,6 +41,19 @@ class Connection(BaseModel, ABC, Generic[OriginT_co, DestinationT_co]):
     """TODO: fuel usage units?"""
     type: ConnectionType
 
+    def __eq__(self, other: object) -> bool:
+        # `isinstance` is not used here because it is much slower and this method
+        # is called many times in the recursive route-finding algorithm.
+        # Further, we don't expect to compare with anything other than Connection objects in the
+        # recursive function, so the overhead introduced by `AttributeError` being raised is not relevant.
+        try:
+            return self.id == other.id  # type: ignore[attr-defined]
+        except AttributeError:
+            return False
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
     @model_validator(mode="before")
     @classmethod
     def _validate_origin_destination(cls, data: DataT, info: ValidationInfo) -> DataT:
