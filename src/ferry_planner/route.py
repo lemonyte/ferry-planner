@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Generator, Iterable, Iterator, Sequence
 from copy import deepcopy
 from datetime import datetime, timedelta
 from enum import Enum
@@ -182,21 +182,18 @@ class RouteBuilder:
         self._connection_db = connection_db
 
     def find_routes(self, *, origin: Location, destination: Location) -> Iterator[Route]:
-        routes = []
-        self._find_routes_recurse(next_point=origin, end_point=destination, routes=routes)
-        yield from routes
+        return self._find_routes_recurse(next_point=origin, end_point=destination)
 
     def _find_routes_recurse(  # noqa: C901, PLR0912, PLR0913
         self,
         *,
         next_point: Location,
         end_point: Location,
-        routes: list[Route],
         current_route: list[Location] | None = None,
         dead_ends: set[Connection] | None = None,
         lands: list[str] | None = None,
         last_connection_type: type[Connection] = Connection,
-    ) -> bool:
+    ) -> Generator[Route, None, bool]:
         if current_route is None:
             current_route = []
         if dead_ends is None:
@@ -205,7 +202,7 @@ class RouteBuilder:
             lands = []
         current_route.append(next_point)
         if next_point == end_point:
-            routes.append(current_route.copy())
+            yield current_route.copy()
             del current_route[-1]
             return True
         if isinstance(end_point, City):
@@ -216,10 +213,10 @@ class RouteBuilder:
                 pass
             else:
                 current_route.append(end_point)
-                routes.append(current_route.copy())
+                yield current_route.copy()
                 del current_route[-2:]
                 return True
-        res = False
+        result = False
         for connection in self._connection_db.from_location(next_point):
             if connection.destination in current_route or connection in dead_ends:
                 continue
@@ -235,21 +232,21 @@ class RouteBuilder:
                 lands.append(connection.origin.land_group)
             else:
                 lands.append("")
-            if self._find_routes_recurse(
+            recursion_result = yield from self._find_routes_recurse(
                 next_point=connection.destination,
                 end_point=end_point,
-                routes=routes,
                 current_route=current_route,
                 dead_ends=dead_ends,
                 lands=lands,
                 last_connection_type=type(connection),
-            ):
-                res = True
+            )
+            if recursion_result is True:
+                result = True
             else:
                 dead_ends.add(connection)
             del lands[-1]
         del current_route[-1]
-        return res
+        return result
 
 
 class RoutePlanBuilder:
