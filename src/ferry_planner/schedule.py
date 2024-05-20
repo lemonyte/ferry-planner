@@ -53,10 +53,10 @@ class ScheduleDB:
         self,
         *,
         ferry_connections: Sequence[FerryConnection] | set[FerryConnection] | frozenset[FerryConnection],
-        base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/",
-        cache_dir: Path = Path("data/schedule_cache"),
-        cache_ahead_days: int = 3,
-        refresh_interval: int = 60 * 60 * 24,  # 24 hours
+        base_url: str,
+        cache_dir: Path,
+        cache_ahead_days: int,
+        refresh_interval: int,
     ) -> None:
         self.ferry_connections = ferry_connections
         self.base_url = base_url

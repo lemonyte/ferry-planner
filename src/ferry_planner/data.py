@@ -1,25 +1,16 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
-from pydantic import BaseModel
-
-from ferry_planner.connection import (
-    AirConnection,
-    BusConnection,
-    CarConnection,
-    Connection,
-    ConnectionId,
-    FerryConnection,
-)
-from ferry_planner.location import City, Location, LocationId, Terminal
+from ferry_planner.location import Location, LocationId
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, MutableMapping
+    from collections.abc import Iterable, Iterator, MutableMapping, Sequence
 
-ModelT = TypeVar("ModelT", bound=BaseModel)
+    from ferry_planner.config import DataFileInfo
+    from ferry_planner.connection import Connection, ConnectionId
+
 LocationT = TypeVar("LocationT", bound=Location)
 OriginT = TypeVar("OriginT", bound=Location)
 DestinationT = TypeVar("DestinationT", bound=Location)
@@ -37,12 +28,12 @@ class ConnectionNotFoundError(Exception):
         super().__init__(f"Connection not found with ID {connection_id}", *args)
 
 
-def load_from_json(file: Path, /, *, data_type: type[ModelT]) -> Iterator[ModelT]:
-    data = json.loads(file.read_text(encoding="utf-8"))
+def load_from_json(data_file: DataFileInfo, /, *, context: dict[str, Any] | None = None) -> Iterator[DataFileInfo.cls]:
+    data = json.loads(data_file.path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
-        msg = f"Data file '{file}' must contain a dictionary"
+        msg = f"data file '{data_file.path}' must contain a dictionary"
         raise TypeError(msg)
-    return (data_type.model_validate(item) for item in data.values())
+    return (data_file.cls.model_validate(obj, context=context) for obj in data.values())
 
 
 class LocationDB:
@@ -50,10 +41,10 @@ class LocationDB:
         self._locations: dict[LocationId, Location] = {location.id: location for location in locations}
 
     @classmethod
-    def from_files(cls) -> LocationDB:
+    def from_files(cls, data_files: Sequence[DataFileInfo], /) -> LocationDB:
         locations = []
-        locations.extend(load_from_json(Path("data/cities.json"), data_type=City))
-        locations.extend(load_from_json(Path("data/terminals.json"), data_type=Terminal))
+        for data_file in data_files:
+            locations.extend(load_from_json(data_file))
         return cls(locations)
 
     def dict(self) -> MutableMapping[LocationId, Location]:
@@ -74,26 +65,15 @@ class ConnectionDB:
         self._connections: dict[ConnectionId, Connection] = {connection.id: connection for connection in connections}
 
     @classmethod
-    def from_files(cls, *, location_db: LocationDB) -> ConnectionDB:
-        files: tuple[tuple[Path, type[Connection]], ...] = (
-            (Path("data/car_connections.json"), CarConnection),
-            (Path("data/ferry_connections.json"), FerryConnection),
-            (Path("data/air_connections.json"), AirConnection),
-            (Path("data/bus_connections.json"), BusConnection),
-        )
+    def from_files(cls, data_files: Sequence[DataFileInfo], /, *, location_db: LocationDB) -> ConnectionDB:
         connections = []
-        for file, connection_type in files:
-            if file.exists():
-                data = json.loads(file.read_text(encoding="utf-8"))
-                if not isinstance(data, dict):
-                    msg = f"Data file {file} must contain a dictionary"
-                    raise ValueError(msg)
-                connections.extend(
-                    (
-                        connection_type.model_validate(obj, context={"location_db": location_db})
-                        for obj in data.values()
-                    ),
-                )
+        for data_file in data_files:
+            connections.extend(
+                load_from_json(
+                    data_file,
+                    context={"location_db": location_db},
+                ),
+            )
         return cls(connections)
 
     def dict(self) -> MutableMapping[ConnectionId, Connection[Location, Location]]:
