@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Generator, Iterable, Iterator, Sequence
 from copy import deepcopy
 from datetime import datetime, timedelta
 from enum import Enum
@@ -182,30 +182,27 @@ class RouteBuilder:
         self._connection_db = connection_db
 
     def find_routes(self, *, origin: Location, destination: Location) -> Iterator[Route]:
-        routes = []
-        self._find_routes_recurse(next_point=origin, end_point=destination, routes=routes)
-        yield from routes
+        return self._find_routes_recurse(next_point=origin, end_point=destination)
 
     def _find_routes_recurse(  # noqa: C901, PLR0912, PLR0913
         self,
         *,
         next_point: Location,
         end_point: Location,
-        routes: list[Route],
         current_route: list[Location] | None = None,
-        dead_ends: list[Connection] | None = None,
+        dead_ends: set[Connection] | None = None,
         lands: list[str] | None = None,
         last_connection_type: type[Connection] = Connection,
-    ) -> bool:
+    ) -> Generator[Route, None, bool]:
         if current_route is None:
             current_route = []
         if dead_ends is None:
-            dead_ends = []
+            dead_ends = set()
         if lands is None:
             lands = []
         current_route.append(next_point)
         if next_point == end_point:
-            routes.append(current_route.copy())
+            yield current_route.copy()
             del current_route[-1]
             return True
         if isinstance(end_point, City):
@@ -216,10 +213,10 @@ class RouteBuilder:
                 pass
             else:
                 current_route.append(end_point)
-                routes.append(current_route.copy())
+                yield current_route.copy()
                 del current_route[-2:]
                 return True
-        res = False
+        result = False
         for connection in self._connection_db.from_location(next_point):
             if connection.destination in current_route or connection in dead_ends:
                 continue
@@ -235,21 +232,21 @@ class RouteBuilder:
                 lands.append(connection.origin.land_group)
             else:
                 lands.append("")
-            if self._find_routes_recurse(
+            recursion_result = yield from self._find_routes_recurse(
                 next_point=connection.destination,
                 end_point=end_point,
-                routes=routes,
                 current_route=current_route,
                 dead_ends=dead_ends,
                 lands=lands,
                 last_connection_type=type(connection),
-            ):
-                res = True
+            )
+            if recursion_result is True:
+                result = True
             else:
-                dead_ends.append(connection)
+                dead_ends.add(connection)
             del lands[-1]
         del current_route[-1]
-        return res
+        return result
 
 
 class RoutePlanBuilder:
@@ -264,48 +261,42 @@ class RoutePlanBuilder:
         schedule_getter: ScheduleGetter,
     ) -> Iterator[RoutePlan]:
         for route in routes:
-            route_plans = []
-            segments = []
-            self._add_plan_segment(
+            yield from self._add_plan_segment(
                 route=route,
                 destination_index=1,
-                segments=segments,
                 start_time=options.date.replace(hour=0, minute=0, second=0, microsecond=0),
-                plans=route_plans,
                 options=options,
                 schedule_getter=schedule_getter,
             )
-            yield from route_plans
 
     def _add_plan_segment(  # noqa: PLR0913
         self,
         *,
         route: Route,
         destination_index: int,
-        segments: list[RoutePlanSegment],
         start_time: datetime,
-        plans: list[RoutePlan],
         options: RoutePlansOptions,
         schedule_getter: ScheduleGetter,
-    ) -> bool:
-        res = False
+        segments: list[RoutePlanSegment] | None = None,
+    ) -> Generator[RoutePlan, None, bool]:
+        if segments is None:
+            segments = []
+        result = False
         try:
             if destination_index == len(route):
                 if not segments:  # empty list?
                     return False  # can we be here?
-                plan = RoutePlan.from_segments(segments)
-                plans.append(plan)
+                yield RoutePlan.from_segments(segments)
                 return True
             origin = route[destination_index - 1]
             destination = route[destination_index]
             connection = self._connection_db.from_to_location(origin, destination)
             if isinstance(connection, FerryConnection):
-                res = self._add_ferry_connection(
+                result = yield from self._add_ferry_connection(
                     route=route,
                     destination_index=destination_index,
                     segments=segments,
                     start_time=start_time,
-                    plans=plans,
                     options=options,
                     connection=connection,
                     schedule_getter=schedule_getter,
@@ -327,19 +318,18 @@ class RoutePlanBuilder:
                     ),
                 )
                 segments.append(RoutePlanSegment(connection=connection, times=times))
-                res = self._add_plan_segment(
+                result = yield from self._add_plan_segment(
                     route=route,
                     destination_index=destination_index + 1,
                     segments=segments,
                     start_time=arrive_time,
-                    plans=plans,
                     options=options,
                     schedule_getter=schedule_getter,
                 )
         finally:
             delete_start = destination_index - 1
             del segments[delete_start:]
-        return res
+        return result
 
     def _add_ferry_connection(  # noqa: C901, PLR0912, PLR0913
         self,
@@ -348,12 +338,11 @@ class RoutePlanBuilder:
         destination_index: int,
         segments: list[RoutePlanSegment],
         start_time: datetime,
-        plans: list[RoutePlan],
         options: RoutePlansOptions,
         connection: FerryConnection,
         schedule_getter: ScheduleGetter,
-    ) -> bool:
-        res = False
+    ) -> Generator[RoutePlan, None, bool]:
+        result = False
         depature_terminal = connection.origin
         day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
         schedule = schedule_getter(connection.origin.id, connection.destination.id, date=day)
@@ -417,22 +406,19 @@ class RoutePlanBuilder:
                     schedule_url=schedule.url,
                 ),
             )
-            if (
-                self._add_plan_segment(
-                    route=route,
-                    destination_index=destination_index + 1,
-                    segments=segments,
-                    start_time=arrive_time,
-                    plans=plans,
-                    options=options,
-                    schedule_getter=schedule_getter,
-                )
-                is False
-            ):
+            recursion_result = yield from self._add_plan_segment(
+                route=route,
+                destination_index=destination_index + 1,
+                segments=segments,
+                start_time=arrive_time,
+                options=options,
+                schedule_getter=schedule_getter,
+            )
+            if recursion_result is False:
                 break
             delete_start = destination_index - 1
             del segments[delete_start:]
-            res = True
+            result = True
             if not options.show_all and sum(1 for s in segments if isinstance(s.connection, FerryConnection)) > 0:
                 break
-        return res
+        return result
