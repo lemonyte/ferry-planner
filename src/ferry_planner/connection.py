@@ -38,7 +38,7 @@ class Connection(BaseModel, ABC, Generic[OriginT_co, DestinationT_co]):
     distance: float
     """Distance in kilometers."""
     fuel: float
-    """TODO: fuel usage units?"""
+    """Fuel usage in litres, assuming an efficiency of approximately 10 litres per 100 km."""
     type: ConnectionType
 
     @model_validator(mode="before")
