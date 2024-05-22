@@ -56,12 +56,15 @@ class DataFileInfo(BaseModel):
     @field_validator("cls", mode="before")
     @classmethod
     def _validate_cls(cls, value: str | type | None) -> type[Location | Connection]:
-        if isinstance(value, str):
-            value = CLASS_MAP.get(value)
-        if not value:
-            msg = f"unknown class name '{value}'. Valid class names are {', '.join(CLASS_MAP)}"
-            raise ValueError(msg)
-        return value
+        if isinstance(value, str) and value in CLASS_MAP:
+            return CLASS_MAP[value]
+        if isinstance(value, type) and value in CLASS_MAP.values():
+            return value
+        msg = (
+            f"invalid class name '{value.__name__ if isinstance(value, type) else value}'. "
+            f"Valid class names are {', '.join(CLASS_MAP)}"
+        )
+        raise ValueError(msg)
 
 
 class DataConfig(BaseModel):
