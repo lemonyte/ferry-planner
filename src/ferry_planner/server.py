@@ -34,7 +34,13 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
 ROOT_DIR = Path(__file__).parent
 
-config = Config()  # type: ignore[call-arg]
+# This line avoids using a "type: ignore" comment,
+# using `config = Config()` would require one as it does not pass type checking.
+# Values are still loaded from the config file because
+# `Config` inherits from `BaseSettings` instead of `BaseModel`.
+# See https://github.com/pydantic/pydantic-settings/issues/108
+# and https://github.com/pydantic/pydantic-settings/issues/201
+config = Config.model_validate({})
 location_db = LocationDB.from_files(config.data.location_files)
 connection_db = ConnectionDB.from_files(config.data.connection_files, location_db=location_db)
 schedule_db = ScheduleDB(
