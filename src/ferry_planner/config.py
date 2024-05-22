@@ -30,7 +30,7 @@ def check_is_dir(path: Path, /) -> Path:
 FilePath = Annotated[Path, AfterValidator(check_is_file)]
 DirectoryPath = Annotated[Path, AfterValidator(check_is_dir)]
 
-CLASS_MAP = {
+DATA_MODEL_CLASS_MAP = {
     cls.__name__: cls
     for cls in (
         Airport,
@@ -56,13 +56,13 @@ class DataFileInfo(BaseModel):
     @field_validator("cls", mode="before")
     @classmethod
     def _validate_cls(cls, value: str | type | None) -> type[Location | Connection]:
-        if isinstance(value, str) and value in CLASS_MAP:
-            return CLASS_MAP[value]
-        if isinstance(value, type) and value in CLASS_MAP.values():
+        if isinstance(value, str) and value in DATA_MODEL_CLASS_MAP:
+            return DATA_MODEL_CLASS_MAP[value]
+        if isinstance(value, type) and value in DATA_MODEL_CLASS_MAP.values():
             return value
         msg = (
             f"invalid class name '{value.__name__ if isinstance(value, type) else value}'. "
-            f"Valid class names are {', '.join(CLASS_MAP)}"
+            f"Valid class names are {', '.join(DATA_MODEL_CLASS_MAP)}"
         )
         raise ValueError(msg)
 
