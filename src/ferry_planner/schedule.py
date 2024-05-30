@@ -422,8 +422,8 @@ def get_seasonal_schedule_rows(soup: BeautifulSoup, date: datetime) -> Sequence[
 
 
 def get_seasonal_schedule_daterange_index(hrefs: Sequence[str], date: datetime) -> int:
-    for i in range(len(hrefs)):
-        dates = get_seasonal_schedule_daterange_from_url(hrefs[i])
+    for i, href in enumerate(hrefs):
+        dates = get_seasonal_schedule_daterange_from_url(href)
         if dates and date.date() >= dates[0].date() and date.date() <= dates[1].date():
             return i
     return -1
