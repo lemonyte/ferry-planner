@@ -3,7 +3,7 @@ import asyncio
 import itertools
 import os
 import time
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Thread
@@ -17,6 +17,13 @@ from ferry_planner.connection import FerryConnection
 from ferry_planner.location import LocationId
 from ferry_planner.utils import datetime_to_timedelta
 
+MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+WEEKDAY_NAMES = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+NO_SAILINGS_MESSAGES = [
+    "Seasonal schedules have not been posted for these dates",
+    "Schedules for your selected date and route are currently unavailable",
+]
+
 
 class FerrySailing(BaseModel):
     departure: datetime
@@ -25,8 +32,8 @@ class FerrySailing(BaseModel):
     """Duration in seconds."""
     # TODO: price: float  # noqa: FIX002
     """Price in Canadian dollars (CAD)."""
-    notes: Sequence[str] | None
-    """Any notes/comments posted about this sailing"""
+    notes: tuple[str, ...] = ()
+    """Notes or comments posted about this sailing."""
 
     def __hash__(self) -> int:
         return hash((self.departure, self.arrival, self.duration, self.notes))
@@ -38,7 +45,7 @@ class FerrySchedule(BaseModel):
     destination: LocationId
     sailings: tuple[FerrySailing, ...]
     url: str
-    notes: Sequence[str] | None
+    notes: tuple[str, ...]
     """Any notes/comments posted about this schedule"""
 
 
@@ -54,14 +61,29 @@ class ScheduleGetter(Protocol):
 
 
 class HtmlParseResult:
-    redirect_url: str | None = None
-    sailings: Sequence[FerrySailing] | None = None
-    notes: list[str] | None = None
+    redirect_url: str = ""
+    sailings: tuple[FerrySailing, ...] = ()
+    notes: tuple[str, ...] = ()
+    """Any notes/comments/errors posted about this schedule"""
 
-    def add_note(self, note: str) -> None:
-        if self.notes is None:
-            self.notes = []
-        self.notes.append(note)
+    @classmethod
+    def redirect(cls, redirect_url: str) -> "HtmlParseResult":
+        result = HtmlParseResult()
+        result.redirect_url = redirect_url
+        return result
+
+    @classmethod
+    def from_sailings(cls, sailings: Sequence[FerrySailing], notes: Sequence[str]) -> "HtmlParseResult":
+        result = HtmlParseResult()
+        result.sailings = tuple(sailings)
+        result.notes = tuple(notes)
+        return result
+
+
+class DownloadScheduleError(Exception):
+    def __init__(self, url: str, msg: str, *args: Iterable) -> None:
+        self.url = url
+        super().__init__(f"Error downloading {url}: {msg}", *args)
 
 
 class ScheduleDB:
@@ -82,6 +104,9 @@ class ScheduleDB:
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
         self._mem_cache = {}
         self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
+        timeout = httpx.Timeout(30.0, pool=None)
+        limits = httpx.Limits(max_connections=5)
+        self._client = httpx.AsyncClient(timeout=timeout, limits=limits, follow_redirects=True)
 
     def _get_download_url(
         self,
@@ -144,48 +169,12 @@ class ScheduleDB:
         *,
         date: datetime,
     ) -> FerrySchedule | None:
-        url = self._get_download_url(origin_id, destination_id, date=date)
-        route = f"{origin_id}-{destination_id}"
-        print(f"[{self.__class__.__name__}:INFO] fetching schedule: {route}:{date.date()}")
-        max_requests_count = 3
-        requests_count = 0
-        while requests_count < max_requests_count:
-            requests_count += 1
-            try:
-                response = httpx.get(url, follow_redirects=True, timeout=30.0)
-            except httpx.HTTPError as exc:
-                print(
-                    f"[{self.__class__.__name__}:ERROR] failed to download schedule: {route}:{date.date()}\n"
-                    f"{exc!r}\n"
-                    f"{url}",
-                )
-                return None
-            if not httpx.codes.is_success(response.status_code):
-                print(
-                    f"[{self.__class__.__name__}:ERROR] schedule not found: {route}:{date.date()}"
-                    f" status {response.status_code}",
-                )
-                return None
-            print(f"[{self.__class__.__name__}:INFO] fetched schedule: {route}:{date.date()}")
-            result = parse_schedule_html(response, date)
-            if result.redirect_url:
-                url = result.redirect_url
-                continue
-            if result.sailings is None:
-                break
-            return FerrySchedule(
-                date=date,
-                origin=origin_id,
-                destination=destination_id,
-                sailings=tuple(result.sailings),
-                url=url,
-                notes=result.notes,
-            )
-        print(
-            f"[{self.__class__.__name__}:ERROR] failed to download schedule: {route}:{date.date()}"
-            f" - too many redirects",
-        )
-        return None
+        coro = self.download_schedule_async(origin_id, destination_id, date=date)
+        try:
+            loop = asyncio.get_running_loop()
+            return loop.run_until_complete(coro)
+        except RuntimeError:
+            return asyncio.run(coro)
 
     async def download_schedule_async(
         self,
@@ -194,37 +183,46 @@ class ScheduleDB:
         /,
         *,
         date: datetime,
-        client: httpx.AsyncClient,
     ) -> FerrySchedule | None:
+        try:
+            return await self._download_schedule_async(origin_id, destination_id, date=date)
+        except (DownloadScheduleError, httpx.HTTPError) as exc:
+            url = exc.request.url if isinstance(exc, httpx.HTTPError) else exc.url
+            print(
+                f"[{self.__class__.__name__}:ERROR] failed to download schedule: "
+                f"{origin_id}-{destination_id}:{date.date()}\n"
+                f"\t{exc!r}\n"
+                f"\tUrl: {url}",
+            )
+            return None
+
+    async def _download_schedule_async(
+        self,
+        origin_id: LocationId,
+        destination_id: LocationId,
+        /,
+        *,
+        date: datetime,
+    ) -> FerrySchedule:
         url = self._get_download_url(origin_id, destination_id, date=date)
         route = f"{origin_id}-{destination_id}"
         print(f"[{self.__class__.__name__}:INFO] fetching schedule: {route}:{date.date()}")
-        max_requests_count = 3
-        requests_count = 0
-        while requests_count < max_requests_count:
-            requests_count += 1
-            try:
-                response = await client.get(url, follow_redirects=True, timeout=30.0)
-            except httpx.HTTPError as exc:
-                print(
-                    f"[{self.__class__.__name__}:ERROR] failed to download schedule: {route}:{date.date()}\n"
-                    f"{exc!r}\n"
-                    f"{url}",
-                )
-                return None
+        max_redirects_count = 3
+        redirects = []
+        while True:
+            response = await self._client.get(url)
             if not httpx.codes.is_success(response.status_code):
-                print(
-                    f"[{self.__class__.__name__}:ERROR] schedule not found: {route}:{date.date()}"
-                    f" status {response.status_code}",
-                )
-                return None
+                raise DownloadScheduleError(url, f"Status {response.status_code}")
             print(f"[{self.__class__.__name__}:INFO] fetched schedule: {route}:{date.date()}")
             result = parse_schedule_html(response, date)
             if result.redirect_url:
+                if len(redirects) > max_redirects_count:
+                    raise DownloadScheduleError(url, "Too many redirects")
+                if url in redirects:
+                    raise DownloadScheduleError(url, "Redirects loop")
                 url = result.redirect_url
+                redirects.append(url)
                 continue
-            if result.sailings is None:
-                break
             return FerrySchedule(
                 date=date,
                 origin=origin_id,
@@ -233,11 +231,6 @@ class ScheduleDB:
                 url=url,
                 notes=result.notes,
             )
-        print(
-            f"[{self.__class__.__name__}:ERROR] failed to download schedule: {route}:{date.date()}"
-            f" - too many redirects",
-        )
-        return None
 
     async def _download_and_save_schedule(
         self,
@@ -246,13 +239,11 @@ class ScheduleDB:
         /,
         *,
         date: datetime,
-        client: httpx.AsyncClient,
     ) -> bool:
         schedule = await self.download_schedule_async(
             origin_id,
             destination_id,
             date=date,
-            client=client,
         )
         if schedule is not None:
             self.put(schedule)
@@ -272,28 +263,24 @@ class ScheduleDB:
         self._mem_cache = {}
         # download new schedules
         tasks = []
-        timeout = httpx.Timeout(30.0, pool=None)
-        limits = httpx.Limits(max_connections=5)
-        async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
-            for connection in self.ferry_connections:
-                for date in dates:
-                    filepath = self._get_filepath(
-                        connection.origin.id,
-                        connection.destination.id,
-                        date=date,
-                    )
-                    if not filepath.exists():
-                        tasks.append(
-                            asyncio.create_task(
-                                self._download_and_save_schedule(
-                                    connection.origin.id,
-                                    connection.destination.id,
-                                    date=date,
-                                    client=client,
-                                ),
+        for connection in self.ferry_connections:
+            for date in dates:
+                filepath = self._get_filepath(
+                    connection.origin.id,
+                    connection.destination.id,
+                    date=date,
+                )
+                if not filepath.exists():
+                    tasks.append(
+                        asyncio.create_task(
+                            self._download_and_save_schedule(
+                                connection.origin.id,
+                                connection.destination.id,
+                                date=date,
                             ),
-                        )
-            downloaded_schedules = sum(await asyncio.gather(*tasks))
+                        ),
+                    )
+        downloaded_schedules = sum(await asyncio.gather(*tasks))
         print(
             f"[{self.__class__.__name__}:INFO] finished refreshing cache, "
             f"downloaded {downloaded_schedules} schedules",
@@ -309,47 +296,40 @@ class ScheduleDB:
 
 
 def parse_schedule_html(response: httpx.Response, date: datetime) -> HtmlParseResult:
-    result = HtmlParseResult()
     html = response.text.replace("\u2060", "")
     soup = BeautifulSoup(markup=html, features="html.parser")
     table_tag = soup.find("table", id="dailyScheduleTableOnward")
     daterange_tag = soup.find("div", id="dateRangeModal")  # for seasonal
-    rows: Sequence[Tag] | None = None
+    rows: Sequence[Tag] = []
     if table_tag and isinstance(table_tag, Tag) and table_tag.tbody:
         rows = table_tag.tbody.find_all("tr")
     elif daterange_tag and isinstance(daterange_tag, Tag):
         hrefs = [a["href"] for a in daterange_tag.find_all("a")]
         index = get_seasonal_schedule_daterange_index(hrefs, date)
         if index < 0:
-            pass  # date is out of range
-        else:
-            url = response.url.scheme + "://" + response.url.host + hrefs[index]
-            if index == 0 or url == str(response.url):
-                rows = get_seasonal_schedule_rows(soup, date)
-            else:
-                result.redirect_url = url
-                return result
-    result.sailings = parse_sailings_from_html_rows(rows, date)
-    if result.sailings is None:
-        for note in [
-            "Seasonal schedules have not been posted for these dates",
-            "Schedules for your selected date and route are currently unavailable",
-        ]:
-            if note in html:
-                result.add_note(note)
-                result.sailings = []
-                return result
-        print(f"No sailings found at {response.url}")
-    return result
+            raise DownloadScheduleError(str(response.url), f"Date {date} is out of seasonal schedules range")
+        url = response.url.scheme + "://" + response.url.host + hrefs[index]
+        if index > 0 and url != str(response.url):
+            return HtmlParseResult.redirect(url)
+        rows = get_seasonal_schedule_rows(str(response.url), soup, date)
+    sailings = parse_sailings_from_html_rows(rows, date)
+    notes = []
+    if not sailings:
+        err = "No sailings found"
+        for msg in NO_SAILINGS_MESSAGES:
+            if msg in html:
+                err = msg
+                break
+        notes.append(err)
+        print(f"{err} at {response.url}")
+    return HtmlParseResult.from_sailings(sailings, notes)
 
 
-def parse_sailings_from_html_rows(rows: Sequence[Tag] | None, date: datetime) -> Sequence[FerrySailing] | None:
-    if rows is None:
-        return None
+def parse_sailings_from_html_rows(rows: Sequence[Tag], date: datetime) -> Sequence[FerrySailing]:
     sailing_row_min_td_count = 3
-    sailings: Sequence[FerrySailing] = []
-    notes = None
+    sailings = []
     for row in rows:
+        notes = []
         tds = row.find_all("td")
         if (
             len(tds) < sailing_row_min_td_count
@@ -386,7 +366,7 @@ def parse_sailings_from_html_rows(rows: Sequence[Tag] | None, date: datetime) ->
             departure=departure,
             arrival=arrival,
             duration=duration,
-            notes=notes,
+            notes=tuple(notes),
         )
         sailings.append(sailing)
     return sailings
@@ -407,13 +387,12 @@ def parse_sailig_comment(comment: str) -> list[str]:
     return notes
 
 
-def get_seasonal_schedule_rows(soup: BeautifulSoup, date: datetime) -> Sequence[Tag] | None:
+def get_seasonal_schedule_rows(url: str, soup: BeautifulSoup, date: datetime) -> Sequence[Tag]:
     rows: Sequence[Tag] = []
     form = soup.find("form", id="seasonalSchedulesForm")
     if not isinstance(form, Tag):
-        return None
-    weekday_names = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
-    weekday = weekday_names[date.weekday()]
+        raise DownloadScheduleError(url, "seasonalSchedulesForm not found")
+    weekday = WEEKDAY_NAMES[date.weekday()]
     for thead in form.find_all("thead"):
         if thead.text.lower().strip().startswith(weekday):
             rows = [x for x in itertools.takewhile(lambda t: t.name != "thead", thead.next_siblings) if x.name == "tr"]
@@ -452,7 +431,6 @@ def is_schedule_excluded_on_date(schedule_comment: str, date: datetime) -> bool:
 
 
 def match_specific_schedule_date(schedule_dates: str, date: datetime) -> bool:
-    months: Sequence[str] = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
     month: int | None = None
     schedule_dates = schedule_dates.upper()
     for c in [".", "&", " ON ", " ON:"]:
@@ -460,8 +438,8 @@ def match_specific_schedule_date(schedule_dates: str, date: datetime) -> bool:
     tokens = [x.strip() for x in schedule_dates.split(",")]
     tokens = [x for x in tokens if x and x not in ["ONLY", "EXCEPT", "NOT AVAILABLE"]]
     for token in tokens:
-        if token in months:
-            month = months.index(token) + 1
+        if token in MONTHS:
+            month = MONTHS.index(token) + 1
             continue
         _date: datetime
         if token.isnumeric():
@@ -472,12 +450,12 @@ def match_specific_schedule_date(schedule_dates: str, date: datetime) -> bool:
         else:
             dt = token.split(" ")
             expected_tokens_count = 2
-            if len(dt) == expected_tokens_count and dt[0].isnumeric() and dt[1] in months:
+            if len(dt) == expected_tokens_count and dt[0].isnumeric() and dt[1] in MONTHS:
                 # 01 JAN, 02 JAN, 05 FEB, 06 FEB
-                _date = datetime(year=date.year, month=months.index(dt[1]) + 1, day=int(dt[0]))
-            elif len(dt) == expected_tokens_count and dt[1].isnumeric() and dt[0] in months:
+                _date = datetime(year=date.year, month=MONTHS.index(dt[1]) + 1, day=int(dt[0]))
+            elif len(dt) == expected_tokens_count and dt[1].isnumeric() and dt[0] in MONTHS:
                 # Jan 1, 2, Feb 5 & 6
-                month = months.index(dt[0]) + 1
+                month = MONTHS.index(dt[0]) + 1
                 _date = datetime(year=date.year, month=month, day=int(dt[1]))
             else:
                 print(f"Failed to parse schedule dates: Unknown word '{token}' in '{schedule_dates}")
