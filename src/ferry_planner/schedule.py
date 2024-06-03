@@ -45,8 +45,8 @@ class FerrySchedule(BaseModel):
     destination: LocationId
     sailings: tuple[FerrySailing, ...]
     url: str
-    notes: tuple[str, ...]
-    """Any notes/comments posted about this schedule"""
+    notes: tuple[str, ...] = ()
+    """Notes or comments posted about this schedule."""
 
 
 class ScheduleGetter(Protocol):
@@ -64,7 +64,7 @@ class HtmlParseResult:
     redirect_url: str = ""
     sailings: tuple[FerrySailing, ...] = ()
     notes: tuple[str, ...] = ()
-    """Any notes/comments/errors posted about this schedule"""
+    """Notes or comments posted about this schedule."""
 
     @classmethod
     def redirect(cls, redirect_url: str) -> "HtmlParseResult":
@@ -339,7 +339,7 @@ def parse_sailings_from_html_rows(rows: Sequence[Tag], date: datetime) -> Sequen
             continue
         td1 = tds[1].text.strip().split("\n", maxsplit=1)
         if len(td1) > 1:
-            notes = parse_sailig_comment(td1[1])
+            notes = parse_sailing_comment(td1[1])
             # assumiing dates are always in the first note
             if is_schedule_excluded_on_date(notes[0], date):
                 continue
@@ -372,7 +372,7 @@ def parse_sailings_from_html_rows(rows: Sequence[Tag], date: datetime) -> Sequen
     return sailings
 
 
-def parse_sailig_comment(comment: str) -> list[str]:
+def parse_sailing_comment(comment: str) -> list[str]:
     notes: list[str] = []
     comment = comment.strip()
     notes.append(comment)
