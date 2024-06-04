@@ -17,12 +17,33 @@ from ferry_planner.connection import FerryConnection
 from ferry_planner.location import LocationId
 from ferry_planner.utils import datetime_to_timedelta
 
-MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
-WEEKDAY_NAMES = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
-NO_SAILINGS_MESSAGES = [
+MONTHS = (
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC",
+)
+WEEKDAY_NAMES = (
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+)
+NO_SAILINGS_MESSAGES = (
     "Seasonal schedules have not been posted for these dates",
     "Schedules for your selected date and route are currently unavailable",
-]
+)
 
 
 class FerrySailing(BaseModel):
