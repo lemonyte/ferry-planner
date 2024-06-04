@@ -1645,7 +1645,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/h31/h35/8808377876510.xml",
         "coordinates": [],
         "id": "TSA-PSB",
-        "from_rev": true
+        "from_reverse": true
     },
     "TSA-PVB": {
         "index": 78,
@@ -1672,7 +1672,7 @@
             "49.0069217,-123.1332865,0"
         ],
         "id": "TSA-PVB",
-        "from_rev": true
+        "from_reverse": true
     },
     "TSA-POB": {
         "index": 79,
@@ -1683,7 +1683,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/hd8/h4a/8808377810974.xml",
         "coordinates": [],
         "id": "TSA-POB",
-        "from_rev": true
+        "from_reverse": true
     },
     "TSA-PLH": {
         "index": 80,
@@ -1711,7 +1711,7 @@
             "48.8520946,-123.4457799,0"
         ],
         "id": "TSA-PLH",
-        "from_rev": true
+        "from_reverse": true
     },
     "TSA-PST": {
         "index": 81,
@@ -1733,7 +1733,7 @@
             "48.8446859,-123.3248891,0"
         ],
         "id": "TSA-PST",
-        "from_rev": true
+        "from_reverse": true
     },
     "SWB-PSB": {
         "index": 82,
@@ -1772,7 +1772,7 @@
             "48.68952,-123.41167,0"
         ],
         "id": "SWB-PSB",
-        "from_rev": true
+        "from_reverse": true
     },
     "SWB-PVB": {
         "index": 83,
@@ -1783,7 +1783,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/h3f/h02/8808377286686.xml",
         "coordinates": [],
         "id": "SWB-PVB",
-        "from_rev": true
+        "from_reverse": true
     },
     "SWB-POB": {
         "index": 84,
@@ -1803,7 +1803,7 @@
             "48.68952,-123.41167,0"
         ],
         "id": "SWB-POB",
-        "from_rev": true
+        "from_reverse": true
     },
     "SWB-FUL": {
         "index": 85,
@@ -1833,7 +1833,7 @@
             "48.769395,-123.451091,0"
         ],
         "id": "SWB-FUL",
-        "from_rev": true
+        "from_reverse": true
     },
     "SWB-PST": {
         "index": 86,
@@ -1844,7 +1844,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/h6b/he6/8808376598558.xml",
         "coordinates": [],
         "id": "SWB-PST",
-        "from_rev": true
+        "from_reverse": true
     },
     "BTW-MIL": {
         "index": 87,
@@ -1873,7 +1873,7 @@
             "48.61398,-123.51776,0"
         ],
         "id": "BTW-MIL",
-        "from_rev": true
+        "from_reverse": true
     },
     "SLT-ERL": {
         "index": 88,
@@ -1924,7 +1924,7 @@
             "49.78147,-124.17722,0"
         ],
         "id": "SLT-ERL",
-        "from_rev": true
+        "from_reverse": true
     },
     "TEX-PWR": {
         "index": 89,
@@ -1945,7 +1945,7 @@
             "49.835132,-124.530658,0"
         ],
         "id": "TEX-PWR",
-        "from_rev": true
+        "from_reverse": true
     },
     "PSB-POB": {
         "index": 90,
@@ -1956,7 +1956,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/hd4/he1/8808377516062.xml",
         "coordinates": [],
         "id": "PSB-POB",
-        "from_rev": true
+        "from_reverse": true
     },
     "PSB-PLH": {
         "index": 91,
@@ -1967,7 +1967,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/hb6/hda/8808374763550.xml",
         "coordinates": [],
         "id": "PSB-PLH",
-        "from_rev": true
+        "from_reverse": true
     },
     "PVB-PSB": {
         "index": 92,
@@ -1978,7 +1978,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/hcf/hcd/8808376369182.xml",
         "coordinates": [],
         "id": "PVB-PSB",
-        "from_rev": true
+        "from_reverse": true
     },
     "PVB-POB": {
         "index": 93,
@@ -2000,7 +2000,7 @@
             "48.84463,-123.3242893,0"
         ],
         "id": "PVB-POB",
-        "from_rev": true
+        "from_reverse": true
     },
     "PVB-PLH": {
         "index": 94,
@@ -2011,7 +2011,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/h06/h6b/8808362606622.xml",
         "coordinates": [],
         "id": "PVB-PLH",
-        "from_rev": true
+        "from_reverse": true
     },
     "PST-PSB": {
         "index": 95,
@@ -2022,7 +2022,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/hd4/hff/8808376303646.xml",
         "coordinates": [],
         "id": "PST-PSB",
-        "from_rev": true
+        "from_reverse": true
     },
     "PST-PVB": {
         "index": 96,
@@ -2033,7 +2033,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/h9e/h4b/8808376991774.xml",
         "coordinates": [],
         "id": "PST-PVB",
-        "from_rev": true
+        "from_reverse": true
     },
     "PST-POB": {
         "index": 97,
@@ -2044,7 +2044,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/hd0/hbe/8808375287838.xml",
         "coordinates": [],
         "id": "PST-POB",
-        "from_rev": true
+        "from_reverse": true
     },
     "PEN-THT": {
         "index": 98,
@@ -2068,7 +2068,7 @@
             "48.9804512,-123.6786815,0"
         ],
         "id": "PEN-THT",
-        "from_rev": true
+        "from_reverse": true
     },
     "PLH-POB": {
         "index": 99,
@@ -2090,7 +2090,7 @@
             "48.8520946,-123.4457799,0"
         ],
         "id": "PLH-POB",
-        "from_rev": true
+        "from_reverse": true
     },
     "ALR-SOI": {
         "index": 100,
@@ -2111,7 +2111,7 @@
             "50.587989,-126.931486,0"
         ],
         "id": "ALR-SOI",
-        "from_rev": true
+        "from_reverse": true
     },
     "HRN-DNE": {
         "index": 101,
@@ -2122,7 +2122,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/hdb/ha2/8808360411166.xml",
         "coordinates": [],
         "id": "HRN-DNE",
-        "from_rev": true
+        "from_reverse": true
     },
     "BEC-PBB": {
         "index": 102,
@@ -2133,7 +2133,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/h84/hc4/8808356479006.xml",
         "coordinates": [],
         "id": "BEC-PBB",
-        "from_rev": true
+        "from_reverse": true
     },
     "POF-PBB": {
         "index": 103,
@@ -2167,7 +2167,7 @@
             "52.352576,-127.693654,0"
         ],
         "id": "POF-PBB",
-        "from_rev": true
+        "from_reverse": true
     },
     "POF-BEC": {
         "index": 104,
@@ -2239,7 +2239,7 @@
             "52.375967,-126.795027,0"
         ],
         "id": "POF-BEC",
-        "from_rev": true
+        "from_reverse": true
     },
     "POF-SHW": {
         "index": 105,
@@ -2250,7 +2250,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/he2/hd7/8808357756958.xml",
         "coordinates": [],
         "id": "POF-SHW",
-        "from_rev": true
+        "from_reverse": true
     },
     "SHW-PBB": {
         "index": 106,
@@ -2272,7 +2272,7 @@
             "52.138831,-128.143744,0"
         ],
         "id": "SHW-PBB",
-        "from_rev": true
+        "from_reverse": true
     },
     "KLE-PPR": {
         "index": 107,
@@ -2283,7 +2283,7 @@
         "map_kml_url": "https://www.bcferries.com/web_image/h07/he9/8808357298206.xml",
         "coordinates": [],
         "id": "KLE-PPR",
-        "from_rev": true
+        "from_reverse": true
     },
     "PSK-ALF": {
         "index": 108,
@@ -2303,6 +2303,6 @@
             "53.211536,-131.988724,0"
         ],
         "id": "PSK-ALF",
-        "from_rev": true
+        "from_reverse": true
     }
 }

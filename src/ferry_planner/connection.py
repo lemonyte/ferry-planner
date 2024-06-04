@@ -83,6 +83,8 @@ class FerryConnection(Connection[Terminal, Terminal]):
     fuel: float = 0.2
     """Fuel usage is estimated for boarding and unboarding only, not for the actual sailing."""
     bookable: bool = False
+    from_reverse: bool = False
+    """Internal attribute used to indicate that this connection was generated from its reverse connection."""
     type: ConnectionType = ConnectionType.FERRY
 
 
