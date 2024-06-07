@@ -253,32 +253,36 @@ class RoutePlanBuilder:
     def __init__(self, connection_db: ConnectionDB, /) -> None:
         self._connection_db = connection_db
 
-    def make_route_plans(
+    async def make_route_plans(
         self,
         *,
         routes: Iterable[Route],
         options: RoutePlansOptions,
         schedule_getter: ScheduleGetter,
-    ) -> Iterator[RoutePlan]:
+    ) -> Sequence[RoutePlan]:
+        route_plans = []
         for route in routes:
-            yield from self._add_plan_segment(
+            await self._add_plan_segment(
+                route_plans=route_plans,
                 route=route,
                 destination_index=1,
                 start_time=options.date.replace(hour=0, minute=0, second=0, microsecond=0),
                 options=options,
                 schedule_getter=schedule_getter,
             )
+        return route_plans
 
-    def _add_plan_segment(  # noqa: PLR0913
+    async def _add_plan_segment(  # noqa: PLR0913
         self,
         *,
+        route_plans: list,
         route: Route,
         destination_index: int,
         start_time: datetime,
         options: RoutePlansOptions,
         schedule_getter: ScheduleGetter,
         segments: list[RoutePlanSegment] | None = None,
-    ) -> Generator[RoutePlan, None, bool]:
+    ) -> bool:
         if segments is None:
             segments = []
         result = False
@@ -286,13 +290,14 @@ class RoutePlanBuilder:
             if destination_index == len(route):
                 if not segments:  # empty list?
                     return False  # can we be here?
-                yield RoutePlan.from_segments(segments)
+                route_plans.append(RoutePlan.from_segments(segments))
                 return True
             origin = route[destination_index - 1]
             destination = route[destination_index]
             connection = self._connection_db.from_to_location(origin, destination)
             if isinstance(connection, FerryConnection):
-                result = yield from self._add_ferry_connection(
+                result = await self._add_ferry_connection(
+                    route_plans=route_plans,
                     route=route,
                     destination_index=destination_index,
                     segments=segments,
@@ -318,7 +323,8 @@ class RoutePlanBuilder:
                     ),
                 )
                 segments.append(RoutePlanSegment(connection=connection, times=times))
-                result = yield from self._add_plan_segment(
+                result = await self._add_plan_segment(
+                    route_plans=route_plans,
                     route=route,
                     destination_index=destination_index + 1,
                     segments=segments,
@@ -331,9 +337,10 @@ class RoutePlanBuilder:
             del segments[delete_start:]
         return result
 
-    def _add_ferry_connection(  # noqa: C901, PLR0912, PLR0913
+    async def _add_ferry_connection(  # noqa: C901, PLR0912, PLR0913
         self,
         *,
+        route_plans: list,
         route: Route,
         destination_index: int,
         segments: list[RoutePlanSegment],
@@ -341,11 +348,11 @@ class RoutePlanBuilder:
         options: RoutePlansOptions,
         connection: FerryConnection,
         schedule_getter: ScheduleGetter,
-    ) -> Generator[RoutePlan, None, bool]:
+    ) -> bool:
         result = False
         depature_terminal = connection.origin
         day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
-        schedule = schedule_getter(connection.origin.id, connection.destination.id, date=day)
+        schedule = await schedule_getter(connection.origin.id, connection.destination.id, date=day)
         if not schedule:
             return False
         for sailing in schedule.sailings:
@@ -406,7 +413,8 @@ class RoutePlanBuilder:
                     schedule_url=schedule.url,
                 ),
             )
-            recursion_result = yield from self._add_plan_segment(
+            recursion_result = await self._add_plan_segment(
+                route_plans=route_plans,
                 route=route,
                 destination_index=destination_index + 1,
                 segments=segments,
