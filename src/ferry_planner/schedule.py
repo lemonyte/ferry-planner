@@ -71,7 +71,7 @@ class FerrySchedule(BaseModel):
 
 
 class ScheduleGetter(Protocol):
-    def __call__(
+    async def __call__(
         self,
         origin_id: LocationId,
         destination_id: LocationId,
@@ -149,7 +149,7 @@ class ScheduleDB:
     ) -> Path:
         return self.cache_dir / f"{origin_id}-{destination_id}" / f"{date.date()}.json"
 
-    def get(
+    async def get(
         self,
         origin_id: LocationId,
         destination_id: LocationId,
@@ -165,7 +165,7 @@ class ScheduleDB:
             schedule = FerrySchedule.model_validate_json(filepath.read_text(encoding="utf-8"))
             self._mem_cache[filepath] = schedule
             return schedule
-        schedule = self.download_schedule(origin_id, destination_id, date=date)
+        schedule = await self.download_schedule(origin_id, destination_id, date=date)
         if schedule:
             self.put(schedule)
         return schedule
@@ -182,22 +182,7 @@ class ScheduleDB:
             dirpath.mkdir(mode=0o755, parents=True, exist_ok=True)
         filepath.write_text(schedule.model_dump_json(indent=4, exclude_none=True), encoding="utf-8")
 
-    def download_schedule(
-        self,
-        origin_id: LocationId,
-        destination_id: LocationId,
-        /,
-        *,
-        date: datetime,
-    ) -> FerrySchedule | None:
-        coro = self.download_schedule_async(origin_id, destination_id, date=date)
-        try:
-            loop = asyncio.get_running_loop()
-            return loop.run_until_complete(coro)
-        except RuntimeError:
-            return asyncio.run(coro)
-
-    async def download_schedule_async(
+    async def download_schedule(
         self,
         origin_id: LocationId,
         destination_id: LocationId,
@@ -261,7 +246,7 @@ class ScheduleDB:
         *,
         date: datetime,
     ) -> bool:
-        schedule = await self.download_schedule_async(
+        schedule = await self.download_schedule(
             origin_id,
             destination_id,
             date=date,
