@@ -149,12 +149,12 @@ class RoutePlan(BaseModel):
         driving_distance = 0.0
         plan_hash = hashlib.sha1(usedforsecurity=False)
         for segment in segments:
-            driving_distance += segment.connection.distance
+            if isinstance(segment.connection, CarConnection):
+                driving_duration += segment.connection.duration
+                driving_distance += segment.connection.distance
             plan_hash.update(segment.connection.destination.id.encode("utf-8"))
             for time in segment.times:
                 plan_hash.update(time.start.isoformat().encode("utf-8"))
-                if time.type == TimeIntervalType.TRAVEL and isinstance(first_segment.connection, CarConnection):
-                    driving_duration += int((time.end - time.start).total_seconds())
 
         # Create Google Maps URL.
         url = "https://www.google.com/maps/dir/?api=1&origin={origin}&destination={destination}&waypoints={waypoints}"
