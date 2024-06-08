@@ -896,8 +896,9 @@ function onPlanSelected(id) {
 export function sortPlans(sortBy) {
   if (sortBy === currentSort) return;
   plans.sort((a, b) => {
-    if (a[sortBy] >= b[sortBy]) return 1;
-    return -1;
+    if (a[sortBy] > b[sortBy]) return 1;
+    if (a[sortBy] < b[sortBy]) return -1;
+    return 0;
   });
   currentSort = sortBy;
   elements.sortOption.value = sortBy;
