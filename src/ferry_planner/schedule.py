@@ -263,7 +263,7 @@ class ScheduleDB:
         for subdir, _, filenames in os.walk(self.cache_dir):
             for filename in filenames:
                 date = datetime.fromisoformat(".".join(filename.split(".")[:-1]))
-                if date not in dates:
+                if date != current_date and date not in dates:
                     (Path(subdir) / filename).unlink(missing_ok=True)
         # clear memory cache
         self._mem_cache = {}
