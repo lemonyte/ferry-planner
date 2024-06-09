@@ -101,10 +101,10 @@ class HtmlParseResult:
         return result
 
 
-class DownloadScheduleError(Exception):
+class ScheduleDownloadError(Exception):
     def __init__(self, url: str, msg: str, *args: Iterable) -> None:
         self.url = url
-        super().__init__(f"Error downloading {url}: {msg}", *args)
+        super().__init__(f"error downloading {url}: {msg}", *args)
 
 
 class ScheduleDB:
@@ -192,7 +192,7 @@ class ScheduleDB:
     ) -> FerrySchedule | None:
         try:
             return await self._download_schedule_async(origin_id, destination_id, date=date)
-        except (DownloadScheduleError, httpx.HTTPError) as exc:
+        except (ScheduleDownloadError, httpx.HTTPError) as exc:
             url = exc.request.url if isinstance(exc, httpx.HTTPError) else exc.url
             print(
                 f"[{self.__class__.__name__}:ERROR] failed to download schedule: "
@@ -218,14 +218,14 @@ class ScheduleDB:
         while True:
             response = await self._client.get(url)
             if not httpx.codes.is_success(response.status_code):
-                raise DownloadScheduleError(url, f"Status {response.status_code}")
+                raise ScheduleDownloadError(url, f"Status {response.status_code}")
             print(f"[{self.__class__.__name__}:INFO] fetched schedule: {route}:{date.date()}")
             result = parse_schedule_html(response, date)
             if result.redirect_url:
                 if len(redirects) > max_redirects_count:
-                    raise DownloadScheduleError(url, "Too many redirects")
+                    raise ScheduleDownloadError(url, "Too many redirects")
                 if url in redirects:
-                    raise DownloadScheduleError(url, "Redirects loop")
+                    raise ScheduleDownloadError(url, "Redirects loop")
                 url = result.redirect_url
                 redirects.append(url)
                 continue
@@ -313,7 +313,7 @@ def parse_schedule_html(response: httpx.Response, date: datetime) -> HtmlParseRe
         hrefs = [a["href"] for a in daterange_tag.find_all("a")]
         index = get_seasonal_schedule_daterange_index(hrefs, date)
         if index < 0:
-            raise DownloadScheduleError(str(response.url), f"Date {date} is out of seasonal schedules range")
+            raise ScheduleDownloadError(str(response.url), f"Date {date} is out of seasonal schedules range")
         url = response.url.scheme + "://" + response.url.host + hrefs[index]
         if index > 0 and url != str(response.url):
             return HtmlParseResult.redirect(url)
@@ -397,7 +397,7 @@ def get_seasonal_schedule_rows(url: str, soup: BeautifulSoup, date: datetime) ->
     rows: Sequence[Tag] = []
     form = soup.find("form", id="seasonalSchedulesForm")
     if not isinstance(form, Tag):
-        raise DownloadScheduleError(url, "seasonalSchedulesForm not found")
+        raise ScheduleDownloadError(url, "'seasonalSchedulesForm' not found")
     weekday = WEEKDAY_NAMES[date.weekday()]
     for thead in form.find_all("thead"):
         if thead.text.lower().strip().startswith(weekday):
