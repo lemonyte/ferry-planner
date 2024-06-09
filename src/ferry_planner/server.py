@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import asyncio
 from collections.abc import Mapping, Sequence
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -107,18 +106,6 @@ async def api_routeplans(options: RoutePlansOptions) -> Sequence[RoutePlan]:
     )
     route_plans.sort(key=lambda plan: plan.duration)
     return route_plans
-
-
-@app.get("/api/update", response_model=Mapping[str, str])
-async def api_update() -> Mapping[str, str]:
-    process = await asyncio.create_subprocess_shell("update.sh")
-    await process.wait()
-    if process.returncode != 0:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update server, err={process.returncode}",
-        )
-    return {"result": "Update successful"}
 
 
 @app.exception_handler(404)
