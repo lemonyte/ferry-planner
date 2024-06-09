@@ -1,6 +1,7 @@
 # ruff: noqa: DTZ007
 from __future__ import annotations
 
+import asyncio
 import hashlib
 from collections.abc import Generator, Iterable, Iterator, Sequence
 from copy import deepcopy
@@ -254,12 +255,31 @@ class RoutePlanBuilder:
         self._connection_db = connection_db
         self._schedule_getter = schedule_getter
 
+    async def _pre_cache_schedules(
+        self,
+        *,
+        routes: Iterable[Route],
+        options: RoutePlansOptions,
+    ) -> None:
+        connections: set[FerryConnection] = set()
+        for route in routes:
+            for i in range(1, len(route)):
+                origin = route[i - 1]
+                destination = route[i]
+                connection = self._connection_db.from_to_location(origin, destination)
+                if isinstance(connection, FerryConnection):
+                    connections.add(connection)
+        tasks = [self._schedule_getter(c.origin.id, c.destination.id, date=options.date) for c in connections]
+        await asyncio.gather(*tasks)
+
     async def make_route_plans(
         self,
         *,
         routes: Iterable[Route],
         options: RoutePlansOptions,
     ) -> Sequence[RoutePlan]:
+        routes = tuple(routes)
+        await self._pre_cache_schedules(routes=routes, options=options)
         route_plans = []
         for route in routes:
             await self._add_plan_segment(
