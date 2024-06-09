@@ -250,15 +250,15 @@ class RouteBuilder:
 
 
 class RoutePlanBuilder:
-    def __init__(self, connection_db: ConnectionDB, /) -> None:
+    def __init__(self, *, connection_db: ConnectionDB, schedule_getter: ScheduleGetter) -> None:
         self._connection_db = connection_db
+        self._schedule_getter = schedule_getter
 
     async def make_route_plans(
         self,
         *,
         routes: Iterable[Route],
         options: RoutePlansOptions,
-        schedule_getter: ScheduleGetter,
     ) -> Sequence[RoutePlan]:
         route_plans = []
         for route in routes:
@@ -268,7 +268,6 @@ class RoutePlanBuilder:
                 destination_index=1,
                 start_time=options.date.replace(hour=0, minute=0, second=0, microsecond=0),
                 options=options,
-                schedule_getter=schedule_getter,
             )
         return route_plans
 
@@ -280,7 +279,6 @@ class RoutePlanBuilder:
         destination_index: int,
         start_time: datetime,
         options: RoutePlansOptions,
-        schedule_getter: ScheduleGetter,
         segments: list[RoutePlanSegment] | None = None,
     ) -> bool:
         if segments is None:
@@ -304,7 +302,6 @@ class RoutePlanBuilder:
                     start_time=start_time,
                     options=options,
                     connection=connection,
-                    schedule_getter=schedule_getter,
                 )
             if isinstance(connection, CarConnection):
                 driving_duration_limit = 6 * 60 * 60
@@ -330,7 +327,6 @@ class RoutePlanBuilder:
                     segments=segments,
                     start_time=arrive_time,
                     options=options,
-                    schedule_getter=schedule_getter,
                 )
         finally:
             delete_start = destination_index - 1
@@ -347,12 +343,11 @@ class RoutePlanBuilder:
         start_time: datetime,
         options: RoutePlansOptions,
         connection: FerryConnection,
-        schedule_getter: ScheduleGetter,
     ) -> bool:
         result = False
         depature_terminal = connection.origin
         day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
-        schedule = await schedule_getter(connection.origin.id, connection.destination.id, date=day)
+        schedule = await self._schedule_getter(connection.origin.id, connection.destination.id, date=day)
         if not schedule:
             return False
         for sailing in schedule.sailings:
@@ -420,7 +415,6 @@ class RoutePlanBuilder:
                 segments=segments,
                 start_time=arrive_time,
                 options=options,
-                schedule_getter=schedule_getter,
             )
             if recursion_result is False:
                 break

@@ -53,7 +53,10 @@ schedule_db = ScheduleDB(
     refresh_interval=config.schedules.refresh_interval,
 )
 route_builder = RouteBuilder(connection_db)
-route_plan_builder = RoutePlanBuilder(connection_db)
+route_plan_builder = RoutePlanBuilder(
+    connection_db=connection_db,
+    schedule_getter=schedule_db.get,
+)
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=ROOT_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=ROOT_DIR / "templates")
@@ -100,7 +103,6 @@ async def api_routeplans(options: RoutePlansOptions) -> Sequence[RoutePlan]:
         await route_plan_builder.make_route_plans(
             routes=routes,
             options=options,
-            schedule_getter=schedule_db.get,
         ),
     )
     route_plans.sort(key=lambda plan: plan.duration)
