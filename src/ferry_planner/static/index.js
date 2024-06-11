@@ -166,14 +166,15 @@ async function fetchApiData(request, body, method = "GET") {
     headers: { "Content-Type": "application/json" },
   };
   const response = await fetch(`/api${request}`, fetchOptions);
-  // if (response.type) // FIXME: check if valid json
-  const responseJson = await response.json();
   if (!response.ok) {
     let msg = response.statusText;
-    if (responseJson?.detail) msg += ` ${JSON.stringify(responseJson.detail)}`;
+    try {
+      const responseJson = await response.json();
+      if (responseJson?.detail) msg += ` ${JSON.stringify(responseJson.detail)}`;
+    } catch {}
     throw new Error(msg);
   }
-  return responseJson;
+  return await response.json();
 }
 
 async function loadLocations() {
