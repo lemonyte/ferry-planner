@@ -19,29 +19,34 @@
   </div>
 </div> -->
 
-<div id="input-form" class="w3-white w3-card w3-round w3-margin-small w3-padding-small">
+<div id="input-form" class="bg-white rounded-md m-2 p-1 flex-grow">
   <!-- <div class="w3-padding-small w3-xlarge w3-center">
     Search for routes
   </div> -->
-  <div class="w3-round-medium" style="display: flex; flex-direction: row; gap: 10px;">
-    <input class="w3-border w3-padding-small w3-round-medium" style="flex-grow: 1;" type="text" id="origin"
-      list="locations" placeholder="Select start location" title="Start location" required />
-    <button class="w3-button w3-border w3-round-medium w3-padding" id="swap" onclick="exports.swap();">
-      <span class="icon"><i class="fa fa-exchange"></i></span>
-    </button>
-    <input class="w3-padding-small w3-round-medium w3-border" type="text" id="destination" list="locations"
-      placeholder="Select destination" title="Destination location" required />
-    <input class="w3-padding-small w3-round-medium w3-border" style="width: 9em;" type="date" id="date"
-      title="Travel date" />
-    <button class="w3-button w3-indigo w3-border w3-round-medium w3-padding" id="submit" onclick="exports.submit();">
-      Search
-    </button>
-    <button class="w3-button w3-border w3-round-medium w3-padding" onclick="exports.toggleShow('options');"
-      title="Additional options">
-      Options
-    </button>
+  <div class="rounded-md flex flex-col lg:flex-row gap-1 items-center">
+    <input class="rounded-md w-full flex-grow border-2 p-2" type="text" id="origin" list="locations"
+      placeholder="Select start location" title="Start location" required />
+    <div class="relative flex flex-grow w-full items-center align-middle">
+      <input class="rounded-md border-2 p-2 flex-grow lg:ml-1" type="text" id="destination" list="locations"
+        placeholder="Select destination" title="Destination location" required />
+      <button tabindex="-1"
+        class="box-border rounded-full text-center border-2 p-0 z-10 w-6 h-6 absolute -top-1 lg:top-1/2 left-1/2 lg:-left-0 transform -translate-x-1/2 -translate-y-1/2 rotate-90 lg:rotate-0 bg-white"
+        id="swap" onclick="exports.swap();">
+        <span class="self-center"><i class="fa fa-exchange block text-xs"></i></span>
+      </button>
+    </div>
+    <div class="flex md:flex-nowrap flex-row gap-1">
+      <input class="rounded-md border-2 p-2" type="date" id="date" title="Travel date" />
+      <button class="rounded-md border-2 p-2" onclick="exports.toggleShow('options');" title="Additional options">
+        Options
+      </button>
+      <button class="flex-grow rounded-md border-2 p-2 bg-indigo-600 w-20 sm:w-36  text-white" id="submit"
+        onclick="exports.submit();">
+        Search
+      </button>
+    </div>
   </div>
-  <div id="options" style="margin-top: 10px;" hidden>
+  <div id="options" class="mt-3" hidden>
     <div class="w3-border w3-padding w3-round-medium">
       <div class="w3-cell-middle">
         <input class="w3-check" type="radio" id="reservation" name="res-type" checked="true" />

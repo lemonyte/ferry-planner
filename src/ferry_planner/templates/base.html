@@ -8,6 +8,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description"
     content="Easily plan your coastal BC trip. Find the best routes and times to travel, even with multiple ferry connections. Get up-to-date info for any location in BC!" />
+  <!--script src="/static/tailwind-3.4.4.js"></script-->
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="shortcut icon" type="image/png" href="/static/favicon.ico" />
   <link rel="stylesheet" href="/static/w3.css" />
   <link rel="stylesheet" href="/static/style.css" />
@@ -17,7 +19,7 @@
   {% endblock %}
 </head>
 
-<body class="w3-white background-image" style="min-width: 365px;">
+<body class="background-image min-w-min min-h-screen bg-white">
   <div class="w3-top w3-card">
     <div class="w3-bar">
       {% block navbar %}
@@ -66,7 +68,7 @@
     <!-- this is a filler div to push down content below floating title bar -->
   </div>
 
-  <div id="content" class="w3-auto">
+  <div id="content min-width-full min-height-screen">
     {% block content %}
     {% endblock %}
   </div>
