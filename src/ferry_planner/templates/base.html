@@ -20,24 +20,24 @@
 </head>
 
 <body class="background-image min-w-min min-h-screen bg-white">
-  <div class="w3-top w3-card">
+  <div class="w3-top drop-shadow-lg select-none">
     <div class="w3-bar">
       {% block navbar %}
       <div class="w3-white no-print">
-        <span id="menu-button" class="w3-xlarge w3-padding w3-serife" style="cursor: pointer; vertical-align: middle;"
-          onclick="menuToggle()">
-          <b>☰</b>
-        </span>
+        <button id="menu-button"
+          class="bg-gray-100 focus:font-bold hover:font-bold font-serif text-2xl cursor-pointer align-middle text-center px-2 border-0"
+          onclick="menuToggle()"
+          >&#8801</button>
         <b>
           <i>
-            <a href="#" class="w3-cell-middle w3-serife w3-large" style="text-transform: uppercase; text-decoration: none;">
+            <a tabindex="-1" href="#" class="w3-cell-middle w3-serife w3-large" style="text-transform: uppercase; text-decoration: none;">
               Ferry Planner
             </a>
           </i>
         </b>
       </div>
       <div class="w3-bar">
-        <nav id="menu" class="w3-sidebar w3-bar-block w3-light-gray no-print w3-large w3-card"
+        <nav id="menu" class="w3-sidebar w3-bar-block bg-gray-100 no-print w3-large w3-card"
           style="display: none; height: auto;">
           <!-- <button onclick="menuClose()" class="w3-bar-item">
               Menu
