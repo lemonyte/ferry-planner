@@ -811,10 +811,24 @@ function assignTooltip(element) {
     if (n.nodeName === "tspan") n = n.parentNode;
     if (n.nodeName === "text") n = n.parentNode;
     const rect = n.getBoundingClientRect();
-    tooltip.style("left", `${rect.x + window.scrollX}px`).style("top", `${rect.bottom + window.scrollY + 3}px`);
+    let w = window.visualViewport.width;
+    let x = rect.x + window.scrollX;
+    let y = rect.bottom + window.scrollY + 3;
+    if (x + elements.tooltip.scrollWidth > w)
+        x = w - elements.tooltip.scrollWidth;
+    tooltip.style("left", `${x}px`).style("top", `${y}px`);
+
+    // widen tooltip to fit two lines
+    while (elements.tooltip.scrollHeight > 50 && x > window.scrollX + 10)
+    {
+      x -= 10;
+      tooltip.style("left", `${x}px`).style("top", `${y}px`);
+    }
   };
   element.onmouseout = (event) => {
-    tooltip.transition().duration(100).style("opacity", 0);
+    tooltip
+    .style("opacity", 0)
+    .style("visibility", "hidden");
   };
   element.onmouseover = (event) => {
     let data = event.target.__data__;
@@ -823,12 +837,11 @@ function assignTooltip(element) {
     // const rect = n.getBoundingClientRect();
     tooltip
       .html(`${timeToString(data.startingTime)} ${data.description}`)
-      .transition()
-      .duration(100)
       // .style('left', (rect.x) + 'px')
       // .style('top', (rect.bottom + 3) + 'px')
-      .style("opacity", 1);
-  };
+      .style("opacity", 1)
+      .style("visibility", "visible");
+  }
 }
 
 function onPlanSelected(id) {
