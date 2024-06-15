@@ -533,7 +533,7 @@ async function fetchRoutes() {
         sortPlans(sort);
         // show routes
         elements.routesCard.hidden = false;
-        showTab("tab-routes-table");
+        showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
       }
     } catch (error) {
       showError(error.message);
