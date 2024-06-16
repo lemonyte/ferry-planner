@@ -171,10 +171,11 @@ async function fetchApiData(request, body, method = "GET") {
     try {
       const responseJson = await response.json();
       if (responseJson?.detail) msg += ` ${JSON.stringify(responseJson.detail)}`;
-    } catch {}
-    throw new Error(msg);
+    } finally {
+      throw new Error(msg);
+    }
   }
-  return await response.json();
+  return response.json();
 }
 
 async function loadLocations() {
@@ -811,24 +812,20 @@ function assignTooltip(element) {
     if (n.nodeName === "tspan") n = n.parentNode;
     if (n.nodeName === "text") n = n.parentNode;
     const rect = n.getBoundingClientRect();
-    let w = window.visualViewport.width;
     let x = rect.x + window.scrollX;
-    let y = rect.bottom + window.scrollY + 3;
-    if (x + elements.tooltip.scrollWidth > w)
-        x = w - elements.tooltip.scrollWidth;
+    const y = rect.bottom + window.scrollY + 3;
+    if (x + elements.tooltip.scrollWidth > window.visualViewport.width)
+      x = window.visualViewport.width - elements.tooltip.scrollWidth;
     tooltip.style("left", `${x}px`).style("top", `${y}px`);
 
     // widen tooltip to fit two lines
-    while (elements.tooltip.scrollHeight > 50 && x > window.scrollX + 10)
-    {
+    while (elements.tooltip.scrollHeight > 50 && x > window.scrollX + 10) {
       x -= 10;
       tooltip.style("left", `${x}px`).style("top", `${y}px`);
     }
   };
   element.onmouseout = (event) => {
-    tooltip
-    .style("opacity", 0)
-    .style("visibility", "hidden");
+    tooltip.style("opacity", 0).style("visibility", "hidden");
   };
   element.onmouseover = (event) => {
     let data = event.target.__data__;
@@ -841,7 +838,7 @@ function assignTooltip(element) {
       // .style('top', (rect.bottom + 3) + 'px')
       .style("opacity", 1)
       .style("visibility", "visible");
-  }
+  };
 }
 
 function onPlanSelected(id) {
