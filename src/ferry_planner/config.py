@@ -75,7 +75,7 @@ class DataConfig(BaseModel):
 class SchedulesConfig(BaseModel):
     base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/"
     cache_dir: DirectoryPath = Path("./data/schedule_cache")
-    cache_ahead_days: int = 3
+    cache_ahead_days: int = 1
     refresh_interval: int = 60 * 60 * 24  # 24 hours
 
 
