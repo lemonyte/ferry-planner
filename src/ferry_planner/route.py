@@ -375,7 +375,7 @@ class RoutePlanBuilder:
             arrive_time = day + datetime_to_timedelta(sailing.arrival)
             if arrive_time < depart_time:
                 arrive_time += timedelta(days=1)
-            if not options.show_all and start_time.date() != arrive_time.date():
+            if not options.show_all and arrive_time - start_time > timedelta(days=1):
                 break  # Skip routes that take more than one day.
             if depart_time < start_time:
                 continue
