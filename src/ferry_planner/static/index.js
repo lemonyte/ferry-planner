@@ -657,7 +657,7 @@ function updateRoutesTable() {
     if (tabsState.columnsCount > 6) {
       td = document.createElement("td");
       td.classList.add("w3-center");
-      td.textContent = plan.via.join(",");
+      td.textContent = plan.via.join(", ");
       tr.appendChild(td);
     }
 
