@@ -122,15 +122,16 @@ class RoutePlan(BaseModel):
 
         # Add departure.
         depart_time = first_segment.times[0].start
-        first_segment.times = (
-            TimeInterval(
-                type=TimeIntervalType.TRAVEL,
-                start=depart_time,
-                end=depart_time,
-                description=f"Depart from {first_segment.connection.origin.name}",
-            ),
-            *first_segment.times,
-        )
+        if not isinstance(first_segment.connection, FerryConnection):
+            first_segment.times = (
+                TimeInterval(
+                    type=TimeIntervalType.TRAVEL,
+                    start=depart_time,
+                    end=depart_time,
+                    description=f"Depart from {first_segment.connection.origin.name}",
+                ),
+                *first_segment.times,
+            )
 
         # Add arrival.
         last_segment = segments[-1]
