@@ -10,6 +10,7 @@ LocationId = str
 class Location(BaseModel, ABC):
     id: LocationId
     name: str
+    region: str
     land_group: str | None = None
 
     def __eq__(self, other: object) -> bool:
@@ -31,7 +32,6 @@ class Location(BaseModel, ABC):
 
 
 class City(Location):
-    region: str
     province: str
     country: str
 
