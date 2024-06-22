@@ -330,8 +330,6 @@ class RoutePlanBuilder:
                 if not options.show_all and connection.duration > driving_duration_limit:
                     return False
                 arrive_time = start_time + timedelta(seconds=connection.duration)
-                if not options.show_all and start_time.date() != arrive_time.date():
-                    return False  # overnight
                 times = (
                     TimeInterval(
                         type=TimeIntervalType.TRAVEL,
