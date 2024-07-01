@@ -293,7 +293,9 @@ class ScheduleDB:
         )
 
     def start_refresh_thread(self) -> None:
-        self._refresh_thread.start()
+        # Disabled temporarily due to causing too many issues.
+        # self._refresh_thread.start()  # noqa: ERA001
+        pass
 
     def _refresh_task(self) -> None:
         while True:
