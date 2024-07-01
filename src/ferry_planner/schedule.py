@@ -359,7 +359,14 @@ def parse_sailings_from_html_rows(rows: Sequence[Tag], date: datetime) -> Sequen
             "%I:%M %p",
         ).replace(year=date.year, month=date.month, day=date.day)
         td3 = tds[3].text.strip()
-        td3format = "%Hh %Mm" if "h " in td3 and "m" in td3 else "%Mm" if "m" in td3 else "%Hh"
+        if "h " in td3 and "m" in td3:
+            td3format = "%Hh %Mm"
+        elif "m" in td3:
+            td3format = "%Mm"
+        elif "h" in td3:
+            td3format = "%Hh"
+        else:
+            td3format = "%H:%M"
         duration = int(
             datetime_to_timedelta(
                 datetime.strptime(
