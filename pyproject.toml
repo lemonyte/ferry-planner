@@ -6,7 +6,7 @@ fix = true
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["A", "D", "T20", "TD002", "TD003", "ANN101", "ANN102"]
+ignore = ["A", "D", "T20", "TD002", "TD003"]
 
 [tool.pyright]
 venvPath = "."
