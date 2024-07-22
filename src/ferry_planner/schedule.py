@@ -108,7 +108,7 @@ class ScheduleDownloadError(Exception):
 
 
 class ScheduleDB:
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         *,
         ferry_connections: Sequence[FerryConnection] | set[FerryConnection] | frozenset[FerryConnection],
