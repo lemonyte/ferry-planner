@@ -365,6 +365,7 @@ class RoutePlanBuilder:
     ) -> bool:
         result = False
         depature_terminal = connection.origin
+        start_day = segments[0].times[0].start.day
         day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
         schedule = await self._schedule_getter(connection.origin.id, connection.destination.id, date=day)
         if not schedule:
@@ -374,7 +375,7 @@ class RoutePlanBuilder:
             arrive_time = day + datetime_to_timedelta(sailing.arrival)
             if arrive_time < depart_time:
                 arrive_time += timedelta(days=1)
-            if not options.show_all and arrive_time - start_time > timedelta(days=1):
+            if not options.show_all and (arrive_time - start_time > timedelta(days=1)) or day.day != start_day:
                 break  # Skip routes that take more than one day.
             if depart_time < start_time:
                 continue
