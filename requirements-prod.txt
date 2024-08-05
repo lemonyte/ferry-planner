@@ -1,2 +1,2 @@
 -r requirements.txt
-uvicorn[standard]~=0.30.3
+uvicorn[standard]~=0.30.5
