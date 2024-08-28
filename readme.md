@@ -12,8 +12,8 @@ This website is a tool that calculates possible routes between two destinations 
 To develop this project, install the required packages and run the server with the following commands:
 
 ```bash
+pip install -r requirements-dev.txt
 pip install -e .
-pip install -r requirements.txt -r requirements-dev.txt
 uvicorn ferry_planner.server:app --reload
 ```
 
