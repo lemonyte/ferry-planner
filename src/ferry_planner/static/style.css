@@ -1,7 +1,10 @@
 /* prevent form zoom on iOS */
-/* input {
-  font-size: 16px;
-} */
+/* https://stackoverflow.com/a/65043782 */
+@supports (-webkit-overflow-scrolling: touch) {
+  input {
+    font-size: 16px;
+  }
+}
 
 
 
