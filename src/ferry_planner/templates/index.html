@@ -164,7 +164,7 @@
     <div id="schedule-header-container" class="w3-center w3-margin-top w3-padding-small">
       <div id="schedule-details"></div>
       <div id="schedule-via" class="w3-small w3-padding"></div>
-      <div class="w3-bar select-none" style="width: 100%;">
+      <div id="schedule-nav-bar" class="w3-bar select-none no-print" style="width: 100%;">
         <div class="w3-left">
           <a id="schedule-back" href="#routes"
             class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-small">
@@ -172,19 +172,19 @@
         </div>
         <div class="w3-right">
           <button onclick="exports.onPrint('schedule-card');"
-            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small no-print">
+            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small">
             <span class="icon"><i class="fa fa-print"></i></span>Print</button>
           <a id="schedule-map" target="_blank"
             class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small">
             <span class="icon"><i class="fa fa-map"></i></span>Map</a>
           <button id="share-button" onclick="exports.onShare();"
-            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small no-print">
+            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small">
             <span class="icon"><i class="fa fa-share-alt"></i></span>Share</button>
         </div>
       </div>
     </div>
     <div class="fp-table-container">
-      <table class="w3-table w3-striped fp-table">
+      <table class="w3-table w3-striped fp-table border-2">
         <tr class="w3-light-grey w3-center" style="font-size: 100%;">
           <th class="w3-center">Time</th>
           <th class="w3-center" style="width: 95%;">Description</th>
