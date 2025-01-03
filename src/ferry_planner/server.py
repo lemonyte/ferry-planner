@@ -17,7 +17,7 @@ from ferry_planner.location import Location, LocationId
 
 # The options imports must be outside the TYPE_CHECKING block
 # because FastAPI/Pydantic uses the type hints at runtime for validation.
-from ferry_planner.options import RoutePlansOptions, ScheduleOptions  # noqa: TCH001
+from ferry_planner.options import RoutePlansOptions, ScheduleOptions  # noqa: TC001
 from ferry_planner.route import RouteBuilder, RoutePlan, RoutePlanBuilder
 from ferry_planner.schedule import FerrySchedule, ScheduleDB
 
