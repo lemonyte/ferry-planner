@@ -3,17 +3,16 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from ferry_planner.location import Location, LocationId
-
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, MutableMapping, Sequence
 
-    from ferry_planner.config import DataFileInfo
+    from ferry_planner.config import DataFileInfo, DataFileT
     from ferry_planner.connection import Connection, ConnectionId
+    from ferry_planner.location import Location, LocationId
 
-LocationT = TypeVar("LocationT", bound=Location)
-OriginT = TypeVar("OriginT", bound=Location)
-DestinationT = TypeVar("DestinationT", bound=Location)
+LocationT = TypeVar("LocationT", bound="Location")
+OriginT = TypeVar("OriginT", bound="Location")
+DestinationT = TypeVar("DestinationT", bound="Location")
 
 
 class LocationNotFoundError(Exception):
@@ -28,7 +27,12 @@ class ConnectionNotFoundError(Exception):
         super().__init__(f"Connection not found with ID {connection_id}", *args)
 
 
-def load_from_json(data_file: DataFileInfo, /, *, context: dict[str, Any] | None = None) -> Iterator[DataFileInfo.cls]:
+def load_from_json(
+    data_file: DataFileInfo[DataFileT],
+    /,
+    *,
+    context: dict[str, Any] | None = None,
+) -> Iterator[DataFileT]:
     data = json.loads(data_file.path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         msg = f"data file '{data_file.path}' must contain a dictionary"
@@ -41,10 +45,8 @@ class LocationDB:
         self._locations: dict[LocationId, Location] = {location.id: location for location in locations}
 
     @classmethod
-    def from_files(cls, data_files: Sequence[DataFileInfo], /) -> LocationDB:
-        locations = []
-        for data_file in data_files:
-            locations.extend(load_from_json(data_file))
+    def from_files(cls, data_files: Sequence[DataFileInfo[Location]], /) -> LocationDB:
+        locations = [location for data_file in data_files for location in load_from_json(data_file)]
         return cls(locations)
 
     def dict(self) -> MutableMapping[LocationId, Location]:
@@ -65,15 +67,12 @@ class ConnectionDB:
         self._connections: dict[ConnectionId, Connection] = {connection.id: connection for connection in connections}
 
     @classmethod
-    def from_files(cls, data_files: Sequence[DataFileInfo], /, *, location_db: LocationDB) -> ConnectionDB:
-        connections = []
-        for data_file in data_files:
-            connections.extend(
-                load_from_json(
-                    data_file,
-                    context={"location_db": location_db},
-                ),
-            )
+    def from_files(cls, data_files: Sequence[DataFileInfo[Connection]], /, *, location_db: LocationDB) -> ConnectionDB:
+        connections = [
+            connection
+            for data_file in data_files
+            for connection in load_from_json(data_file, context={"location_db": location_db})
+        ]
         return cls(connections)
 
     def dict(self) -> MutableMapping[ConnectionId, Connection[Location, Location]]:

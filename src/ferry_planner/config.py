@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Generic, TypeVar
 
 from pydantic import AfterValidator, BaseModel, field_serializer, field_validator
 from pydantic_settings import (
@@ -11,6 +11,8 @@ from pydantic_settings import (
 
 from ferry_planner.connection import AirConnection, BusConnection, CarConnection, Connection, FerryConnection
 from ferry_planner.location import Airport, BusStop, City, Location, Terminal
+
+DataFileT = TypeVar("DataFileT", bound=Location | Connection)
 
 
 def check_is_file(path: Path, /) -> Path:
@@ -45,9 +47,9 @@ DATA_MODEL_CLASS_MAP = {
 }
 
 
-class DataFileInfo(BaseModel):
+class DataFileInfo(BaseModel, Generic[DataFileT]):
     path: FilePath
-    cls: type[Location | Connection]
+    cls: type[DataFileT]
 
     @field_serializer("cls", when_used="json")
     def _serialize_cls(self, value: type[Location | Connection]) -> str:
@@ -68,8 +70,8 @@ class DataFileInfo(BaseModel):
 
 
 class DataConfig(BaseModel):
-    location_files: tuple[DataFileInfo, ...]
-    connection_files: tuple[DataFileInfo, ...]
+    location_files: tuple[DataFileInfo[Location], ...]
+    connection_files: tuple[DataFileInfo[Connection], ...]
 
 
 class SchedulesConfig(BaseModel):
