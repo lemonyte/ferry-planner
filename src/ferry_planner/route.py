@@ -295,7 +295,7 @@ class RoutePlanBuilder:
     async def _add_plan_segment(  # noqa: PLR0913
         self,
         *,
-        route_plans: list,
+        route_plans: list[RoutePlan],
         route: Route,
         destination_index: int,
         start_time: datetime,
@@ -355,7 +355,7 @@ class RoutePlanBuilder:
     async def _add_ferry_connection(  # noqa: C901, PLR0912, PLR0913
         self,
         *,
-        route_plans: list,
+        route_plans: list[RoutePlan],
         route: Route,
         destination_index: int,
         segments: list[RoutePlanSegment],
@@ -365,7 +365,7 @@ class RoutePlanBuilder:
     ) -> bool:
         result = False
         depature_terminal = connection.origin
-        start_day = segments[0].times[0].start.day
+        start_day = segments[0].times[0].start.day if segments else start_time.day
         day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
         schedule = await self._schedule_getter(connection.origin.id, connection.destination.id, date=day)
         if not schedule:
