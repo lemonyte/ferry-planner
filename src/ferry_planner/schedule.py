@@ -51,7 +51,7 @@ class FerrySailing(BaseModel):
     arrival: datetime
     duration: int
     """Duration in seconds."""
-    # TODO: price: float  # noqa: FIX002
+    # TODO @lemonyte: price: float  # noqa: FIX002
     """Price in Canadian dollars (CAD)."""
     notes: tuple[str, ...] = ()
     """Notes or comments posted about this sailing."""
@@ -288,8 +288,7 @@ class ScheduleDB:
                     )
         downloaded_schedules = sum(await asyncio.gather(*tasks))
         print(
-            f"[{self.__class__.__name__}:INFO] finished refreshing cache, "
-            f"downloaded {downloaded_schedules} schedules",
+            f"[{self.__class__.__name__}:INFO] finished refreshing cache, downloaded {downloaded_schedules} schedules",
         )
 
     def start_refresh_thread(self) -> None:
