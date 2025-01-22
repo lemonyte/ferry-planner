@@ -102,9 +102,15 @@ class HtmlParseResult:
 
 
 class ScheduleDownloadError(Exception):
-    def __init__(self, url: str, msg: str, *args: Iterable) -> None:
+    def __init__(self, msg: str, /, *args: Iterable, url: str) -> None:
         self.url = url
-        super().__init__(f"error downloading {url}: {msg}", *args)
+        super().__init__(f"error downloading schedule at {url}: {msg}", *args)
+
+
+class ScheduleParseError(Exception):
+    def __init__(self, msg: str, /, *args: Iterable, url: str) -> None:
+        self.url = url
+        super().__init__(f"error parsing schedule at {url}: {msg}", *args)
 
 
 class ScheduleDB:
@@ -128,6 +134,9 @@ class ScheduleDB:
         timeout = httpx.Timeout(30.0, pool=None)
         limits = httpx.Limits(max_connections=5)
         self._client = httpx.AsyncClient(timeout=timeout, limits=limits, follow_redirects=True)
+
+    def _log(self, message: str, /, *, level: str = "INFO") -> None:
+        print(f"[{self.__class__.__name__}:{level}] {message}")
 
     def _get_download_url(
         self,
@@ -192,13 +201,11 @@ class ScheduleDB:
     ) -> FerrySchedule | None:
         try:
             return await self._download_schedule_async(origin_id, destination_id, date=date)
-        except (ScheduleDownloadError, httpx.HTTPError) as exc:
+        except (ScheduleDownloadError, ScheduleParseError, httpx.HTTPError) as exc:
             url = exc.request.url if isinstance(exc, httpx.HTTPError) else exc.url
-            print(
-                f"[{self.__class__.__name__}:ERROR] failed to download schedule: "
-                f"{origin_id}-{destination_id}:{date.date()}\n"
-                f"\t{exc!r}\n"
-                f"\tUrl: {url}",
+            self._log(
+                f"failed to download schedule: {origin_id}-{destination_id}:{date.date()}\n\t{exc!r}\n\tUrl: {url}",
+                level="ERROR",
             )
             return None
 
@@ -212,20 +219,23 @@ class ScheduleDB:
     ) -> FerrySchedule:
         url = self._get_download_url(origin_id, destination_id, date=date)
         route = f"{origin_id}-{destination_id}"
-        print(f"[{self.__class__.__name__}:INFO] fetching schedule: {route}:{date.date()}")
+        self._log(f"fetching schedule: {route}:{date.date()}")
         max_redirects_count = 3
         redirects = []
         while True:
             response = await self._client.get(url)
             if not httpx.codes.is_success(response.status_code):
-                raise ScheduleDownloadError(url, f"Status {response.status_code}")
-            print(f"[{self.__class__.__name__}:INFO] fetched schedule: {route}:{date.date()}")
+                msg = f"status {response.status_code}"
+                raise ScheduleDownloadError(msg, url=url)
+            self._log(f"fetched schedule: {route}:{date.date()}")
             result = parse_schedule_html(response, date)
             if result.redirect_url:
                 if len(redirects) > max_redirects_count:
-                    raise ScheduleDownloadError(url, "Too many redirects")
+                    msg = "too many redirects"
+                    raise ScheduleDownloadError(msg, url=url)
                 if url in redirects:
-                    raise ScheduleDownloadError(url, "Redirects loop")
+                    msg = "redirects loop"
+                    raise ScheduleDownloadError(msg, url=url)
                 url = result.redirect_url
                 redirects.append(url)
                 continue
@@ -287,9 +297,7 @@ class ScheduleDB:
                         ),
                     )
         downloaded_schedules = sum(await asyncio.gather(*tasks))
-        print(
-            f"[{self.__class__.__name__}:INFO] finished refreshing cache, downloaded {downloaded_schedules} schedules",
-        )
+        self._log(f"finished refreshing cache, downloaded {downloaded_schedules} schedules")
 
     def start_refresh_thread(self) -> None:
         # Disabled temporarily due to causing too many issues.
@@ -314,7 +322,8 @@ def parse_schedule_html(response: httpx.Response, date: datetime) -> HtmlParseRe
         hrefs = [a["href"] for a in daterange_tag.find_all("a")]
         index = get_seasonal_schedule_daterange_index(hrefs, date)
         if index < 0:
-            raise ScheduleDownloadError(str(response.url), f"Date {date} is out of seasonal schedules range")
+            msg = f"date {date} is out of seasonal schedules range"
+            raise ScheduleParseError(msg, url=str(response.url))
         url = response.url.scheme + "://" + response.url.host + hrefs[index]
         if index > 0 and url != str(response.url):
             return HtmlParseResult.redirect(url)
@@ -405,7 +414,8 @@ def get_seasonal_schedule_rows(url: str, soup: BeautifulSoup, date: datetime) ->
     rows: Sequence[Tag] = []
     form = soup.find("form", id="seasonalSchedulesForm")
     if not isinstance(form, Tag):
-        raise ScheduleDownloadError(url, "'seasonalSchedulesForm' not found")
+        msg = "'seasonalSchedulesForm' not found"
+        raise ScheduleParseError(msg, url=url)
     weekday = WEEKDAY_NAMES[date.weekday()]
     for thead in form.find_all("thead"):
         if thead.text.lower().strip().startswith(weekday):
