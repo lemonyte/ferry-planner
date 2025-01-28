@@ -469,7 +469,6 @@ class ScheduleParser:
             if token in MONTHS:
                 month = MONTHS.index(token) + 1
                 continue
-            _date: datetime
             if token.isnumeric():
                 if not month:
                     ScheduleParser._log(
