@@ -1,4 +1,4 @@
-# ruff: noqa: DTZ005, DTZ007
+# ruff: noqa: DTZ005
 from datetime import datetime
 from typing import Self
 
