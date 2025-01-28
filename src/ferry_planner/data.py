@@ -42,7 +42,7 @@ def load_from_json(
 
 class LocationDB:
     def __init__(self, locations: Iterable[Location], /) -> None:
-        self._locations: dict[LocationId, Location] = {location.id: location for location in locations}
+        self._locations = {location.id: location for location in locations}
 
     @classmethod
     def from_files(cls, data_files: Sequence[DataFileInfo[Location]], /) -> LocationDB:
@@ -64,7 +64,7 @@ class LocationDB:
 
 class ConnectionDB:
     def __init__(self, connections: Iterable[Connection], /) -> None:
-        self._connections: dict[ConnectionId, Connection] = {connection.id: connection for connection in connections}
+        self._connections = {connection.id: connection for connection in connections}
 
     @classmethod
     def from_files(cls, data_files: Sequence[DataFileInfo[Connection]], /, *, location_db: LocationDB) -> ConnectionDB:
