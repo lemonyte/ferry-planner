@@ -94,7 +94,7 @@ class HtmlParseResult:
         return result
 
     @classmethod
-    def from_sailings(cls, sailings: Sequence[FerrySailing], notes: Sequence[str]) -> "HtmlParseResult":
+    def from_sailings(cls, sailings: Iterable[FerrySailing], notes: Iterable[str]) -> "HtmlParseResult":
         result = HtmlParseResult()
         result.sailings = tuple(sailings)
         result.notes = tuple(notes)
@@ -117,7 +117,7 @@ class ScheduleDB:
     def __init__(
         self,
         *,
-        ferry_connections: Sequence[FerryConnection] | set[FerryConnection] | frozenset[FerryConnection],
+        ferry_connections: Iterable[FerryConnection] | set[FerryConnection] | frozenset[FerryConnection],
         base_url: str,
         cache_dir: Path,
         cache_ahead_days: int,
@@ -321,11 +321,15 @@ class ScheduleParser:
         soup = BeautifulSoup(markup=html, features="html.parser")
         table_tag = soup.find("table", id="dailyScheduleTableOnward")
         daterange_tag = soup.find("div", id="dateRangeModal")  # for seasonal
-        rows: Sequence[Tag] = []
+        rows = []
         if table_tag and isinstance(table_tag, Tag) and table_tag.tbody:
             rows = table_tag.tbody.find_all("tr")
         elif daterange_tag and isinstance(daterange_tag, Tag):
-            hrefs = [a["href"] for a in daterange_tag.find_all("a")]
+            hrefs = [
+                a.attrs["href"]
+                for a in daterange_tag.find_all("a")
+                if isinstance(a, Tag) and isinstance(a.attrs["href"], str)
+            ]
             index = ScheduleParser.get_seasonal_schedule_daterange_index(hrefs, date)
             if index < 0:
                 msg = f"date {date} is out of seasonal schedules range"
@@ -347,7 +351,7 @@ class ScheduleParser:
         return HtmlParseResult.from_sailings(sailings, notes)
 
     @staticmethod
-    def parse_sailings_from_html_rows(rows: Sequence[Tag], date: datetime) -> Sequence[FerrySailing]:
+    def parse_sailings_from_html_rows(rows: Iterable[Tag], date: datetime) -> Sequence[FerrySailing]:
         sailing_row_min_td_count = 3
         sailings = []
         for row in rows:
@@ -411,22 +415,27 @@ class ScheduleParser:
 
     @staticmethod
     def get_seasonal_schedule_rows(url: str, soup: BeautifulSoup, date: datetime) -> Sequence[Tag]:
-        rows: Sequence[Tag] = []
+        rows = []
         form = soup.find("form", id="seasonalSchedulesForm")
         if not isinstance(form, Tag):
             msg = "'seasonalSchedulesForm' not found"
             raise ScheduleParseError(msg, url=url)
         weekday = WEEKDAY_NAMES[date.weekday()]
         for thead in form.find_all("thead"):
-            if thead.text.lower().strip().startswith(weekday):
+            if thead.get_text().lower().strip().startswith(weekday):
                 rows = [
-                    x for x in itertools.takewhile(lambda t: t.name != "thead", thead.next_siblings) if x.name == "tr"
+                    x
+                    for x in itertools.takewhile(
+                        lambda t: isinstance(t, Tag) and t.name != "thead",
+                        thead.next_siblings,
+                    )
+                    if isinstance(x, Tag) and x.name == "tr"
                 ]
                 break
         return rows
 
     @staticmethod
-    def get_seasonal_schedule_daterange_index(hrefs: Sequence[str], date: datetime) -> int:
+    def get_seasonal_schedule_daterange_index(hrefs: Iterable[str], date: datetime) -> int:
         for i, href in enumerate(hrefs):
             dates = ScheduleParser.get_seasonal_schedule_daterange_from_url(href)
             if dates and date.date() >= dates[0].date() and date.date() <= dates[1].date():
