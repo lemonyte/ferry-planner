@@ -194,10 +194,6 @@ async function loadLocations() {
     option.value = name;
     locationsList.appendChild(option);
   }
-
-  // parse parameters from URL
-  const options = urlToOptions(window.location);
-  await applyOptions(options);
 }
 
 function initInput(input) {
@@ -245,7 +241,8 @@ function getOptions(excludeDefaults) {
   const options = {};
   for (const input of elements.inputForm.getElementsByTagName("input")) {
     const value = inputValue(input);
-    if (excludeDefaults === true && value === input.default) continue;
+    const defaultValue = defaultInputValue(input);
+    if (excludeDefaults === true && value === defaultValue) continue;
     options[input.id] = value;
   }
   if (currentPlan) options.hash = currentPlan.hash;
@@ -1007,6 +1004,18 @@ function inputValue(input) {
   return value;
 }
 
+function defaultInputValue(input) {
+  switch (input.type) {
+    case "number":
+      return parseInt(input.defaultValue);
+    case "checkbox":
+    case "radio":
+      return input.defaultChecked;
+    default:
+      return input.defaultValue;
+  }
+}
+
 function outputsize(event) {
   const target = event[0].target;
   if (target.clientWidth !== 0) {
@@ -1014,7 +1023,7 @@ function outputsize(event) {
   }
 }
 
-function init() {
+async function init() {
   window.addEventListener("error", (event) => {
     showMessage(event.type, event.message, event.type);
   });
@@ -1036,15 +1045,15 @@ function init() {
   new ResizeObserver(outputsize).observe(elements.routesCard);
   new ResizeObserver(outputsize).observe(elements.timeline);
 
-  window.onhashchange = (event) => {
-    goto(new URL(event.newURL).hash);
+  window.onhashchange = async (event) => {
+    await goto(new URL(event.newURL).hash);
   };
 
-  window.onpopstate = (event) => {
+  window.onpopstate = async (event) => {
     if (!locations) {
-      loadLocations().then(() => {});
+      await loadLocations();
     }
-    applyOptions(event.state ?? urlToOptions(window.location));
+    await applyOptions(event.state ?? urlToOptions(window.location));
   };
 
   // for insecure context clipboard and sharing are unavailable
@@ -1053,28 +1062,27 @@ function init() {
   }
 
   resetState();
-  loadLocations();
+  await loadLocations();
 
   // initialize input controls
   {
     const date = new Date();
     const today = `${date.getFullYear()}-${pad(date.getMonth() + 1, 2)}-${pad(date.getDate(), 2)}`;
-    elements.inputDate.setAttribute("value", today);
-    elements.inputDate.setAttribute("min", today);
+    elements.inputDate.defaultValue = today;
+    elements.inputDate.min = today;
     initInput(elements.inputOrigin);
     initInput(elements.inputDestination);
-    elements.inputDate.addEventListener("keypress", (event) => {
-      if (event.code === "Enter") submit();
+    elements.inputDate.addEventListener("keypress", async (event) => {
+      if (event.code === "Enter") await submit();
     });
     elements.timelineSwitch.addEventListener("change", () => {
       window.setTimeout(() => {
         showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
       }, 0);
     });
-    for (const input of document.getElementsByTagName("input")) {
-      input.default = inputValue(input);
-    }
   }
+
+  await applyOptions(urlToOptions(window.location));
 
   // initialize sort options
   elements.sortOption.setAttribute("onchange", "exports.sortPlans(this.value);");
@@ -1086,4 +1094,4 @@ function init() {
   }
 }
 
-init();
+await init();
