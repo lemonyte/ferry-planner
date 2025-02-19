@@ -426,7 +426,7 @@ class ScheduleParser:
                 rows = [
                     x
                     for x in itertools.takewhile(
-                        lambda t: isinstance(t, Tag) and t.name != "thead",
+                        lambda t: not isinstance(t, Tag) or t.name != "thead",
                         thead.next_siblings,
                     )
                     if isinstance(x, Tag) and x.name == "tr"
