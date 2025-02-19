@@ -1062,27 +1062,21 @@ async function init() {
   }
 
   resetState();
-  await loadLocations();
 
   // initialize input controls
-  {
-    const date = new Date();
-    const today = `${date.getFullYear()}-${pad(date.getMonth() + 1, 2)}-${pad(date.getDate(), 2)}`;
-    elements.inputDate.defaultValue = today;
-    elements.inputDate.min = today;
-    initInput(elements.inputOrigin);
-    initInput(elements.inputDestination);
-    elements.inputDate.addEventListener("keypress", async (event) => {
-      if (event.code === "Enter") await submit();
-    });
-    elements.timelineSwitch.addEventListener("change", () => {
-      window.setTimeout(() => {
-        showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
-      }, 0);
-    });
-  }
+  const date = new Date();
+  const today = `${date.getFullYear()}-${pad(date.getMonth() + 1, 2)}-${pad(date.getDate(), 2)}`;
+  elements.inputDate.defaultValue = today;
+  elements.inputDate.min = today;
 
-  await applyOptions(urlToOptions(window.location));
+  elements.inputDate.addEventListener("keypress", async (event) => {
+    if (event.code === "Enter") await submit();
+  });
+  elements.timelineSwitch.addEventListener("change", () => {
+    window.setTimeout(() => {
+      showTab(elements.timelineSwitch.checked ? "tab-routes-timeline" : "tab-routes-table");
+    }, 0);
+  });
 
   // initialize sort options
   elements.sortOption.setAttribute("onchange", "exports.sortPlans(this.value);");
@@ -1092,6 +1086,12 @@ async function init() {
     opt.value = columns[k];
     elements.sortOption.add(opt, null);
   }
+
+  initInput(elements.inputOrigin);
+  initInput(elements.inputDestination);
+  // Load location data before applying options so that location names are substituted instead of ids.
+  await loadLocations();
+  await applyOptions(urlToOptions(window.location));
 }
 
 await init();
