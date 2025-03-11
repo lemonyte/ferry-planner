@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* prevent form zoom on iOS */
 /* https://stackoverflow.com/a/65043782 */
 @supports (-webkit-overflow-scrolling: touch) {
@@ -6,8 +8,13 @@
   }
 }
 
-
-
+*,
+::after,
+::before {
+  box-sizing: border-box;
+  border-style: solid;
+  border-color: #e5e7eb
+}
 
 @supports (-webkit-touch-callout: none) {
   input[type="date"] {
