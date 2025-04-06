@@ -201,10 +201,10 @@ class ScheduleDB:
     ) -> FerrySchedule | None:
         try:
             return await self._download_schedule_async(origin_id, destination_id, date=date)
-        except (ScheduleDownloadError, ScheduleParseError, httpx.HTTPError) as exc:
-            url = exc.request.url if isinstance(exc, httpx.HTTPError) else exc.url
+        except (ScheduleDownloadError, ScheduleParseError) as exc:
+            msg = "failed to parse schedule" if isinstance(exc, ScheduleParseError) else "failed to download schedule"
             self._log(
-                f"failed to download schedule: {origin_id}-{destination_id}:{date.date()}\n\t{exc!r}\n\tUrl: {url}",
+                f"{msg} {origin_id}-{destination_id}:{date.date()}\n\t{exc!r}\n\tUrl: {exc.url}",
                 level="ERROR",
             )
             return None
@@ -223,7 +223,11 @@ class ScheduleDB:
         max_redirects_count = 3
         redirects = []
         while True:
-            response = await self._client.get(url)
+            try:
+                response = await self._client.get(url)
+            except httpx.HTTPError as exc:
+                msg = "failed to download schedule"
+                raise ScheduleDownloadError(msg, url=url) from exc
             if not httpx.codes.is_success(response.status_code):
                 msg = f"status {response.status_code}"
                 raise ScheduleDownloadError(msg, url=url)
@@ -330,7 +334,11 @@ class ScheduleParser:
                 for a in daterange_tag.find_all("a")
                 if isinstance(a, Tag) and isinstance(a.attrs["href"], str)
             ]
-            index = ScheduleParser.get_seasonal_schedule_daterange_index(hrefs, date)
+            try:
+                index = ScheduleParser.get_seasonal_schedule_daterange_index(hrefs, date)
+            except Exception as exc:
+                msg = "failed to parse seasonal schedule daterange"
+                raise ScheduleParseError(msg, url=str(response.url)) from exc
             if index < 0:
                 msg = f"date {date} is out of seasonal schedules range"
                 raise ScheduleParseError(msg, url=str(response.url))
@@ -338,7 +346,11 @@ class ScheduleParser:
             if index > 0 and url != str(response.url):
                 return HtmlParseResult.redirect(url)
             rows = ScheduleParser.get_seasonal_schedule_rows(str(response.url), soup, date)
-        sailings = ScheduleParser.parse_sailings_from_html_rows(rows, date)
+        try:
+            sailings = ScheduleParser.parse_sailings_from_html_rows(rows, date)
+        except Exception as exc:
+            msg = "failed to parse schedule from HTML rows"
+            raise ScheduleParseError(msg, url=str(response.url)) from exc
         notes = []
         if not sailings:
             err = "No sailings found"
