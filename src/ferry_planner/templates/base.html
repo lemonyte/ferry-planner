@@ -1,112 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  {% block head %}
-  <title>{% block title %}Ferry Planner{% endblock %}</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description"
-    content="Easily plan your coastal BC trip. Find the best routes and times to travel, even with multiple ferry connections. Get up-to-date info for any location in BC!" />
-  <link rel="shortcut icon" type="image/png" href="/static/favicon.ico" />
-  <link rel="stylesheet" href="/static/w3.css" />
-  <link rel="stylesheet" href="/static/style.css" />
-  <link rel="stylesheet" href="/static/switch.css" />
-  <link rel="stylesheet" href="/static/notifications.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-  <script defer src="https://ferryplanner.ca/a/script.js" data-website-id="ed4abbf7-badc-42e9-a74b-88e86e0037cb"></script>
-  {% endblock %}
-</head>
-
-<body class="background-image min-w-min min-h-screen bg-white">
-  <div class="w3-top drop-shadow-lg select-none">
-    <div class="w3-bar">
-      {% block navbar %}
-      <div class="w3-white no-print">
-        <button id="menu-button"
-          class="bg-gray-100 focus:font-bold hover:font-bold font-serif text-2xl cursor-pointer align-middle text-center px-2 border-0"
-          onclick="menuToggle()"
-          >&#8801</button>
-        <b>
-          <i>
-            <a tabindex="-1" href="#" class="w3-cell-middle w3-serife w3-large" style="text-transform: uppercase; text-decoration: none;">
-              Ferry Planner
+  <head>
+    {% block head %}
+    <title>{% block title %}Ferry Planner{% endblock %}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description"
+      content="Easily plan your coastal BC trip. Find the best routes and times to travel, even with multiple ferry connections. Get up-to-date info for any location in BC!" />
+    <link rel="shortcut icon" type="image/png" href="/static/favicon.ico" />
+    <link rel="stylesheet" href="/static/w3.css" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/switch.css" />
+    <link rel="stylesheet" href="/static/notifications.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <script defer src="https://ferryplanner.ca/a/script.js" data-website-id="ed4abbf7-badc-42e9-a74b-88e86e0037cb"></script>
+    {% endblock %}
+  </head>
+  <body class="background-image min-w-min min-h-screen bg-white">
+    <div class="top-0 drop-shadow-lg select-none">
+      <div class="w-full overflow-hidden">
+        {% block navbar %}
+        <div class="text-black bg-white no-print">
+          <button id="menu-button"
+            class="bg-gray-100 focus:font-bold hover:font-bold font-serif text-2xl cursor-pointer align-middle text-center px-2 border-0"
+            onclick="menuToggle()"
+          >
+            &#8801
+          </button>
+            <a tabindex="-1" href="#" class="align-middle text-lg uppercase">
+              <b>
+                  Ferry Planner
+              </b>
             </a>
-          </i>
-        </b>
-      </div>
-      <div class="w3-bar">
-        <nav id="menu" class="w3-sidebar w3-bar-block bg-gray-100 no-print w3-large w3-card"
-          style="display: none; height: auto;">
-          <!-- <button onclick="menuClose()" class="w3-bar-item">
-              Menu
-              <span class="w3-right">&times;</span>
-          </button> -->
-          <a href="#" class="w3-bar-item w3-button">
+        </div>
+        <nav id="menu" class="w-52 fixed z-10 overflow-auto bg-gray-100 no-print text-lg shadow-lg h-auto flex flex-col" hidden>
+          <a href="#" class="w-full p-2 select-none hover:bg-gray-200">
             <span class="icon"><i class="fa fa-home"></i></span>
             Home
           </a>
-          <a href="/about" class="w3-bar-item w3-button">
+          <a href="/about" class="w-full p-2 select-none hover:bg-gray-200">
             <span class="icon"><i class="fa fa-info-circle"></i></span>
             About
           </a>
-          <a href="/docs" class="w3-bar-item w3-button">
+          <a href="/docs" class="w-full p-2 select-none hover:bg-gray-200">
             <span class="icon"><i class="fa fa-code"></i></span>
             API
           </a>
-          <a href="https://github.com/lemonyte/ferry-planner" class="w3-bar-item w3-button">
+          <a href="https://github.com/lemonyte/ferry-planner" class="w-full p-2 select-none hover:bg-gray-200">
             <span class="icon"><i class="fa fa-github"></i></span>
             GitHub
           </a>
         </nav>
+        {% endblock %}
       </div>
-      {% endblock %}
     </div>
-  </div>
-  <div style="height: 42px;" class="">
-    <!-- this is a filler div to push down content below floating title bar -->
-  </div>
 
-  <div id="content" class="min-width-full max-w-screen-xl min-height-screen m-auto">
-    {% block content %}
+    <main id="content" class="min-width-full max-w-screen-xl min-height-screen m-auto mt-12">
+      {% block content %}
+      {% endblock %}
+    </main>
+
+    <footer>
+      {% block footer %}
+      {% endblock %}
+    </footer>
+
+    {% block scripts %}
+    <script src="/static/notifications.js"></script>
+    <script>
+      const menuButton = document.getElementById("menu-button");
+      const menu = document.getElementById("menu");
+      const menuToggle = () => {
+        if (menu.hidden) {
+          menuOpen();
+        } else {
+          menuClose();
+        }
+      };
+      const menuOpen = () => {
+        menu.hidden = false;
+        menuButton.classList.add("pressed");
+      };
+      const menuClose = () => {
+        menu.hidden = true;
+        menuButton.classList.remove("pressed");
+      };
+      window.addEventListener("click", (event) => {
+        if (!menuButton.contains(event.target)) {
+          menuClose();
+        }
+      });
+    </script>
+    <!-- 100% privacy-first analytics -->
+    <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
     {% endblock %}
-  </div>
-
-  <footer>
-    {% block footer %}
-    {% endblock %}
-  </footer>
-
-  {% block scripts %}
-  <script src="/static/notifications.js"></script>
-  <script>
-    const menuButton = document.getElementById("menu-button");
-    const menu = document.getElementById("menu");
-    const menuToggle = () => {
-      if (menu.style.display == "none") {
-        menuOpen();
-      } else {
-        menuClose();
-      }
-    };
-    const menuOpen = () => {
-      menu.style.display = "block";
-      menuButton.classList.add("pressed");
-    };
-    const menuClose = () => {
-      menu.style.display = "none";
-      menuButton.classList.remove("pressed");
-    };
-    window.addEventListener("click", (event) => {
-      if (!menuButton.contains(event.target)) {
-        menuClose();
-      }
-    });
-  </script>
-  <!-- 100% privacy-first analytics -->
-  <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
-  <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
-  {% endblock %}
-</body>
-
+  </body>
 </html>

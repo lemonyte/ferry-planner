@@ -6,7 +6,7 @@
   <h2 class="w3-center w3-bar w3-indigo">Welcome to the Ferry Planner</h2>
   <div class="w3-container w3-padding">
     <span>On this website you can find the best route and time for your BC trip</span>
-    <a id="welcome-more" class="w3-border-bottom w3-text-gray w3-small" onclick="welcomeClick();"
+    <a id="welcome-more" class="border-b-2 w3-text-gray w3-small" onclick="welcomeClick();"
       title="Click to see more information">see more</a>
     <br />
     <span id="welcome-more-info" hidden>
@@ -21,9 +21,6 @@
 
 <form id="input-form" class="bg-white rounded-lg m-2 p-2 flex-grow"
   action="javascript:exports.submit();">
-  <!-- <div class="w3-padding-small w3-xlarge w3-center">
-    Search for routes
-  </div> -->
   <div class="rounded-md flex flex-col lg:flex-row gap-1 items-center">
     <input autofocus name="origin" class="hover:border-blue-200 rounded-md w-full flex-grow border-2 p-2"
       type="text" id="origin" list="locations"
@@ -54,54 +51,48 @@
   </div>
   <div id="options" class="mt-3" hidden>
     <div class="border-2 rounded-md p-2">
-      <div class="w3-cell-middle">
-        <input class="w3-check" type="radio" id="reservation" name="res-type" checked="true" />
+      <div>
+        <input class="w-6 h-6 relative top-1" type="radio" id="reservation" name="res-type" checked="true" />
         <label>Assume ferry reservation</label>
       </div>
-      <div class="w3-cell-middle">
-        <input class="w3-check" type="radio" id="assured" name="res-type" />
+      <div>
+        <input class="w-6 h-6 relative top-1" type="radio" id="assured" name="res-type" />
         <label>Assured loading</label>
       </div>
-      <div class="w3-cell-middle">
-        <input class="w3-check" type="radio" id="hostled" name="res-type" />
+      <div>
+        <input class="w-6 h-6 relative top-1" type="radio" id="hostled" name="res-type" />
         <label>Hostled vehicle</label>
       </div>
-      <div class="w3-cell-middle w3-margin-top">
-        <input class="w3-check" type="checkbox" id="show_all" />
+      <div class="mt-4">
+        <input class="w-6 h-6 relative top-1" type="checkbox" id="show_all" />
         <label>Show all possible routes</label>
       </div>
-      <div class="w3-cell-middle w3-margin-top">
+      <div class="mt-4">
         Arrive at terminal
-        <input class="w-24 w3-padding-small w3-border-0 w3-border-bottom" type="number" id="buffer" min="0" max="60"
+        <input class="w-20 p-1 border-b-2" type="number" id="buffer" min="0" max="60"
           value="15" />
         minutes in advance
       </div>
     </div>
   </div>
-
-  <!-- <div class="w3-padding-small w3-xlarge w3-center">
-    <img src="/static/bc-ferries-1920.jpg" class="w3-round-large w3-display-middle w3-opacity"
-    style="width: 100%; height: 100vh; z-index: -1; overflow: hidden; object-fit: cover;">
-  </div> -->
 </form>
 
-<div id="message-card" class="w3-white w3-card w3-round" hidden>
+<div id="message-card" class="bg-white w3-card w3-round" hidden>
   <b><span id="message-heading"></span></b><span id="message-content"></span>
 </div>
 
 <div id="loading-spinner" class="w3-center w3-panel w3-card w3-padding-16 w3-margin w3-white w3-round" hidden>
+  <i class="fa fa-circle-o-notch w3-spin w3-cell-middle text-3xl"></i>
   <span class="w3-center w3-cell-middle">Calculating routes, this may take a few minutes. Please wait...</span>
-  <!-- <i class="fa fa-circle-o-notch w3-spin w3-cell-middle" style="font-size: 32px;"></i> -->
-  <br /><i class="fa fa-spinner w3-spin w3-cell-middle" style="font-size: 32px;"></i>
 </div>
 
 
 <div id="routes-card" class="w3-white w3-card" hidden>
-  <h3 id="routes-card-header" class="w3-center w3-indigo" style="margin: 0;">Available Routes</h3>
+  <h3 id="routes-card-header" class="w3-center w3-indigo m-0">Available Routes</h3>
 
-  <div class="w3-bar w3-padding no-print select-none" style="width: 100%;">
+  <div class="w3-bar w3-padding no-print select-none w-full">
     <div class="w3-left">
-      <a id="back-home" href="#" class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-right">
+      <a id="back-home" href="#" class="w3-button w3-left p-1 border-2 w3-round-medium w3-margin-right">
         <span class="icon"><i class="fa fa-angle-double-left"></i></span>Home</a>
     </div>
     <div class="w3-right">
@@ -114,18 +105,9 @@
     </div>
   </div>
 
-  <div class="">
-    <!-- <div class="w3-bar w3-blue">
-      <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-table');">Table</button>
-      <button class="w3-bar-item w3-button" onclick="showTab('tab-routes-timeline');">Timeline</button>
-    </div> -->
-
+  <div>
     <div id="tab-routes-table" class="tab-content">
       <div id="routes" class="fp-table-container">
-        <!-- <div id="routes-header-container" class="w3-center w3-padding-small">
-          <div id="routes-details"></div>
-          <div id="routes-via" class="w3-small"></div>
-        </div> -->
         <table class="w3-table w3-striped fp-table">
           <thead>
             <tr id="tab-routes-table-header-row" class="w3-light-grey w3-center"></tr>
@@ -136,49 +118,49 @@
     </div>
 
     <div id="tab-routes-timeline" class="tab-content select-none" hidden>
-      <div class="w3-light-gray w3-center w3-padding-small">
+      <div class="w3-light-gray w3-center p-1">
         <b>Timeline</b>
       </div>
       <div class="w3-bar">
-        <label class="w3-bar-item w3-padding-small w3-cell-middle">Sort by:</label>
-        <select class="w3-select w3-bar-item w3-padding-small w3-cell-middle w3-border-bottom"
+        <label class="w3-bar-item p-1 w3-cell-middle">Sort by:</label>
+        <select class="w3-select w3-bar-item p-1 w3-cell-middle border-b-2"
           id="sort-option"></select>
-        <label class="w3-bar-item w3-padding-small">Color by:</label>
-        <select class="w3-select w3-bar-item w3-padding-small w3-border-bottom" id="color-option"
+        <label class="w3-bar-item p-1">Color by:</label>
+        <select class="w3-select w3-bar-item p-1 border-b-2" id="color-option"
           onchange="exports.updateTimelines();">
           <option value="activity">Activity</option>
           <option value="region">Region</option>
         </select>
         <div style="font-size: 75%;">
-          <div id="timeline-legend" class="w3-bar-item w3-padding-small w3-right"></div>
+          <div id="timeline-legend" class="w3-bar-item p-1 w3-right"></div>
         </div>
       </div>
-      <div id="timeline" class="w3-padding-small"></div>
+      <div id="timeline" class="p-1"></div>
     </div>
   </div>
 </div>
 
 <div id="schedule-card" class="w3-white w3-card" hidden>
-  <h3 id="schedule-header" class="w3-center w3-indigo" style="margin: 0;"></h3>
+  <h3 id="schedule-header" class="w3-center w3-indigo m-0"></h3>
   <div id="schedule" class="">
-    <div id="schedule-header-container" class="w3-center w3-margin-top w3-padding-small">
+    <div id="schedule-header-container" class="w3-center w3-margin-top p-1">
       <div id="schedule-details"></div>
       <div id="schedule-via" class="w3-small w3-padding"></div>
-      <div id="schedule-nav-bar" class="w3-bar select-none no-print" style="width: 100%;">
+      <div id="schedule-nav-bar" class="w3-bar select-none no-print w-full">
         <div class="w3-left">
           <a id="schedule-back" href="#routes"
-            class="w3-button w3-left w3-padding-small w3-border w3-round-medium w3-margin-small">
+            class="w3-button w3-left p-1 border-2 w3-round-medium w3-margin-small">
             <span class="icon"><i class="fa fa-angle-double-left"></i></span>Routes</a>
         </div>
         <div class="w3-right">
           <button onclick="exports.onPrint('schedule-card');"
-            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small">
+            class="w3-button w3-right p-1 border-2 w3-round-medium w3-margin-small">
             <span class="icon"><i class="fa fa-print"></i></span>Print</button>
           <a id="schedule-map" target="_blank"
-            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small">
+            class="w3-button w3-right p-1 border-2 w3-round-medium w3-margin-small">
             <span class="icon"><i class="fa fa-map"></i></span>Map</a>
           <button id="share-button" onclick="exports.onShare();"
-            class="w3-button w3-right w3-padding-small w3-border w3-round-medium w3-margin-small">
+            class="w3-button w3-right p-1 border-2 w3-round-medium w3-margin-small">
             <span class="icon"><i class="fa fa-share-alt"></i></span>Share</button>
         </div>
       </div>
@@ -187,7 +169,7 @@
       <table class="w3-table w3-striped fp-table border-2">
         <tr class="w3-light-grey w3-center" style="font-size: 100%;">
           <th class="w3-center">Time</th>
-          <th class="w3-center" style="width: 95%;">Description</th>
+          <th class="w3-center w-11/12">Description</th>
           <th class="w3-center">Duration</th>
         </tr>
         <tbody id="schedule-table"></tbody>
@@ -196,7 +178,7 @@
   </div>
 </div>
 
-<div id="tooltip" class="timeline-tooltip" style="position: absolute; opacity: 0; transition: opacity 200ms, visibility 1ms;"></div>
+<div id="tooltip" class="timeline-tooltip absolute opacity-0 transition-[opacity]" style="transition: opacity 200ms, visibility 1ms;"></div>
 
 <pre id="debug"></pre>
 
