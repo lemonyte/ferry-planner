@@ -12,6 +12,7 @@ scripts/
 *.bak
 .flake8
 todo*
+*-out.css
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

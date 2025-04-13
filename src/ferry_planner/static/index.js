@@ -105,17 +105,6 @@ function debug(text) {
   elements.debug.textContent = `${elements.debug.textContent}${text}\n`;
 }
 
-// function showMessage(heading, text, color) {
-//   elements.messageCard.hidden = false;
-//   messageHidden = false;
-//   if (!heading) heading = "";
-//   if (heading.length > 0) heading += ": ";
-//   elements.messageCard.querySelector("#message-heading").textContent = heading;
-//   elements.messageCard.querySelector("#message-content").textContent = text;
-//   elements.messageCard.setAttribute("class", `w3-card-4 w3-margin w3-padding w3-${color}`);
-//   debug(`${heading}${text}`);
-// }
-
 function showMessage(heading, text, theme) {
   window.createNotification({
     closeOnClick: true,
@@ -556,7 +545,10 @@ function secondsToString(seconds) {
 function timeToString(time, roundSeconds = true) {
   const dateObj = new Date(time);
   if (roundSeconds) dateObj.setSeconds(0);
-  return dateObj.toLocaleTimeString().toLowerCase().replace(":00 ", "");
+  return dateObj.toLocaleTimeString("en-CA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).toLowerCase();
   // let hours = dateObj.getHours();
   // const minutes = dateObj.getMinutes();
   // let ampm = "am";
@@ -600,7 +592,7 @@ function updateRoutesTable() {
   let c = 0;
   for (const k in columns) {
     if (c++ === tabsState.columnsCount) break;
-    headerRowHtml += `<th class="w3-center hover-underline" onclick="exports.sortPlans('${columns[k]}')">${k}</th>`;
+    headerRowHtml += `<th onclick="exports.sortPlans('${columns[k]}')">${k}</th>`;
   }
   elements.tabRoutesTableHeaderRow.innerHTML = headerRowHtml;
 
@@ -615,7 +607,7 @@ function updateRoutesTable() {
     tr.classList.add("routes-table-row");
     tr.plan = plan;
     if (new Date(plan.depart_time) < Date.now() - 60000) {
-      tr.classList.add("w3-text-grey");
+      tr.classList.add("past-route");
     }
 
     let td = document.createElement("td");
@@ -623,37 +615,31 @@ function updateRoutesTable() {
     tr.appendChild(td);
 
     td = document.createElement("td");
-    td.classList.add("w3-center");
     td.innerHTML = timeToString(plan.depart_time);
     tr.appendChild(td);
 
     td = document.createElement("td");
-    td.classList.add("w3-center");
     td.innerHTML = timeToString(plan.arrive_time);
     tr.appendChild(td);
 
     td = document.createElement("td");
-    td.classList.add("w3-center");
     td.innerHTML = durationToString(plan.duration * 1000);
     tr.appendChild(td);
 
     if (tabsState.columnsCount > 4) {
       td = document.createElement("td");
-      td.classList.add("w3-center");
       td.innerHTML = durationToString(plan.driving_duration * 1000);
       tr.appendChild(td);
     }
 
     if (tabsState.columnsCount > 5) {
       td = document.createElement("td");
-      td.classList.add("w3-center");
       td.textContent = `${plan.driving_distance.toFixed(1)} km`;
       tr.appendChild(td);
     }
 
     if (tabsState.columnsCount > 6) {
       td = document.createElement("td");
-      td.classList.add("w3-center");
       td.textContent = plan.via.join(", ");
       tr.appendChild(td);
     }
@@ -872,21 +858,20 @@ function onPlanSelected(id) {
     for (const t of s.times) {
       const tr = document.createElement("tr");
       elements.scheduleTable.appendChild(tr);
-      if (new Date(t.start) < Date.now() - 60000) tr.classList.add("w3-text-grey");
+      if (new Date(t.start) < Date.now() - 60000) tr.classList.add("past-route");
 
       let td;
       td = document.createElement("td");
-      td.classList.add("w3-center");
       td.innerHTML = timeToString(t.start).replace(" ", "&nbsp;");
       tr.appendChild(td);
 
       let desc = t.description;
       if (s.schedule_url && t.type === "TRAVEL" && t.start !== t.end) {
-        desc += ` <a class="w3-button w3-right w3-border w3-round-medium" style="padding:1px 5px!important" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
+        desc += ` <a class="schedule-button" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
       }
       td = document.createElement("td");
       if (t.description.includes("Ferry")) {
-        desc = `<span class="icon"><i class="fa fa-ship w3-text-blue"></i></span> ${desc}`;
+        desc = `<span class="icon"><i class="fa fa-ship"></i></span> ${desc}`;
       }
       td.innerHTML = desc;
       tr.appendChild(td);
@@ -894,7 +879,6 @@ function onPlanSelected(id) {
       const duration = new Date(t.end) - new Date(t.start);
 
       td = document.createElement("td");
-      td.classList.add("w3-center");
       td.textContent = duration > 0 ? durationToString(duration) : "--";
       tr.appendChild(td);
     }

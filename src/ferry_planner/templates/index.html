@@ -2,11 +2,11 @@
 
 {% block content %}
 
-<!-- <div id="welcome" class="w3-card-4 w3-white no-print w3-margin-bottom">
-  <h2 class="w3-center w3-bar w3-indigo">Welcome to the Ferry Planner</h2>
-  <div class="w3-container w3-padding">
+<!-- <div id="welcome" class="no-print">
+  <h2 class="">Welcome to the Ferry Planner</h2>
+  <div class="">
     <span>On this website you can find the best route and time for your BC trip</span>
-    <a id="welcome-more" class="border-b-2 w3-text-gray w3-small" onclick="welcomeClick();"
+    <a id="welcome-more" class="border-b-2" onclick="welcomeClick();"
       title="Click to see more information">see more</a>
     <br />
     <span id="welcome-more-info" hidden>
@@ -19,7 +19,7 @@
   </div>
 </div> -->
 
-<form id="input-form" class="bg-white rounded-lg m-2 p-2 flex-grow"
+<form id="input-form" class="bg-white rounded-lg p-2 flex-grow"
   action="javascript:exports.submit();">
   <div class="rounded-md flex flex-col lg:flex-row gap-1 items-center">
     <input autofocus name="origin" class="hover:border-blue-200 rounded-md w-full flex-grow border-2 p-2"
@@ -77,106 +77,103 @@
   </div>
 </form>
 
-<div id="message-card" class="bg-white w3-card w3-round" hidden>
+<div id="message-card" class="bg-white rounded-lg" hidden>
   <b><span id="message-heading"></span></b><span id="message-content"></span>
 </div>
 
-<div id="loading-spinner" class="w3-center w3-panel w3-card w3-padding-16 w3-margin w3-white w3-round" hidden>
-  <i class="fa fa-circle-o-notch w3-spin w3-cell-middle text-3xl"></i>
-  <span class="w3-center w3-cell-middle">Calculating routes, this may take a few minutes. Please wait...</span>
+<div id="loading-spinner" class="bg-white rounded-lg p-4" hidden>
+  <i class="fa fa-circle-o-notch animate-spin text-3xl"></i>
+  <span>Calculating routes, this may take a few minutes. Please wait...</span>
 </div>
 
 
-<div id="routes-card" class="w3-white w3-card" hidden>
-  <h3 id="routes-card-header" class="w3-center w3-indigo m-0">Available Routes</h3>
+<div class="bg-white flex flex-col rounded-lg items-stretch">
+  <div id="routes-card" hidden>
+    <h3 id="routes-card-header" class="text-center bg-indigo-700 text-white rounded-t-lg">Available Routes</h3>
 
-  <div class="w3-bar w3-padding no-print select-none w-full">
-    <div class="w3-left">
-      <a id="back-home" href="#" class="w3-button w3-left p-1 border-2 w3-round-medium w3-margin-right">
-        <span class="icon"><i class="fa fa-angle-double-left"></i></span>Home</a>
+    <div class="flex flex-row p-2 no-print select-none w-full">
+      <div>
+        <a id="back-home" href="#" class="hover:bg-gray-200 p-1 border-2 rounded-md">
+          <span class="icon"><i class="fa fa-angle-double-left"></i></span>Home</a>
+      </div>
+      <div class="ml-auto">
+        <span>Table</span>
+        <label class="switch">
+          <input id="timeline-switch" type="checkbox" />
+          <span class="slider round bg-indigo-700"></span>
+        </label>
+        <span>Timeline</span>
+      </div>
     </div>
-    <div class="w3-right">
-      <span class="w3-cell-middle">Table</span>
-      <label class="switch w3-cell-middle">
-        <input id="timeline-switch" class="w3-input" type="checkbox" />
-        <span class="slider round"></span>
-      </label>
-      <span class="w3-cell-middle">Timeline</span>
-    </div>
-  </div>
 
-  <div>
-    <div id="tab-routes-table" class="tab-content">
-      <div id="routes" class="fp-table-container">
-        <table class="w3-table w3-striped fp-table">
+    <div class="flex flex-col p-2">
+      <div id="tab-routes-table" class="tab-content">
+        <table class="w-full">
           <thead>
-            <tr id="tab-routes-table-header-row" class="w3-light-grey w3-center"></tr>
+            <tr id="tab-routes-table-header-row" class="bg-indigo-100"></tr>
           </thead>
           <tbody id="routes-table"></tbody>
         </table>
       </div>
-    </div>
 
-    <div id="tab-routes-timeline" class="tab-content select-none" hidden>
-      <div class="w3-light-gray w3-center p-1">
-        <b>Timeline</b>
-      </div>
-      <div class="w3-bar">
-        <label class="w3-bar-item p-1 w3-cell-middle">Sort by:</label>
-        <select class="w3-select w3-bar-item p-1 w3-cell-middle border-b-2"
-          id="sort-option"></select>
-        <label class="w3-bar-item p-1">Color by:</label>
-        <select class="w3-select w3-bar-item p-1 border-b-2" id="color-option"
-          onchange="exports.updateTimelines();">
-          <option value="activity">Activity</option>
-          <option value="region">Region</option>
-        </select>
-        <div style="font-size: 75%;">
-          <div id="timeline-legend" class="w3-bar-item p-1 w3-right"></div>
+      <div id="tab-routes-timeline" class="tab-content select-none" hidden>
+        <div>
+          <label class="p-1">Sort by:</label>
+          <select class="p-1 border-b-2"
+            id="sort-option"></select>
+          <label class="p-1">Color by:</label>
+          <select class="p-1 border-b-2" id="color-option"
+            onchange="exports.updateTimelines();">
+            <option value="activity">Activity</option>
+            <option value="region">Region</option>
+          </select>
+          <div class="flex flex-row w-full">
+            <div id="timeline-legend" class="p-1 ml-auto"></div>
+          </div>
         </div>
+        <div id="timeline" class="p-1"></div>
       </div>
-      <div id="timeline" class="p-1"></div>
     </div>
   </div>
-</div>
 
-<div id="schedule-card" class="w3-white w3-card" hidden>
-  <h3 id="schedule-header" class="w3-center w3-indigo m-0"></h3>
-  <div id="schedule" class="">
-    <div id="schedule-header-container" class="w3-center w3-margin-top p-1">
-      <div id="schedule-details"></div>
-      <div id="schedule-via" class="w3-small w3-padding"></div>
-      <div id="schedule-nav-bar" class="w3-bar select-none no-print w-full">
-        <div class="w3-left">
-          <a id="schedule-back" href="#routes"
-            class="w3-button w3-left p-1 border-2 w3-round-medium w3-margin-small">
-            <span class="icon"><i class="fa fa-angle-double-left"></i></span>Routes</a>
-        </div>
-        <div class="w3-right">
-          <button onclick="exports.onPrint('schedule-card');"
-            class="w3-button w3-right p-1 border-2 w3-round-medium w3-margin-small">
-            <span class="icon"><i class="fa fa-print"></i></span>Print</button>
-          <a id="schedule-map" target="_blank"
-            class="w3-button w3-right p-1 border-2 w3-round-medium w3-margin-small">
-            <span class="icon"><i class="fa fa-map"></i></span>Map</a>
-          <button id="share-button" onclick="exports.onShare();"
-            class="w3-button w3-right p-1 border-2 w3-round-medium w3-margin-small">
-            <span class="icon"><i class="fa fa-share-alt"></i></span>Share</button>
+  <div id="schedule-card" hidden>
+    <h3 id="schedule-header" class="text-center bg-indigo-700 text-white rounded-t-lg"></h3>
+    <div id="schedule" class="flex flex-col p-2">
+      <div id="schedule-header-container" class="text-center p-1">
+        <div id="schedule-details"></div>
+        <div id="schedule-via" class="text-sm"></div>
+        <div id="schedule-nav-bar" class="flex flex-row select-none no-print w-full">
+          <div>
+            <a id="schedule-back" href="#routes"
+              class="p-1 border-2 rounded-md hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-angle-double-left"></i></span>Routes</a>
+          </div>
+          <div class="ml-auto">
+            <button onclick="exports.onPrint('schedule-card');"
+              class="p-1 border-2 rounded-md hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-print"></i></span>Print</button>
+            <a id="schedule-map" target="_blank"
+              class="p-1 border-2 rounded-md hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-map"></i></span>Map</a>
+            <button id="share-button" onclick="exports.onShare();"
+              class="p-1 border-2 rounded-md hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-share-alt"></i></span>Share</button>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="fp-table-container">
-      <table class="w3-table w3-striped fp-table border-2">
-        <tr class="w3-light-grey w3-center" style="font-size: 100%;">
-          <th class="w3-center">Time</th>
-          <th class="w3-center w-11/12">Description</th>
-          <th class="w3-center">Duration</th>
-        </tr>
+      <table class="w-full table-auto">
+        <thead>
+          <tr class="bg-indigo-100">
+            <th>Time</th>
+            <th class="w-11/12">Description</th>
+            <th>Duration</th>
+          </tr>
+        </thead>
         <tbody id="schedule-table"></tbody>
       </table>
     </div>
   </div>
-</div>
+</div >
 
 <div id="tooltip" class="timeline-tooltip absolute opacity-0 transition-[opacity]" style="transition: opacity 200ms, visibility 1ms;"></div>
 

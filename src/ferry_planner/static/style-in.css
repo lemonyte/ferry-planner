@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* prevent form zoom on iOS */
+/* https://stackoverflow.com/a/65043782 */
+@supports (-webkit-overflow-scrolling: touch) {
+  input {
+    font-size: 16px;
+  }
+}
+
+*,
+::after,
+::before {
+  @apply border-gray-200;
+}
+
+@supports (-webkit-touch-callout: none) {
+  input[type="date"] {
+    height: 40px;
+  }
+}
+
+.icon {
+  @apply pl-[3px] pr-[5px];
+}
+
+table, tr {
+  @apply border
+}
+
+table td, table th {
+  @apply p-1
+}
+
+table th {
+  @apply font-bold text-left;
+}
+
+#tab-routes-table-header-row th {
+  @apply hover:underline cursor-pointer;
+}
+
+.routes-table-row {
+  @apply cursor-pointer hover:bg-indigo-400;
+}
+
+tbody tr {
+  @apply even:bg-indigo-100 odd:bg-white;
+}
+
+.selected-row {
+  @apply bg-indigo-200;
+}
+
+.timeline-tooltip {
+  @apply text-white bg-black/80 border rounded-lg p-2 leading-4;
+}
+
+.timeline-label {
+  @apply hover:underline cursor-pointer even:bg-indigo-100;
+}
+
+.past-route {
+  @apply text-gray-400;
+}
+
+.schedule-button {
+  @apply border border-black py-0.5 px-1 rounded-md ml-auto bg-white hover:bg-gray-200 float-right;
+}
+
+#schedule-table .fa-ship {
+  @apply text-blue-500;
+}
+
+@media print {
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+/* https://stackoverflow.com/a/46302531 */
+  * {
+    -webkit-print-color-adjust: exact !important; /*Chrome, Safari */
+    print-color-adjust: exact !important; /*Firefox*/
+  }
+}
+
+@media screen {
+  .background-image {
+    background-image: url(/static/bc-ferries-1920.jpg);
+    background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+}
+
+.card-header {
+  @apply pt-1 text-2xl;
+}
+
+.card-header-date {
+  @apply pb-2 text-sm;
+}
