@@ -867,11 +867,23 @@ function onPlanSelected(id) {
 
       let desc = t.description;
       if (s.schedule_url && t.type === "TRAVEL" && t.start !== t.end) {
-        desc += ` <a class="schedule-button no-print" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
+        desc += `<a class="schedule-button no-print" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
       }
       td = document.createElement("td");
-      if (t.description.includes("Ferry")) {
-        desc = `<span class="icon"><i class="fa fa-ship"></i></span> ${desc}`;
+      if (t.description.startsWith("Ferry")) {
+        desc = `<span class="icon"><i class="fa fa-ship"></i></span>${desc}`;
+      }
+      else if (t.description.startsWith("Drive")) {
+        desc = `<span class="icon"><i class="fa fa-car"></i></span>${desc}`;
+      }
+      else if (t.description.startsWith("Free time")) {
+        desc = `<span class="icon"><i class="fa fa-smile-o"></i></span>${desc}`;
+      }
+      else if (t.description.startsWith("Depart")) {
+        desc = `<span class="icon"><i class="fa fa-sign-out"></i></span>${desc}`;
+      }
+      else if (t.description.startsWith("Arrive")) {
+        desc = `<span class="icon"><i class="fa fa-sign-in"></i></span>${desc}`;
       }
       td.innerHTML = desc;
       tr.appendChild(td);

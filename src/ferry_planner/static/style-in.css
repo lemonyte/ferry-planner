@@ -65,11 +65,27 @@ tbody tr {
 }
 
 .schedule-button {
-  @apply border border-black py-0.5 px-1 rounded-md ml-auto bg-white hover:bg-gray-200 float-right;
+  @apply border border-black py-0.5 px-1 rounded-md ml-auto bg-white hover:bg-gray-200 float-right select-none;
 }
 
 #schedule-table .fa-ship {
   @apply text-blue-500;
+}
+
+#schedule-table .fa-sign-out {
+  @apply pr-0.5;
+}
+
+#schedule-table .fa-sign-in {
+  @apply pr-1;
+}
+
+#schedule-table .fa-smile-o {
+  @apply pr-1 text-green-700;
+}
+
+#schedule-table .fa-car {
+  @apply text-orange-500;
 }
 
 #schedule-table td, #schedule-table th {
