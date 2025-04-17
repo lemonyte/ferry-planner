@@ -26,7 +26,7 @@ const elements = {
   routesTable: document.querySelector("#routes-table"),
   // schedule: document.querySelector('#schedule'),
   scheduleCard: document.querySelector("#schedule-card"),
-  scheduleTable: document.querySelector("#schedule-table"),
+  scheduleTable: document.querySelector("#schedule-table-body"),
   timeline: document.querySelector("#timeline"),
   timelineSwitch: document.querySelector("#timeline-switch"),
   sortOption: document.querySelector("#sort-option"),
@@ -867,7 +867,7 @@ function onPlanSelected(id) {
 
       let desc = t.description;
       if (s.schedule_url && t.type === "TRAVEL" && t.start !== t.end) {
-        desc += ` <a class="schedule-button" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
+        desc += ` <a class="schedule-button no-print" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
       }
       td = document.createElement("td");
       if (t.description.includes("Ferry")) {

@@ -41,7 +41,7 @@ table th {
 }
 
 .routes-table-row {
-  @apply cursor-pointer hover:bg-indigo-400;
+  @apply cursor-pointer hover:!bg-indigo-400;
 }
 
 tbody tr {
@@ -49,7 +49,7 @@ tbody tr {
 }
 
 .selected-row {
-  @apply bg-indigo-200;
+  @apply !bg-indigo-200;
 }
 
 .timeline-tooltip {
@@ -70,6 +70,10 @@ tbody tr {
 
 #schedule-table .fa-ship {
   @apply text-blue-500;
+}
+
+#schedule-table td, #schedule-table th {
+  @apply px-4;
 }
 
 @media print {
