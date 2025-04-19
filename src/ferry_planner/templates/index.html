@@ -92,11 +92,13 @@
     <h3 id="routes-card-header" class="text-center bg-indigo-700 text-white rounded-t-lg">Available Routes</h3>
 
     <div class="flex flex-row p-2 no-print select-none w-full">
-      <div>
-        <a id="back-home" href="#" class="hover:bg-gray-200 p-1 border-2 rounded-md">
-          <span class="icon"><i class="fa fa-angle-double-left"></i></span>Home</a>
+      <div class="flex flex-row gap-2">
+        <a id="back-home" href="#" class="hover:bg-gray-200 p-1 border-2 rounded-md" type="button">
+          <span class="icon"><i class="fa fa-angle-double-left"></i></span>
+          Home
+        </a>
       </div>
-      <div class="ml-auto">
+      <div class="flex flex-row gap-2 ml-auto">
         <span>Table</span>
         <label class="switch">
           <input id="timeline-switch" type="checkbox" />
@@ -110,7 +112,7 @@
       <div id="tab-routes-table" class="tab-content">
         <table class="w-full">
           <thead>
-            <tr id="tab-routes-table-header-row" class="bg-indigo-100"></tr>
+            <tr id="tab-routes-table-header-row" class="bg-indigo-50"></tr>
           </thead>
           <tbody id="routes-table"></tbody>
         </table>
@@ -139,31 +141,37 @@
   <div id="schedule-card" hidden>
     <h3 id="schedule-header" class="text-center bg-indigo-700 text-white rounded-t-lg"></h3>
     <div id="schedule" class="flex flex-col p-2">
-      <div id="schedule-header-container" class="text-center p-1">
-        <div id="schedule-details"></div>
-        <div id="schedule-via" class="text-sm"></div>
-        <div id="schedule-nav-bar" class="flex flex-row select-none no-print w-full">
-          <div>
-            <a id="schedule-back" href="#routes"
-              class="p-1 border-2 rounded-md hover:bg-gray-200">
-              <span class="icon"><i class="fa fa-angle-double-left"></i></span>Routes</a>
+      <div id="schedule-header-container" class="text-center">
+        <div class="p-2">
+          <div id="schedule-details"></div>
+          <div id="schedule-via" class="text-sm"></div>
+        </div>
+        <div id="schedule-nav-bar" class="flex flex-row select-none no-print w-full p-2">
+          <div class="flex flex-row gap-2">
+            <a id="schedule-back" href="#routes" class="p-1 border-2 rounded-md hover:bg-gray-200" type="button">
+              <span class="icon"><i class="fa fa-angle-double-left"></i></span>
+              Routes
+            </a>
           </div>
-          <div class="ml-auto">
-            <button onclick="exports.onPrint('schedule-card');"
-              class="p-1 border-2 rounded-md hover:bg-gray-200">
-              <span class="icon"><i class="fa fa-print"></i></span>Print</button>
-            <a id="schedule-map" target="_blank"
-              class="p-1 border-2 rounded-md hover:bg-gray-200">
-              <span class="icon"><i class="fa fa-map"></i></span>Map</a>
-            <button id="share-button" onclick="exports.onShare();"
-              class="p-1 border-2 rounded-md hover:bg-gray-200">
-              <span class="icon"><i class="fa fa-share-alt"></i></span>Share</button>
+          <div class="flex flex-row gap-2 ml-auto">
+            <a id="schedule-map" target="_blank" class="p-1 border-2 rounded-md hover:bg-gray-200" type="button">
+              <span class="icon"><i class="fa fa-map"></i></span>
+              Map
+            </a>
+            <button onclick="exports.onPrint('schedule-card');" class="p-1 border-2 rounded-md hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-print"></i></span>
+              Print
+            </button>
+            <button id="share-button" onclick="exports.onShare();" class="p-1 border-2 rounded-md hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-share-alt"></i></span>
+              Share
+            </button>
           </div>
         </div>
       </div>
       <table id="schedule-table" class="w-full">
         <thead>
-          <tr class="bg-indigo-100">
+          <tr class="bg-indigo-50">
             <th>Time</th>
             <th class="w-11/12">Description</th>
             <th>Duration</th>
