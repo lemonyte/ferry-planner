@@ -22,31 +22,34 @@
 <form id="input-form" class="bg-white rounded-lg p-2 flex-grow"
   action="javascript:exports.submit();">
   <div class="rounded-md flex flex-col lg:flex-row gap-1 items-center">
-    <input autofocus name="origin" class="hover:border-blue-200 rounded-md w-full flex-grow border-2 p-2"
+    <input autofocus name="origin" class="rounded-md w-full flex-grow border-2 p-2"
       type="text" id="origin" list="locations"
       placeholder="Select start location" title="Start location" required
       value=""/>
     <div class="relative flex flex-grow w-full items-center align-middle">
-      <input class="hover:border-blue-200 rounded-md border-2 p-2 flex-grow lg:!ml-1"
+      <input class="rounded-md border-2 p-2 flex-grow lg:!ml-1"
         type="text" id="destination" list="locations"
         placeholder="Select destination" title="Destination location" required
         value=""/>
       <button tabindex="-1"
         type="button"
-        class="hover:border-blue-200 hover:bg-gray-100 box-border rounded-full text-center border p-0 w-6 h-6 absolute -top-1 lg:top-1/2 left-1/2 lg:left-0 transform -translate-x-1/2 -translate-y-1/2 rotate-90 lg:rotate-0 bg-white"
-        id="swap" onclick="exports.swap();">
-        <span class="self-center"><i class="fa fa-exchange block text-xs"></i></span>
+        class="hover:bg-gray-100 box-border rounded-full flex justify-center text-center border p-0 w-6 h-6 absolute -top-1 lg:top-1/2 left-1/2 lg:left-0 transform -translate-x-1/2 -translate-y-1/2 rotate-90 lg:rotate-0 bg-white"
+        id="swap"
+        onclick="exports.swap();"
+      >
+        <span class="self-center flex"><i class="fa fa-exchange block text-xs"></i></span>
       </button>
     </div>
-    <div class="flex md:flex-nowrap flex-row gap-1">
-      <input class="hover:border-blue-200 rounded-md border-2 p-2" type="date" id="date" title="Travel date" />
+    <div class="flex md:flex-nowrap flex-row gap-1 w-full">
+      <input class="rounded-md border-2 p-2" type="date" id="date" title="Travel date" />
       <button
         type="button"
-        class="focus:border-blue-500 rounded-md hover:border-blue-200 hover:bg-gray-100 border-2 p-2" onclick="exports.toggleShow('options');" title="Additional options">
+        class="rounded-md hover:bg-gray-100 border-2 p-2" onclick="exports.toggleShow('options');" title="Additional options">
         Options
       </button>
-      <button type="submit" class="focus:border-blue-500 flex-grow rounded-md border-2 p-2 bg-indigo-600 hover:bg-indigo-900 w-20 sm:w-36  text-white" id="submit"
-        >Search</button>
+      <button type="submit" class="flex-grow rounded-md border-2 p-2 bg-indigo-600 hover:bg-indigo-900 w-20 sm:w-36  text-white" id="submit">
+        Search
+      </button>
     </div>
   </div>
   <div id="options" class="mt-3" hidden>

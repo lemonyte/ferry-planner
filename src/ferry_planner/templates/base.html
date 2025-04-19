@@ -16,36 +16,52 @@
     {% endblock %}
   </head>
   <body class="background-image min-w-min min-h-screen bg-white">
-    <div class="top-0 drop-shadow-lg select-none sticky">
+    <div class="top-0 drop-shadow-lg select-none sticky z-10">
       <div class="w-full overflow-hidden">
         {% block navbar %}
-        <div class="text-black bg-white no-print">
+        <div class="text-black bg-white no-print flex items-center">
           <button id="menu-button"
-            class="bg-gray-100 focus:font-bold hover:font-bold font-serif text-2xl cursor-pointer align-middle text-center px-2 border-0"
+            class="md:hidden bg-gray-100 focus:font-bold hover:font-bold font-serif text-2xl cursor-pointer align-middle text-center px-2 border-0"
             onclick="menuToggle()"
           >
             &#8801
           </button>
-            <a tabindex="-1" href="#" class="align-middle text-lg uppercase">
-              <b>
-                  Ferry Planner
-              </b>
+          <a tabindex="-1" href="/#" class="align-middle text-lg uppercase px-4">
+            <b>Ferry Planner</b>
+          </a>
+          <nav class="hidden md:flex">
+            <a href="/#" class="p-2 hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-home"></i></span>
+              Home
             </a>
+            <a href="/about" class="p-2 hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-info-circle"></i></span>
+              About
+            </a>
+            <a href="/docs" class="p-2 hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-code"></i></span>
+              API
+            </a>
+            <a href="https://github.com/lemonyte/ferry-planner" class="p-2 hover:bg-gray-200">
+              <span class="icon"><i class="fa fa-github"></i></span>
+              GitHub
+            </a>
+          </nav>
         </div>
         <nav id="menu" class="w-52 fixed z-10 overflow-auto bg-gray-100 no-print text-lg shadow-lg h-auto flex flex-col" hidden>
-          <a href="#" class="w-full p-2 select-none hover:bg-gray-200">
+          <a href="/#" class="w-full p-2 hover:bg-gray-200">
             <span class="icon"><i class="fa fa-home"></i></span>
             Home
           </a>
-          <a href="/about" class="w-full p-2 select-none hover:bg-gray-200">
+          <a href="/about" class="w-full p-2 hover:bg-gray-200">
             <span class="icon"><i class="fa fa-info-circle"></i></span>
             About
           </a>
-          <a href="/docs" class="w-full p-2 select-none hover:bg-gray-200">
+          <a href="/docs" class="w-full p-2 hover:bg-gray-200">
             <span class="icon"><i class="fa fa-code"></i></span>
             API
           </a>
-          <a href="https://github.com/lemonyte/ferry-planner" class="w-full p-2 select-none hover:bg-gray-200">
+          <a href="https://github.com/lemonyte/ferry-planner" class="w-full p-2 hover:bg-gray-200">
             <span class="icon"><i class="fa fa-github"></i></span>
             GitHub
           </a>
