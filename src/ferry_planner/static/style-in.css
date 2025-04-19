@@ -8,10 +8,15 @@
   }
 }
 
-*,
-::after,
-::before {
-  @apply border-gray-200;
+* {
+  @apply border-black/20;
+}
+
+input,
+button,
+[type="button"]
+{
+  @apply hover:border-black/40;
 }
 
 @supports (-webkit-touch-callout: none) {
@@ -41,11 +46,11 @@ table th {
 }
 
 .routes-table-row {
-  @apply cursor-pointer hover:!bg-indigo-400;
+  @apply cursor-pointer hover:!bg-indigo-300;
 }
 
 tbody tr {
-  @apply even:bg-indigo-100 odd:bg-white;
+  @apply even:bg-indigo-50 odd:bg-white;
 }
 
 .selected-row {
@@ -57,7 +62,7 @@ tbody tr {
 }
 
 .timeline-label {
-  @apply hover:underline cursor-pointer even:bg-indigo-100;
+  @apply hover:underline cursor-pointer even:bg-indigo-50;
 }
 
 .past-route {

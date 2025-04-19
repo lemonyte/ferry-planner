@@ -867,7 +867,7 @@ function onPlanSelected(id) {
 
       let desc = t.description;
       if (s.schedule_url && t.type === "TRAVEL" && t.start !== t.end) {
-        desc += `<a class="schedule-button no-print" href="${s.schedule_url}" target="_blank"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
+        desc += `<a class="schedule-button no-print" href="${s.schedule_url}" target="_blank" type="button"><span class="icon"><i class="fa fa-list-alt"></i></span>Schedule</a>`;
       }
       td = document.createElement("td");
       if (t.description.startsWith("Ferry")) {
