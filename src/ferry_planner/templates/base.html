@@ -9,9 +9,14 @@
       content="Easily plan your coastal BC trip. Find the best routes and times to travel, even with multiple ferry connections. Get up-to-date info for any location in BC!" />
     <link rel="shortcut icon" type="image/png" href="/static/favicon.ico" />
     <link rel="stylesheet" href="/static/style-out.css" />
-    <link rel="stylesheet" href="/static/switch.css" />
-    <link rel="stylesheet" href="/static/notifications.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="preload" href="/static/switch.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="preload" href="/static/notifications.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+      <link rel="stylesheet" href="/static/switch.css" />
+      <link rel="stylesheet" href="/static/notifications.css" />
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    </noscript>
     <script defer src="https://ferryplanner.ca/a/script.js" data-website-id="ed4abbf7-badc-42e9-a74b-88e86e0037cb"></script>
     {% endblock %}
   </head>
@@ -81,7 +86,7 @@
     </footer>
 
     {% block scripts %}
-    <script src="/static/notifications.js"></script>
+    <script async src="/static/notifications.js"></script>
     <script>
       const menuButton = document.getElementById("menu-button");
       const menu = document.getElementById("menu");
