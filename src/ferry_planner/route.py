@@ -364,7 +364,7 @@ class RoutePlanBuilder:
         connection: FerryConnection,
     ) -> bool:
         result = False
-        depature_terminal = connection.origin
+        departure_terminal = connection.origin
         start_day = segments[0].times[0].start.day if segments else start_time.day
         day = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
         schedule = await self._schedule_getter(connection.origin.id, connection.destination.id, date=day)
@@ -381,21 +381,21 @@ class RoutePlanBuilder:
                 continue
             deadline_name = "departure"
             wait_minutes = 0
-            if options.hostled and depature_terminal.hostled_close and depature_terminal.hostled_close > 0:
-                deadline_name = "hostled vehicles checkin close"
-                wait_minutes = depature_terminal.hostled_close
-            if options.assured and depature_terminal.assured_close and depature_terminal.assured_close > 0:
-                deadline_name = "assured loading checkin close"
-                wait_minutes = depature_terminal.assured_close
-            elif depature_terminal.res_close and depature_terminal.res_close > 0 and connection.bookable:
-                deadline_name = "booking checkin close"
-                wait_minutes = depature_terminal.res_close
-            elif depature_terminal.veh_close and depature_terminal.veh_close > 0:
-                deadline_name = "vehicles checkin close"
-                wait_minutes = depature_terminal.veh_close
-            elif depature_terminal.foot_close and depature_terminal.foot_close > 0:
-                deadline_name = "foot passengers checkin close"
-                wait_minutes = depature_terminal.foot_close
+            if options.hostled and departure_terminal.hostled_close and departure_terminal.hostled_close > 0:
+                deadline_name = "hostled vehicles check-in close"
+                wait_minutes = departure_terminal.hostled_close
+            if options.assured and departure_terminal.assured_close and departure_terminal.assured_close > 0:
+                deadline_name = "assured loading check-in close"
+                wait_minutes = departure_terminal.assured_close
+            elif departure_terminal.res_close and departure_terminal.res_close > 0 and connection.bookable:
+                deadline_name = "booking check-in close"
+                wait_minutes = departure_terminal.res_close
+            elif departure_terminal.veh_close and departure_terminal.veh_close > 0:
+                deadline_name = "vehicles check-in close"
+                wait_minutes = departure_terminal.veh_close
+            elif departure_terminal.foot_close and departure_terminal.foot_close > 0:
+                deadline_name = "foot passengers check-in close"
+                wait_minutes = departure_terminal.foot_close
             deadline_time = depart_time - timedelta(minutes=wait_minutes) - timedelta(minutes=options.buffer)
             if deadline_time < start_time:
                 continue

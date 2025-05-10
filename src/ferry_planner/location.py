@@ -49,7 +49,7 @@ class Terminal(Location):
     veh_close: int | None = None
     """Vehicles check-in close time in minutes."""
     foot_close: int | None = None
-    """Foot passangers check-in close time in minutes."""
+    """Foot passengers check-in close time in minutes."""
     res_open: int | None = None
     """Booking check-in open time in minutes."""
     res_close: int | None = None
