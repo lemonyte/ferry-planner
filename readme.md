@@ -1,6 +1,6 @@
 # Ferry Planner
 
-This website is a tool that calculates possible routes between two destinations with [BC Ferries](https://bcferries.com) sailings.
+This website is a tool that calculates possible routes between places with [BC Ferries](https://bcferries.com) sailings.
 
 ## Requirements
 
