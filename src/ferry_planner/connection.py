@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 ConnectionId = str
 
-DataT = TypeVar("DataT", Any, dict)
+DataT = TypeVar("DataT", Any, dict[str, Any])
 OriginT_co = TypeVar("OriginT_co", bound="Location", covariant=True)
 DestinationT_co = TypeVar("DestinationT_co", bound="Location", covariant=True)
 
