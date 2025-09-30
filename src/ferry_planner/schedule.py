@@ -326,14 +326,10 @@ class ScheduleParser:
         table_tag = soup.find("table", id="dailyScheduleTableOnward")
         daterange_tag = soup.find("div", id="dateRangeModal")  # for seasonal
         rows = []
-        if table_tag and isinstance(table_tag, Tag) and table_tag.tbody:
+        if table_tag and table_tag.tbody:
             rows = table_tag.tbody.find_all("tr")
-        elif daterange_tag and isinstance(daterange_tag, Tag):
-            hrefs = [
-                a.attrs["href"]
-                for a in daterange_tag.find_all("a")
-                if isinstance(a, Tag) and isinstance(a.attrs["href"], str)
-            ]
+        elif daterange_tag:
+            hrefs = [a.attrs["href"] for a in daterange_tag.find_all("a") if isinstance(a.attrs["href"], str)]
             try:
                 index = ScheduleParser.get_seasonal_schedule_daterange_index(hrefs, date)
             except Exception as exc:
@@ -429,7 +425,7 @@ class ScheduleParser:
     def get_seasonal_schedule_rows(url: str, soup: BeautifulSoup, date: datetime) -> Sequence[Tag]:
         rows = []
         form = soup.find("form", id="seasonalSchedulesForm")
-        if not isinstance(form, Tag):
+        if form is None:
             msg = "'seasonalSchedulesForm' not found"
             raise ScheduleParseError(msg, url=url)
         weekday = WEEKDAY_NAMES[date.weekday()]
