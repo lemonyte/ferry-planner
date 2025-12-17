@@ -12,8 +12,6 @@ from pydantic_settings import (
 from ferry_planner.connection import AirConnection, BusConnection, CarConnection, Connection, FerryConnection
 from ferry_planner.location import Airport, BusStop, City, Location, Terminal
 
-DataFileT = TypeVar("DataFileT", bound=Location | Connection)
-
 
 def check_is_file(path: Path, /) -> Path:
     if not path.is_file():
@@ -31,6 +29,7 @@ def check_is_dir(path: Path, /) -> Path:
 
 FilePath = Annotated[Path, AfterValidator(check_is_file)]
 DirectoryPath = Annotated[Path, AfterValidator(check_is_dir)]
+DataFileT = TypeVar("DataFileT", Location, Connection)
 
 DATA_MODEL_CLASS_MAP = {
     cls.__name__: cls
