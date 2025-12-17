@@ -60,7 +60,7 @@ class DataFileInfo(BaseModel, Generic[DataFileT]):
     def _validate_cls(cls, value: str | type | None) -> type[Location | Connection]:
         if isinstance(value, str) and value in DATA_MODEL_CLASS_MAP:
             return DATA_MODEL_CLASS_MAP[value]
-        if isinstance(value, type) and value in DATA_MODEL_CLASS_MAP.values():
+        if isinstance(value, type) and issubclass(value, tuple(DATA_MODEL_CLASS_MAP.values())):
             return value
         msg = (
             f"invalid class name '{value.__name__ if isinstance(value, type) else value}'. "
