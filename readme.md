@@ -15,6 +15,14 @@ pip install -e .
 uvicorn ferry_planner.server:app --reload
 ```
 
+### Building CSS output
+
+You need to build the CSS file with [Tailwind](https://tailwindcss.com/docs/installation/tailwind-cli) before running the server for the first time:
+
+```bash
+npx @tailwindcss/cli -i ./src/ferry_planner/static/style-in.css -o ./src/ferry_planner/static/style-out.css
+```
+
 Navigate to <http://localhost:8000> to preview the website.
 
 ## Disclaimer
