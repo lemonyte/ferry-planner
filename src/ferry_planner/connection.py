@@ -56,7 +56,7 @@ class Connection(BaseModel, ABC, Generic[OriginT_co, DestinationT_co]):
 
     @model_validator(mode="before")
     @classmethod
-    def _validate_origin_destination(cls, data: DataT, info: ValidationInfo) -> DataT:
+    def _validate_origin_destination(cls, data: Any, info: ValidationInfo) -> Any:  # noqa: ANN401 Needed for Pydantic validators.
         if isinstance(data, dict):
             origin = data.get("origin")
             destination = data.get("destination")
