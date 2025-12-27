@@ -8,6 +8,7 @@ from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
+    TomlConfigSettingsSource,
     YamlConfigSettingsSource,
 )
 
@@ -79,28 +80,31 @@ class SchedulesConfig(BaseModel):
     base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/"
     cache_dir: DirectoryPath = Path("./data/schedule_cache")
     cache_ahead_days: int = 1
-    refresh_interval: int = 60 * 60 * 24  # 24 hours
+    refresh_interval_seconds: int = 24 * 60 * 60  # 24 hours
 
 
 class Config(BaseSettings):
     timezone: ZoneInfo = ZoneInfo("America/Vancouver")
     log_level: ImportString | int = logging.INFO
-    data: DataConfig
     schedules: SchedulesConfig = SchedulesConfig()
+    data: DataConfig
 
-    model_config = SettingsConfigDict(yaml_file="config.yaml")
+    model_config = SettingsConfigDict(env_file=".env", toml_file="config.toml", yaml_file="config.yaml")
 
     @classmethod
     def settings_customise_sources(
         cls,
         settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,  # noqa: ARG003
-        dotenv_settings: PydanticBaseSettingsSource,  # noqa: ARG003
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,  # noqa: ARG003
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         return (
             init_settings,
+            env_settings,
+            dotenv_settings,
+            TomlConfigSettingsSource(settings_cls),
             YamlConfigSettingsSource(settings_cls),
         )
 
