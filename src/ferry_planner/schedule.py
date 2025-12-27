@@ -1,19 +1,12 @@
-# ruff: noqa: DTZ001, DTZ005, DTZ007
-import asyncio
 import itertools
-import os
-import time
 from collections.abc import Iterable, Sequence
-from datetime import datetime, timedelta
-from pathlib import Path
-from threading import Thread
+from datetime import datetime
 from typing import Protocol
 
-import httpx
 from bs4 import BeautifulSoup, Tag
+from httpx import Response
 from pydantic import BaseModel
 
-from ferry_planner.connection import FerryConnection
 from ferry_planner.location import LocationId
 from ferry_planner.utils import datetime_to_timedelta
 
@@ -113,214 +106,13 @@ class ScheduleParseError(Exception):
         super().__init__(f"error parsing schedule at {url}: {msg}", *args)
 
 
-class ScheduleDB:
-    def __init__(
-        self,
-        *,
-        ferry_connections: Iterable[FerryConnection] | set[FerryConnection] | frozenset[FerryConnection],
-        base_url: str,
-        cache_dir: Path,
-        cache_ahead_days: int,
-        refresh_interval: int,
-    ) -> None:
-        self.ferry_connections = ferry_connections
-        self.base_url = base_url
-        self.cache_dir = cache_dir
-        self.cache_ahead_days = cache_ahead_days
-        self.refresh_interval = refresh_interval
-        self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
-        self._mem_cache = {}
-        self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
-        timeout = httpx.Timeout(30.0, pool=None)
-        limits = httpx.Limits(max_connections=5)
-        self._client = httpx.AsyncClient(timeout=timeout, limits=limits, follow_redirects=True)
-
-    def _log(self, message: str, /, *, level: str = "INFO") -> None:
-        print(f"[{self.__class__.__name__}:{level}] {message}")
-
-    def _get_download_url(
-        self,
-        origin_id: LocationId,
-        destination_id: LocationId,
-        /,
-        *,
-        date: datetime,
-    ) -> str:
-        return f"{self.base_url}{origin_id}-{destination_id}?&scheduleDate={date.strftime('%m/%d/%Y')}"
-
-    def _get_filepath(
-        self,
-        origin_id: LocationId,
-        destination_id: LocationId,
-        /,
-        *,
-        date: datetime,
-    ) -> Path:
-        return self.cache_dir / f"{origin_id}-{destination_id}" / f"{date.date()}.json"
-
-    async def get(
-        self,
-        origin_id: LocationId,
-        destination_id: LocationId,
-        /,
-        *,
-        date: datetime,
-    ) -> FerrySchedule | None:
-        filepath = self._get_filepath(origin_id, destination_id, date=date)
-        schedule = self._mem_cache.get(filepath)
-        if schedule:
-            return schedule
-        if filepath.exists():
-            schedule = FerrySchedule.model_validate_json(filepath.read_text(encoding="utf-8"))
-            self._mem_cache[filepath] = schedule
-            return schedule
-        schedule = await self.download_schedule(origin_id, destination_id, date=date)
-        if schedule:
-            self.put(schedule)
-        return schedule
-
-    def put(self, schedule: FerrySchedule, /) -> None:
-        filepath = self._get_filepath(
-            schedule.origin,
-            schedule.destination,
-            date=schedule.date,
-        )
-        self._mem_cache[filepath] = schedule
-        dirpath = filepath.parent
-        if not dirpath.exists():
-            dirpath.mkdir(mode=0o755, parents=True, exist_ok=True)
-        filepath.write_text(schedule.model_dump_json(indent=4, exclude_none=True), encoding="utf-8")
-
-    async def download_schedule(
-        self,
-        origin_id: LocationId,
-        destination_id: LocationId,
-        /,
-        *,
-        date: datetime,
-    ) -> FerrySchedule | None:
-        try:
-            return await self._download_schedule_async(origin_id, destination_id, date=date)
-        except (ScheduleDownloadError, ScheduleParseError) as exc:
-            msg = "failed to parse schedule" if isinstance(exc, ScheduleParseError) else "failed to download schedule"
-            self._log(
-                f"{msg} {origin_id}-{destination_id}:{date.date()}\n\t{exc!r}\n\tUrl: {exc.url}",
-                level="ERROR",
-            )
-            return None
-
-    async def _download_schedule_async(
-        self,
-        origin_id: LocationId,
-        destination_id: LocationId,
-        /,
-        *,
-        date: datetime,
-    ) -> FerrySchedule:
-        url = self._get_download_url(origin_id, destination_id, date=date)
-        route = f"{origin_id}-{destination_id}"
-        self._log(f"fetching schedule: {route}:{date.date()}")
-        max_redirects_count = 3
-        redirects = []
-        while True:
-            try:
-                response = await self._client.get(url)
-            except httpx.HTTPError as exc:
-                msg = "failed to download schedule"
-                raise ScheduleDownloadError(msg, url=url) from exc
-            if not httpx.codes.is_success(response.status_code):
-                msg = f"status {response.status_code}"
-                raise ScheduleDownloadError(msg, url=url)
-            self._log(f"fetched schedule: {route}:{date.date()}")
-            result = ScheduleParser.parse_schedule_html(response, date)
-            if result.redirect_url:
-                if len(redirects) > max_redirects_count:
-                    msg = "too many redirects"
-                    raise ScheduleDownloadError(msg, url=url)
-                if url in redirects:
-                    msg = "redirects loop"
-                    raise ScheduleDownloadError(msg, url=url)
-                url = result.redirect_url
-                redirects.append(url)
-                continue
-            return FerrySchedule(
-                date=date,
-                origin=origin_id,
-                destination=destination_id,
-                sailings=tuple(result.sailings),
-                url=url,
-                notes=result.notes,
-            )
-
-    async def _download_and_save_schedule(
-        self,
-        origin_id: LocationId,
-        destination_id: LocationId,
-        /,
-        *,
-        date: datetime,
-    ) -> bool:
-        schedule = await self.download_schedule(
-            origin_id,
-            destination_id,
-            date=date,
-        )
-        if schedule is not None:
-            self.put(schedule)
-            return True
-        return False
-
-    async def refresh_cache(self) -> None:
-        current_date = datetime.now().date()
-        current_date = datetime(current_date.year, current_date.month, current_date.day)
-        dates = [current_date + timedelta(days=i) for i in range(self.cache_ahead_days)]
-        for subdir, _, filenames in os.walk(self.cache_dir):
-            for filename in filenames:
-                date = datetime.fromisoformat(".".join(filename.split(".")[:-1]))
-                if date != current_date and date not in dates:
-                    (Path(subdir) / filename).unlink(missing_ok=True)
-        # clear memory cache
-        self._mem_cache = {}
-        # download new schedules
-        tasks = []
-        for connection in self.ferry_connections:
-            for date in dates:
-                filepath = self._get_filepath(
-                    connection.origin.id,
-                    connection.destination.id,
-                    date=date,
-                )
-                if not filepath.exists():
-                    tasks.append(
-                        asyncio.create_task(
-                            self._download_and_save_schedule(
-                                connection.origin.id,
-                                connection.destination.id,
-                                date=date,
-                            ),
-                        ),
-                    )
-        downloaded_schedules = sum(await asyncio.gather(*tasks))
-        self._log(f"finished refreshing cache, downloaded {downloaded_schedules} schedules")
-
-    def start_refresh_thread(self) -> None:
-        # Disabled temporarily due to causing too many issues.
-        # self._refresh_thread.start()  # noqa: ERA001
-        pass
-
-    def _refresh_task(self) -> None:
-        while True:
-            asyncio.run(self.refresh_cache())
-            time.sleep(self.refresh_interval)
-
-
 class ScheduleParser:
     @staticmethod
     def _log(message: str, /, *, level: str = "INFO") -> None:
         print(f"[{ScheduleParser.__name__}:{level}] {message}")
 
     @staticmethod
-    def parse_schedule_html(response: httpx.Response, date: datetime) -> HtmlParseResult:
+    def parse_schedule_html(response: Response, date: datetime) -> HtmlParseResult:
         html = response.text.replace("\u2060", "")
         soup = BeautifulSoup(markup=html, features="html.parser")
         table_tag = soup.find("table", id="dailyScheduleTableOnward")

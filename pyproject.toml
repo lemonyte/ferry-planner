@@ -3,7 +3,7 @@ name = "ferry-planner"
 version = "0.1.0"
 description = "BC Ferries sailing planner website server"
 readme = "readme.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "beautifulsoup4~=4.14.2",
     "fastapi~=0.127.0",
@@ -19,6 +19,8 @@ dependencies = [
 dev = [
     "prek>=0.2.22",
     "ty>=0.0.2",
+    "workers-py>=1.6.1",
+    "workers-runtime-sdk>=0.3.1",
 ]
 
 [build-system]
@@ -28,8 +30,11 @@ build-backend = "setuptools.build_meta"
 [tool.ruff]
 src = ["src"]
 line-length = 119
-target-version = "py311"
+exclude = ["src/js-stubs/**"]
 
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = ["A", "D1", "T20", "TD003"]
+
+[tool.ty.src]
+exclude = ["src/js-stubs/**"]
