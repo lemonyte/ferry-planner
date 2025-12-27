@@ -118,17 +118,17 @@ class ScheduleDB:
     def __init__(
         self,
         *,
-        ferry_connections: Iterable[FerryConnection] | set[FerryConnection] | frozenset[FerryConnection],
-        base_url: str,
-        cache_dir: Path,
-        cache_ahead_days: int,
-        refresh_interval: int,
+        ferry_connections: Iterable[FerryConnection],
+        base_url: str | None = None,
+        cache_dir: Path | None = None,
+        cache_ahead_days: int | None = None,
+        refresh_interval: int | None = None,
     ) -> None:
         self.ferry_connections = ferry_connections
-        self.base_url = base_url
-        self.cache_dir = cache_dir
-        self.cache_ahead_days = cache_ahead_days
-        self.refresh_interval = refresh_interval
+        self.base_url = base_url or CONFIG.schedules.base_url
+        self.cache_dir = cache_dir or CONFIG.schedules.cache_dir
+        self.cache_ahead_days = cache_ahead_days or CONFIG.schedules.cache_ahead_days
+        self.refresh_interval = refresh_interval or CONFIG.schedules.refresh_interval_seconds
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
         self._mem_cache = {}
         self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)

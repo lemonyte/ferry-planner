@@ -42,10 +42,6 @@ schedule_db = ScheduleDB(
     ferry_connections=tuple(
         connection for connection in connection_db.all() if isinstance(connection, FerryConnection)
     ),
-    base_url=CONFIG.schedules.base_url,
-    cache_dir=CONFIG.schedules.cache_dir,
-    cache_ahead_days=CONFIG.schedules.cache_ahead_days,
-    refresh_interval=CONFIG.schedules.refresh_interval_seconds,
 )
 route_builder = RouteBuilder(connection_db)
 route_plan_builder = RoutePlanBuilder(
