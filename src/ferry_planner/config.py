@@ -1,8 +1,9 @@
+import logging
 from pathlib import Path
 from typing import Annotated, Generic, TypeVar
 from zoneinfo import ZoneInfo
 
-from pydantic import AfterValidator, BaseModel, field_serializer, field_validator
+from pydantic import AfterValidator, BaseModel, ImportString, field_serializer, field_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -83,6 +84,7 @@ class SchedulesConfig(BaseModel):
 
 class Config(BaseSettings):
     timezone: ZoneInfo = ZoneInfo("America/Vancouver")
+    log_level: ImportString | int = logging.INFO
     data: DataConfig
     schedules: SchedulesConfig = SchedulesConfig()
 
@@ -103,4 +105,10 @@ class Config(BaseSettings):
         )
 
 
+# This line avoids using a "type: ignore" comment,
+# using `config = Config()` would require one as it does not pass type checking.
+# Values are still loaded from the config file because
+# `Config` inherits from `BaseSettings` instead of `BaseModel`.
+# See https://github.com/pydantic/pydantic-settings/issues/108
+# and https://github.com/pydantic/pydantic-settings/issues/201
 CONFIG = Config.model_validate({})

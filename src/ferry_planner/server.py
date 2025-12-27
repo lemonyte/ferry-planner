@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping, Sequence
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -31,14 +32,10 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
 
+logging.basicConfig(level=CONFIG.log_level)
+# Disable info logs from httpx.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 ROOT_DIR = Path(__file__).parent
-
-# This line avoids using a "type: ignore" comment,
-# using `config = Config()` would require one as it does not pass type checking.
-# Values are still loaded from the config file because
-# `Config` inherits from `BaseSettings` instead of `BaseModel`.
-# See https://github.com/pydantic/pydantic-settings/issues/108
-# and https://github.com/pydantic/pydantic-settings/issues/201
 location_db = LocationDB.from_files(CONFIG.data.location_files)
 connection_db = ConnectionDB.from_files(CONFIG.data.connection_files, location_db=location_db)
 schedule_db = ScheduleDB(
