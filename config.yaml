@@ -9,3 +9,6 @@ data:
       cls: CarConnection
     - path: ./data/ferry_connections.json
       cls: FerryConnection
+
+schedules:
+  db_cls: CloudflareD1DB

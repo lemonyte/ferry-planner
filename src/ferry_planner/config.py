@@ -10,6 +10,7 @@ from pydantic_settings import (
 )
 
 from ferry_planner.connection import AirConnection, BusConnection, CarConnection, Connection, FerryConnection
+from ferry_planner.db import BaseDB, FileDB
 from ferry_planner.location import Airport, BusStop, City, Location, Terminal
 
 
@@ -74,6 +75,7 @@ class DataConfig(BaseModel):
 
 
 class SchedulesConfig(BaseModel):
+    db_cls: type[BaseDB] = FileDB
     base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/"
     cache_dir: DirectoryPath = Path("./data/schedule_cache")
     cache_ahead_days: int = 1
