@@ -10,7 +10,7 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from ferry_planner.config import Config
+from ferry_planner.config import CONFIG
 from ferry_planner.connection import FerryConnection
 from ferry_planner.data import ConnectionDB, LocationDB
 from ferry_planner.location import Location, LocationId
@@ -39,17 +39,16 @@ ROOT_DIR = Path(__file__).parent
 # `Config` inherits from `BaseSettings` instead of `BaseModel`.
 # See https://github.com/pydantic/pydantic-settings/issues/108
 # and https://github.com/pydantic/pydantic-settings/issues/201
-config = Config.model_validate({})
-location_db = LocationDB.from_files(config.data.location_files)
-connection_db = ConnectionDB.from_files(config.data.connection_files, location_db=location_db)
+location_db = LocationDB.from_files(CONFIG.data.location_files)
+connection_db = ConnectionDB.from_files(CONFIG.data.connection_files, location_db=location_db)
 schedule_db = ScheduleDB(
     ferry_connections=tuple(
         connection for connection in connection_db.all() if isinstance(connection, FerryConnection)
     ),
-    base_url=config.schedules.base_url,
-    cache_dir=config.schedules.cache_dir,
-    cache_ahead_days=config.schedules.cache_ahead_days,
-    refresh_interval=config.schedules.refresh_interval,
+    base_url=CONFIG.schedules.base_url,
+    cache_dir=CONFIG.schedules.cache_dir,
+    cache_ahead_days=CONFIG.schedules.cache_ahead_days,
+    refresh_interval=CONFIG.schedules.refresh_interval,
 )
 route_builder = RouteBuilder(connection_db)
 route_plan_builder = RoutePlanBuilder(

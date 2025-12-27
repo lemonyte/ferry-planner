@@ -8,10 +8,10 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import TYPE_CHECKING
 from urllib.parse import quote
-from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
 
+from ferry_planner.config import CONFIG
 from ferry_planner.connection import CarConnection, Connection, FerryConnection
 from ferry_planner.data import ConnectionNotFoundError
 from ferry_planner.location import City, Location
@@ -81,7 +81,7 @@ class RoutePlan(BaseModel):
             msg = "route plan must have at least one segment"
             raise ValueError(msg)
 
-        # If first segment is driving, we can shift it to second segment
+        # If first segment is driving, we can shift it forward
         # in order to arrive just in time for ferry.
         first_segment = segments[0]
         if isinstance(first_segment.connection, CarConnection) and segments_len > 1:
@@ -90,18 +90,12 @@ class RoutePlan(BaseModel):
                 time.start += free_time
                 time.end += free_time
 
-        # If the only segment is car travel, make sure start time is in Vancouver time zone.
+        # If the only segment is car travel, make the start time the current time.
         if isinstance(first_segment.connection, CarConnection) and segments_len == 1:
-            tz = ZoneInfo("America/Vancouver")
-            now = datetime.now().astimezone()
-            local_offset = now.astimezone().utcoffset()
-            bc_offset = tz.utcoffset(now)
-            if local_offset and bc_offset:
-                tz_diff = bc_offset - local_offset
-                current_time_bc = now - first_segment.times[0].start.astimezone() + tz_diff
-                for t in first_segment.times:
-                    t.start += current_time_bc
-                    t.end += current_time_bc
+            now = datetime.now(tz=CONFIG.timezone)
+            for t in first_segment.times:
+                t.start += datetime_to_timedelta(now)
+                t.end += datetime_to_timedelta(now)
 
         # Add free time to segments.
         for i in range(segments_len - 1):

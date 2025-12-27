@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Annotated, Generic, TypeVar
+from zoneinfo import ZoneInfo
 
 from pydantic import AfterValidator, BaseModel, field_serializer, field_validator
 from pydantic_settings import (
@@ -81,6 +82,7 @@ class SchedulesConfig(BaseModel):
 
 
 class Config(BaseSettings):
+    timezone: ZoneInfo = ZoneInfo("America/Vancouver")
     data: DataConfig
     schedules: SchedulesConfig = SchedulesConfig()
 
@@ -99,3 +101,6 @@ class Config(BaseSettings):
             init_settings,
             YamlConfigSettingsSource(settings_cls),
         )
+
+
+CONFIG = Config.model_validate({})

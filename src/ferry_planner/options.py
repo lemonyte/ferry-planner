@@ -1,9 +1,9 @@
-# ruff: noqa: DTZ005
 from datetime import datetime
 from typing import Self
 
 from pydantic import BaseModel, field_validator, model_validator
 
+from ferry_planner.config import CONFIG
 from ferry_planner.location import LocationId
 
 
@@ -26,7 +26,7 @@ class ScheduleOptions(RoutesOptions):
     @classmethod
     def _parse_date(cls, value: str | datetime | None) -> datetime:
         if not value:
-            value = datetime.now()
+            value = datetime.now(CONFIG.timezone)
         if isinstance(value, str):
             value = datetime.fromisoformat(value)
         return value

@@ -1,4 +1,3 @@
-# ruff: noqa: DTZ001, DTZ005, DTZ007
 import asyncio
 import itertools
 import logging
@@ -14,6 +13,7 @@ import httpx
 from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
 
+from ferry_planner.config import CONFIG
 from ferry_planner.connection import FerryConnection
 from ferry_planner.location import LocationId
 from ferry_planner.utils import datetime_to_timedelta
@@ -275,8 +275,7 @@ class ScheduleDB:
         return False
 
     async def refresh_cache(self) -> None:
-        current_date = datetime.now().date()
-        current_date = datetime(current_date.year, current_date.month, current_date.day)
+        current_date = datetime.now(tz=CONFIG.timezone).replace(hour=0, minute=0, second=0, microsecond=0)
         dates = [current_date + timedelta(days=i) for i in range(self.cache_ahead_days)]
         for subdir, _, filenames in os.walk(self.cache_dir):
             for filename in filenames:
@@ -309,8 +308,8 @@ class ScheduleDB:
 
     def start_refresh_thread(self) -> None:
         # Disabled temporarily due to causing too many issues.
-        # self._refresh_thread.start()  # noqa: ERA001
-        pass
+        if False:
+            self._refresh_thread.start()
 
     def _refresh_task(self) -> None:
         while True:
@@ -382,11 +381,11 @@ class ScheduleParser:
             departure = datetime.strptime(
                 departure_time.strip(),
                 "%I:%M %p",
-            ).replace(year=date.year, month=date.month, day=date.day)
+            ).replace(year=date.year, month=date.month, day=date.day, tzinfo=CONFIG.timezone)
             arrival = datetime.strptime(
                 row.find_all("td")[2].text.strip(),
                 "%I:%M %p",
-            ).replace(year=date.year, month=date.month, day=date.day)
+            ).replace(year=date.year, month=date.month, day=date.day, tzinfo=CONFIG.timezone)
             td3 = tds[3].text.strip()
             if "h " in td3 and "m" in td3:
                 td3format = "%Hh %Mm"
@@ -401,7 +400,7 @@ class ScheduleParser:
                     datetime.strptime(
                         td3,
                         td3format,
-                    ),
+                    ).replace(tzinfo=CONFIG.timezone),
                 ).total_seconds(),
             )
             sailing = FerrySailing(
@@ -453,8 +452,8 @@ class ScheduleParser:
         expected_dates_count = 2
         if (len(dates)) != expected_dates_count:
             return None
-        date_from = datetime.strptime(dates[0], "%Y%m%d")
-        date_to = datetime.strptime(dates[1], "%Y%m%d")
+        date_from = datetime.strptime(dates[0], "%Y%m%d").replace(tzinfo=CONFIG.timezone)
+        date_to = datetime.strptime(dates[1], "%Y%m%d").replace(tzinfo=CONFIG.timezone)
         return (date_from, date_to)
 
     def is_sailing_excluded_on_date(self, schedule_comment: str, date: datetime) -> bool:
@@ -489,17 +488,22 @@ class ScheduleParser:
                         schedule_dates,
                     )
                     return False
-                _date = datetime(year=date.year, month=month, day=int(token))
+                _date = datetime(year=date.year, month=month, day=int(token), tzinfo=CONFIG.timezone)
             else:
                 dt = token.split(" ")
                 expected_tokens_count = 2
                 if len(dt) == expected_tokens_count and dt[0].isnumeric() and dt[1] in MONTHS:
                     # 01 JAN, 02 JAN, 05 FEB, 06 FEB
-                    _date = datetime(year=date.year, month=MONTHS.index(dt[1]) + 1, day=int(dt[0]))
+                    _date = datetime(
+                        year=date.year,
+                        month=MONTHS.index(dt[1]) + 1,
+                        day=int(dt[0]),
+                        tzinfo=CONFIG.timezone,
+                    )
                 elif len(dt) == expected_tokens_count and dt[1].isnumeric() and dt[0] in MONTHS:
                     # Jan 1, 2, Feb 5 & 6
                     month = MONTHS.index(dt[0]) + 1
-                    _date = datetime(year=date.year, month=month, day=int(dt[1]))
+                    _date = datetime(year=date.year, month=month, day=int(dt[1]), tzinfo=CONFIG.timezone)
                 else:
                     self._logger.warning(
                         "failed to parse schedule dates: Unknown word %r in %r",

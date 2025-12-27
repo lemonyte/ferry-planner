@@ -32,4 +32,4 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["A", "D1", "T20", "TD003"]
+ignore = ["A", "D1", "TD003"]
