@@ -103,7 +103,6 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "tzdata" },
-    { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.dev-dependencies]
@@ -112,6 +111,9 @@ dev = [
     { name = "ty" },
     { name = "workers-py" },
     { name = "workers-runtime-sdk" },
+]
+server = [
+    { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.metadata]
@@ -123,7 +125,6 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.7.0,<3.0.0" },
     { name = "pydantic-settings", specifier = "~=2.12.0" },
     { name = "tzdata", specifier = "~=2025.1" },
-    { name = "uvicorn", extras = ["standard"], specifier = "~=0.40.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -133,6 +134,7 @@ dev = [
     { name = "workers-py", specifier = ">=1.6.1" },
     { name = "workers-runtime-sdk", specifier = ">=0.3.1" },
 ]
+server = [{ name = "uvicorn", extras = ["standard"], specifier = "~=0.40.0" }]
 
 [[package]]
 name = "h11"
