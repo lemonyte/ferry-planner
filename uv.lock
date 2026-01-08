@@ -110,7 +110,6 @@ dev = [
     { name = "prek" },
     { name = "ty" },
     { name = "workers-py" },
-    { name = "workers-runtime-sdk" },
 ]
 server = [
     { name = "uvicorn", extra = ["standard"] },
@@ -131,8 +130,7 @@ requires-dist = [
 dev = [
     { name = "prek", specifier = ">=0.2.22" },
     { name = "ty", specifier = ">=0.0.2" },
-    { name = "workers-py", specifier = ">=1.6.1" },
-    { name = "workers-runtime-sdk", specifier = ">=0.3.1" },
+    { name = "workers-py", specifier = ">=1.7.0" },
 ]
 server = [{ name = "uvicorn", extras = ["standard"], specifier = "~=0.40.0" }]
 
@@ -627,7 +625,7 @@ wheels = [
 
 [[package]]
 name = "workers-py"
-version = "1.6.1"
+version = "1.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -635,10 +633,11 @@ dependencies = [
     { name = "pyodide-cli" },
     { name = "pyodide-py" },
     { name = "rich" },
+    { name = "workers-runtime-sdk" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/16/25/da14d51ca5e67fab961b0b948f7cadde18c8d028fbead668d3d3877e1608/workers_py-1.6.1.tar.gz", hash = "sha256:812eb03203b35f9a4d5f5164eaec513e761de2d1ce7a2625a174bc61fa664ae8", size = 55062, upload-time = "2025-10-15T19:53:59.509Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/a2/92cbc8a0aaf5748db4bde8f990ff307ab38cfa36dc4e8d40634a79d939bb/workers_py-1.7.0.tar.gz", hash = "sha256:33562f1fa73e6465202cdafdc12a78a5d5e620c41b0dfb926ad9a2cc744122dd", size = 44878, upload-time = "2025-10-31T12:04:28.328Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/47/0f/207602b67ceafbb3d87a8a654555206d6bde253d24992e6a791f4cf15377/workers_py-1.6.1-py3-none-any.whl", hash = "sha256:a91354bec5786b0a359ccbf3cda874a4927a41e902fc0e1ed5a542053b5365cd", size = 11002, upload-time = "2025-10-15T19:53:58.174Z" },
+    { url = "https://files.pythonhosted.org/packages/33/d5/0d14a1111a3d4e2f6a9da09ee155f9de793d201383fdd43ddf76015568a2/workers_py-1.7.0-py3-none-any.whl", hash = "sha256:063dd09c7870c3409857036fd76faa3f9b3a3d56e6797224feeaa9d2ffe36913", size = 11954, upload-time = "2025-10-31T12:04:26.855Z" },
 ]
 
 [[package]]
