@@ -6,7 +6,7 @@ readme = "readme.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "beautifulsoup4~=4.14.2",
-    "fastapi~=0.127.0",
+    "fastapi~=0.128.0",
     "httpx~=0.28.1",
     "jinja2~=3.1.5",
     "pydantic-settings~=2.12.0",
@@ -35,7 +35,7 @@ exclude = ["src/js-stubs/**"]
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["A", "D1", "T20", "TD003"]
+ignore = ["A", "D1", "TD003"]
 
 [tool.ty.src]
 exclude = ["src/js-stubs/**"]

@@ -1,11 +1,14 @@
+import logging
 from pathlib import Path
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, TypeVar
+from zoneinfo import ZoneInfo
 
-from pydantic import AfterValidator, BaseModel, field_serializer, field_validator
+from pydantic import AfterValidator, BaseModel, ImportString, field_serializer, field_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
+    TomlConfigSettingsSource,
     YamlConfigSettingsSource,
 )
 
@@ -47,7 +50,7 @@ DATA_MODEL_CLASS_MAP = {
 }
 
 
-class DataFileInfo(BaseModel, Generic[DataFileT]):
+class DataFileInfo[DataFileT](BaseModel):
     path: FilePath
     cls: type[DataFileT]
 
@@ -79,25 +82,39 @@ class SchedulesConfig(BaseModel):
     base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/"
     cache_dir: DirectoryPath = Path("./data/schedule_cache")
     cache_ahead_days: int = 1
-    refresh_interval: int = 60 * 60 * 24  # 24 hours
+    refresh_interval_seconds: int = 24 * 60 * 60  # 24 hours
 
 
 class Config(BaseSettings):
-    data: DataConfig
+    timezone: ZoneInfo = ZoneInfo("America/Vancouver")
+    log_level: ImportString | int = logging.INFO
     schedules: SchedulesConfig = SchedulesConfig()
+    data: DataConfig
 
-    model_config = SettingsConfigDict(yaml_file="config.yaml")
+    model_config = SettingsConfigDict(env_file=".env", toml_file="config.toml", yaml_file="config.yaml")
 
     @classmethod
     def settings_customise_sources(
         cls,
         settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,  # noqa: ARG003
-        dotenv_settings: PydanticBaseSettingsSource,  # noqa: ARG003
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,  # noqa: ARG003
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         return (
             init_settings,
+            env_settings,
+            dotenv_settings,
+            TomlConfigSettingsSource(settings_cls),
             YamlConfigSettingsSource(settings_cls),
         )
+
+
+# This line avoids using a "type: ignore" comment,
+# using `config = Config()` would require one as it does not pass type checking.
+# Values are still loaded from the config file because
+# `Config` inherits from `BaseSettings` instead of `BaseModel`.
+# See https://github.com/pydantic/pydantic-settings/issues/108
+# and https://github.com/pydantic/pydantic-settings/issues/201
+CONFIG = Config.model_validate({})

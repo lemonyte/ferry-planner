@@ -2,14 +2,17 @@ import asyncio
 import json
 from collections.abc import Iterable
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
-from js import D1Database
-
+from ferry_planner.config import CONFIG
 from ferry_planner.connection import FerryConnection
 from ferry_planner.location import LocationId
 from ferry_planner.schedule import FerrySchedule
 
 from .db import BaseDB
+
+if TYPE_CHECKING:
+    from js import D1Database
 
 
 class CloudflareD1DB(BaseDB):
@@ -20,7 +23,7 @@ class CloudflareD1DB(BaseDB):
         base_url: str,
         cache_ahead_days: int,
         refresh_interval: int,
-        d1_instance: D1Database,
+        d1_instance: "D1Database",
         **kwargs: object,
     ) -> None:
         super().__init__(
@@ -57,8 +60,7 @@ class CloudflareD1DB(BaseDB):
         )
 
     async def refresh_cache(self) -> None:
-        current_date = datetime.now().date()
-        current_date = datetime(current_date.year, current_date.month, current_date.day)
+        current_date = datetime.now(tz=CONFIG.timezone).replace(hour=0, minute=0, second=0, microsecond=0)
         dates = [current_date + timedelta(days=i) for i in range(self.cache_ahead_days)]
         await (
             self._db.prepare(
@@ -82,7 +84,7 @@ class CloudflareD1DB(BaseDB):
             for date in dates
         ]
         downloaded_schedules = sum(await asyncio.gather(*tasks))
-        self._log(f"finished refreshing cache, downloaded {downloaded_schedules} schedules")
+        self._logger.info("finished refreshing cache, downloaded %d schedules", downloaded_schedules)
 
     def start_refresh_task(self) -> None:
         """Start a background task to refresh the cache periodically.

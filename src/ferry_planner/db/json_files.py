@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Thread
 
+from ferry_planner.config import CONFIG
 from ferry_planner.connection import FerryConnection
 from ferry_planner.location import LocationId
 from ferry_planner.schedule import FerrySchedule
@@ -31,7 +32,7 @@ class FileDB(BaseDB):
             refresh_interval=refresh_interval,
             **kwargs,
         )
-        self.cache_dir = cache_dir
+        self.cache_dir = cache_dir or CONFIG.schedules.cache_dir
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
         self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
 
@@ -68,8 +69,7 @@ class FileDB(BaseDB):
         filepath.write_text(schedule.model_dump_json(indent=4, exclude_none=True), encoding="utf-8")
 
     async def refresh_cache(self) -> None:
-        current_date = datetime.now().date()
-        current_date = datetime(current_date.year, current_date.month, current_date.day)
+        current_date = datetime.now(tz=CONFIG.timezone).replace(hour=0, minute=0, second=0, microsecond=0)
         dates = [current_date + timedelta(days=i) for i in range(self.cache_ahead_days)]
         for subdir, _, filenames in os.walk(self.cache_dir):
             for filename in filenames:
@@ -98,12 +98,12 @@ class FileDB(BaseDB):
                         ),
                     )
         downloaded_schedules = sum(await asyncio.gather(*tasks))
-        self._log(f"finished refreshing cache, downloaded {downloaded_schedules} schedules")
+        self._logger.info("finished refreshing cache, downloaded %d schedules", downloaded_schedules)
 
     def start_refresh_task(self) -> None:
         # Disabled temporarily due to causing too many issues.
-        # self._refresh_thread.start()  # noqa: ERA001
-        pass
+        if False:
+            self._refresh_thread.start()
 
     def _refresh_task(self) -> None:
         while True:

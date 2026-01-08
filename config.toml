@@ -1,0 +1,15 @@
+[[data.location_files]]
+path = "./data/cities.json"
+cls = "City"
+
+[[data.location_files]]
+path = "./data/terminals.json"
+cls = "Terminal"
+
+[[data.connection_files]]
+path = "./data/car_connections.json"
+cls = "CarConnection"
+
+[[data.connection_files]]
+path = "./data/ferry_connections.json"
+cls = "FerryConnection"

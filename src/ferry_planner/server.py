@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Literal
@@ -9,7 +10,7 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from ferry_planner.config import Config
+from ferry_planner.config import CONFIG
 from ferry_planner.connection import FerryConnection
 from ferry_planner.data import ConnectionDB, LocationDB
 
@@ -24,17 +25,12 @@ from ferry_planner.schedule import FerrySchedule
 if TYPE_CHECKING:
     from js import Env
 
+logging.basicConfig(level=CONFIG.log_level)
+# Disable info logs from httpx.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 ROOT_DIR = Path(__file__).parent
-
-# This line avoids using a "type: ignore" comment,
-# using `config = Config()` would require one as it does not pass type checking.
-# Values are still loaded from the config file because
-# `Config` inherits from `BaseSettings` instead of `BaseModel`.
-# See https://github.com/pydantic/pydantic-settings/issues/108
-# and https://github.com/pydantic/pydantic-settings/issues/201
-config = Config.model_validate({})
-location_db = LocationDB.from_files(config.data.location_files)
-connection_db = ConnectionDB.from_files(config.data.connection_files, location_db=location_db)
+location_db = LocationDB.from_files(CONFIG.data.location_files)
+connection_db = ConnectionDB.from_files(CONFIG.data.connection_files, location_db=location_db)
 route_builder = RouteBuilder(connection_db)
 app = FastAPI()
 app.mount("/static", StaticFiles(directory=ROOT_DIR / "static"), name="static")
@@ -50,14 +46,14 @@ class ScheduleDatabaseDependency:
     def __call__(self, request: Request) -> BaseDB:
         if self._db is None:
             env: Env = request.scope["env"]
-            self._db = config.schedules.db_cls(
+            self._db = CONFIG.schedules.db_cls(
                 ferry_connections=tuple(
                     connection for connection in connection_db.all() if isinstance(connection, FerryConnection)
                 ),
-                base_url=config.schedules.base_url,
-                cache_ahead_days=config.schedules.cache_ahead_days,
-                refresh_interval=config.schedules.refresh_interval,
-                cache_dir=config.schedules.cache_dir,
+                base_url=CONFIG.schedules.base_url,
+                cache_ahead_days=CONFIG.schedules.cache_ahead_days,
+                refresh_interval=CONFIG.schedules.refresh_interval_seconds,
+                cache_dir=CONFIG.schedules.cache_dir,
                 d1_instance=env.DB,
             )
             self._db.start_refresh_task()
