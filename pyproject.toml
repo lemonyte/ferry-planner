@@ -19,14 +19,14 @@ server = [
     "uvicorn[standard]~=0.40.0",
 ]
 dev = [
-    "prek>=0.2.22",
+    "prek>=0.2.27",
     "ty>=0.0.2",
     "workers-py>=1.7.0",
 ]
 
 [build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.9.22"]
+build-backend = "uv_build"
 
 [tool.ruff]
 src = ["src"]
