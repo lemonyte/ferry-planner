@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Sequence
 from datetime import datetime
 
 import httpx
@@ -15,7 +15,7 @@ class BaseDB(ABC):
     def __init__(
         self,
         *,
-        ferry_connections: Iterable[FerryConnection],
+        ferry_connections: Sequence[FerryConnection] | set[FerryConnection] | frozenset[FerryConnection],
         base_url: str | None = None,
         cache_ahead_days: int | None = None,
         refresh_interval: int | None = None,

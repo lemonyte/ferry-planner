@@ -1,6 +1,6 @@
 import asyncio
 import json
-from collections.abc import Iterable
+from collections.abc import Sequence
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -9,7 +9,7 @@ from ferry_planner.connection import FerryConnection
 from ferry_planner.location import LocationId
 from ferry_planner.schedule import FerrySchedule
 
-from .db import BaseDB
+from .abc import BaseDB
 
 if TYPE_CHECKING:
     from js import D1Database
@@ -19,7 +19,7 @@ class CloudflareD1DB(BaseDB):
     def __init__(
         self,
         *,
-        ferry_connections: Iterable[FerryConnection],
+        ferry_connections: Sequence[FerryConnection] | set[FerryConnection] | frozenset[FerryConnection],
         base_url: str,
         cache_ahead_days: int,
         refresh_interval: int,

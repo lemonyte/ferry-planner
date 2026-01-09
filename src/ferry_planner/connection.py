@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from abc import ABC
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from pydantic import BaseModel, ValidationInfo, model_validator
 
@@ -29,7 +27,7 @@ class ConnectionType(Enum):
     """Air connection."""
 
 
-class Connection(BaseModel, ABC, Generic[OriginT_co, DestinationT_co]):
+class Connection[OriginT_co, DestinationT_co](BaseModel, ABC):
     id: ConnectionId
     origin: OriginT_co
     destination: DestinationT_co

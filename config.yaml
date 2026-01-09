@@ -11,4 +11,4 @@ data:
       cls: FerryConnection
 
 schedules:
-  db_cls: CloudflareD1DB
+  db_provider: cloudflare_d1

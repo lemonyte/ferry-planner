@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -13,12 +11,9 @@ from fastapi.templating import Jinja2Templates
 from ferry_planner.config import CONFIG
 from ferry_planner.connection import FerryConnection
 from ferry_planner.data import ConnectionDB, LocationDB
-
-# The options and db imports must be outside the TYPE_CHECKING block
-# because FastAPI/Pydantic uses the type hints at runtime for validation.
-from ferry_planner.db import BaseDB  # noqa: TC001
+from ferry_planner.db import BaseDB, get_db_class
 from ferry_planner.location import Location, LocationId
-from ferry_planner.options import RoutePlansOptions, ScheduleOptions  # noqa: TC001
+from ferry_planner.options import RoutePlansOptions, ScheduleOptions
 from ferry_planner.route import RouteBuilder, RoutePlan, RoutePlanBuilder
 from ferry_planner.schedule import FerrySchedule
 
@@ -46,7 +41,8 @@ class ScheduleDatabaseDependency:
     def __call__(self, request: Request) -> BaseDB:
         if self._db is None:
             env: Env = request.scope["env"]
-            self._db = CONFIG.schedules.db_cls(
+            db_cls = get_db_class(CONFIG.schedules.db_provider)
+            self._db = db_cls(
                 ferry_connections=tuple(
                     connection for connection in connection_db.all() if isinstance(connection, FerryConnection)
                 ),
@@ -96,7 +92,7 @@ async def api(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("api.html", {"request": request})
 
 
-@app.get("/api/locations", response_model=Mapping[LocationId, Location])
+@app.get("/api/locations")
 async def api_locations() -> Mapping[LocationId, Location]:
     return location_db.dict()
 
@@ -116,7 +112,7 @@ async def api_schedule(
     return schedule
 
 
-@app.post("/api/routeplans", response_model=Sequence[RoutePlan])
+@app.post("/api/routeplans")
 async def api_routeplans(
     options: RoutePlansOptions,
     builder: Annotated[RoutePlanBuilder, Depends(route_plan_builder_provider)],
