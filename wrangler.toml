@@ -1,6 +1,6 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "ferry-planner-backend"
-main = "src/ferry_planner/worker.py"
+main = "src/worker.py"
 compatibility_date = "2025-12-26"
 compatibility_flags = ["python_workers"]
 
