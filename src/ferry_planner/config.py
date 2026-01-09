@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, Literal, TypeVar
 from zoneinfo import ZoneInfo
 
 from pydantic import AfterValidator, BaseModel, ImportString, field_serializer, field_validator
@@ -33,6 +33,7 @@ def check_is_dir(path: Path, /) -> Path:
 FilePath = Annotated[Path, AfterValidator(check_is_file)]
 DirectoryPath = Annotated[Path, AfterValidator(check_is_dir)]
 DataFileT = TypeVar("DataFileT", Location, Connection)
+DBProvider = Literal["json_files", "cloudflare_d1"]
 
 DATA_MODEL_CLASS_MAP = {
     cls.__name__: cls
@@ -49,9 +50,9 @@ DATA_MODEL_CLASS_MAP = {
 }
 
 
-class DataFileInfo(BaseModel, Generic[DataFileT]):
+class DataFileInfo[DataFileT](BaseModel):
     path: FilePath
-    cls: type[DataFileT]
+    cls: type[DataFileT] | ImportString
 
     @field_serializer("cls", when_used="json")
     def _serialize_cls(self, value: type[Location | Connection]) -> str:
@@ -77,6 +78,7 @@ class DataConfig(BaseModel):
 
 
 class SchedulesConfig(BaseModel):
+    db_provider: DBProvider = "json_files"
     base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/"
     cache_dir: DirectoryPath = Path("./data/schedule_cache")
     cache_ahead_days: int = 1

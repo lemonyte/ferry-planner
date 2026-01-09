@@ -1,18 +1,14 @@
-from __future__ import annotations
-
 import json
-from typing import TYPE_CHECKING, Any, TypeVar
+from collections.abc import Iterable, Iterator, MutableMapping, Sequence
+from typing import Any, TypeVar
 
-if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, MutableMapping, Sequence
+from ferry_planner.config import DataFileInfo, DataFileT
+from ferry_planner.connection import Connection, ConnectionId
+from ferry_planner.location import Location, LocationId
 
-    from ferry_planner.config import DataFileInfo, DataFileT
-    from ferry_planner.connection import Connection, ConnectionId
-    from ferry_planner.location import Location, LocationId
-
-LocationT = TypeVar("LocationT", bound="Location")
-OriginT = TypeVar("OriginT", bound="Location")
-DestinationT = TypeVar("DestinationT", bound="Location")
+LocationT = TypeVar("LocationT", bound=Location)
+OriginT = TypeVar("OriginT", bound=Location)
+DestinationT = TypeVar("DestinationT", bound=Location)
 
 
 class LocationNotFoundError(Exception):
@@ -45,7 +41,7 @@ class LocationDB:
         self._locations = {location.id: location for location in locations}
 
     @classmethod
-    def from_files(cls, data_files: Sequence[DataFileInfo[Location]], /) -> LocationDB:
+    def from_files(cls, data_files: Sequence[DataFileInfo[Location]], /) -> "LocationDB":
         locations = [location for data_file in data_files for location in load_from_json(data_file)]
         return cls(locations)
 
@@ -67,7 +63,13 @@ class ConnectionDB:
         self._connections = {connection.id: connection for connection in connections}
 
     @classmethod
-    def from_files(cls, data_files: Sequence[DataFileInfo[Connection]], /, *, location_db: LocationDB) -> ConnectionDB:
+    def from_files(
+        cls,
+        data_files: Sequence[DataFileInfo[Connection]],
+        /,
+        *,
+        location_db: LocationDB,
+    ) -> "ConnectionDB":
         connections = [
             connection
             for data_file in data_files

@@ -1,0 +1,21 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "ferry-planner-backend"
+main = "src/worker.py"
+compatibility_date = "2025-12-26"
+compatibility_flags = ["python_workers"]
+
+[observability]
+enabled = true
+
+[[routes]]
+pattern = "beta.ferryplanner.ca/api/*"
+zone_name = "ferryplanner.ca"
+
+[triggers]
+# Daily job to refresh schedule cache.
+crons = ["0 0 * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ferry-planner"
+database_id = "7f8474af-9a8e-48a7-9d31-1297b84cee6e"

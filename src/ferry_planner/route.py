@@ -1,26 +1,20 @@
-from __future__ import annotations
-
 import asyncio
 import hashlib
 from collections.abc import Generator, Iterable, Iterator, Sequence
 from copy import deepcopy
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import TYPE_CHECKING
 from urllib.parse import quote
 
 from pydantic import BaseModel
 
 from ferry_planner.config import CONFIG
 from ferry_planner.connection import CarConnection, Connection, FerryConnection
-from ferry_planner.data import ConnectionNotFoundError
+from ferry_planner.data import ConnectionDB, ConnectionNotFoundError
 from ferry_planner.location import City, Location
+from ferry_planner.options import RoutePlansOptions
+from ferry_planner.schedule import ScheduleGetter
 from ferry_planner.utils import datetime_to_timedelta
-
-if TYPE_CHECKING:
-    from ferry_planner.data import ConnectionDB
-    from ferry_planner.options import RoutePlansOptions
-    from ferry_planner.schedule import ScheduleGetter
 
 Route = Sequence[Location]
 
@@ -67,7 +61,7 @@ class RoutePlan(BaseModel):
     """Google Maps URL of the route."""
 
     @classmethod
-    def from_segments(cls, _segments: Iterable[RoutePlanSegment], /) -> RoutePlan:  # noqa: C901
+    def from_segments(cls, _segments: Iterable[RoutePlanSegment], /) -> "RoutePlan":  # noqa: C901
         segments = tuple(
             RoutePlanSegment(
                 connection=segment.connection,

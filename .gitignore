@@ -13,6 +13,8 @@ scripts/
 .flake8
 todo*
 *-out.css
+node_modules/
+python_modules/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
