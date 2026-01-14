@@ -1,6 +1,7 @@
 import logging
+from importlib import resources
 from pathlib import Path
-from typing import Annotated, Generic, TypeVar
+from typing import TYPE_CHECKING, Annotated, Literal, TypeVar
 from zoneinfo import ZoneInfo
 
 from pydantic import AfterValidator, BaseModel, ImportString, field_serializer, field_validator
@@ -15,24 +16,28 @@ from pydantic_settings import (
 from ferry_planner.connection import AirConnection, BusConnection, CarConnection, Connection, FerryConnection
 from ferry_planner.location import Airport, BusStop, City, Location, Terminal
 
+if TYPE_CHECKING:
+    from importlib.abc import Traversable
 
-def check_is_file(path: Path, /) -> Path:
+
+def check_is_file(path: "Traversable", /) -> "Traversable":
     if not path.is_file():
         msg = f"path '{path}' is not a file"
         raise ValueError(msg)
     return path
 
 
-def check_is_dir(path: Path, /) -> Path:
+def check_is_dir(path: "Traversable", /) -> "Traversable":
     if not path.is_dir():
         msg = f"path '{path}' is not a directory"
         raise ValueError(msg)
     return path
 
 
-FilePath = Annotated[Path, AfterValidator(check_is_file)]
-DirectoryPath = Annotated[Path, AfterValidator(check_is_dir)]
+FilePath = Annotated["Traversable", AfterValidator(check_is_file)]
+DirectoryPath = Annotated["Traversable", AfterValidator(check_is_dir)]
 DataFileT = TypeVar("DataFileT", Location, Connection)
+DBProvider = Literal["json_files", "cloudflare_d1"]
 
 DATA_MODEL_CLASS_MAP = {
     cls.__name__: cls
@@ -49,9 +54,9 @@ DATA_MODEL_CLASS_MAP = {
 }
 
 
-class DataFileInfo(BaseModel, Generic[DataFileT]):
+class DataFileInfo[DataFileT](BaseModel):
     path: FilePath
-    cls: type[DataFileT]
+    cls: type[DataFileT] | ImportString
 
     @field_serializer("cls", when_used="json")
     def _serialize_cls(self, value: type[Location | Connection]) -> str:
@@ -71,14 +76,40 @@ class DataFileInfo(BaseModel, Generic[DataFileT]):
         raise ValueError(msg)
 
 
+RESOURCE_DIR = resources.files("ferry_planner.data")
+DEFAULT_DATA_FILES = {
+    "locations": (
+        DataFileInfo(
+            path=RESOURCE_DIR / "cities.json",
+            cls=City,
+        ),
+        DataFileInfo(
+            path=RESOURCE_DIR / "terminals.json",
+            cls=Terminal,
+        ),
+    ),
+    "connections": (
+        DataFileInfo(
+            path=RESOURCE_DIR / "car_connections.json",
+            cls=CarConnection,
+        ),
+        DataFileInfo(
+            path=RESOURCE_DIR / "ferry_connections.json",
+            cls=FerryConnection,
+        ),
+    ),
+}
+
+
 class DataConfig(BaseModel):
-    location_files: tuple[DataFileInfo[Location], ...]
-    connection_files: tuple[DataFileInfo[Connection], ...]
+    location_files: tuple[DataFileInfo[Location], ...] = DEFAULT_DATA_FILES["locations"]
+    connection_files: tuple[DataFileInfo[Connection], ...] = DEFAULT_DATA_FILES["connections"]
 
 
 class SchedulesConfig(BaseModel):
+    db_provider: DBProvider = "json_files"
     base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/"
-    cache_dir: DirectoryPath = Path("./data/schedule_cache")
+    cache_dir: DirectoryPath = Path("./.cache/ferry_schedules")
     cache_ahead_days: int = 1
     refresh_interval_seconds: int = 24 * 60 * 60  # 24 hours
 
