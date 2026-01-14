@@ -109,7 +109,7 @@ class DataConfig(BaseModel):
 class SchedulesConfig(BaseModel):
     db_provider: DBProvider = "json_files"
     base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/"
-    cache_dir: DirectoryPath = Path("./data/schedule_cache")
+    cache_dir: DirectoryPath = Path("./.cache/ferry_schedules")
     cache_ahead_days: int = 1
     refresh_interval_seconds: int = 24 * 60 * 60  # 24 hours
 
