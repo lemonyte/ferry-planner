@@ -21,7 +21,6 @@ server = [
 dev = [
     "prek>=0.2.27",
     "ty>=0.0.2",
-    "workers-py>=1.7.0",
 ]
 
 [build-system]

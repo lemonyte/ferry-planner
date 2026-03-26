@@ -24,6 +24,7 @@ logging.basicConfig(level=CONFIG.log_level)
 # Disable info logs from httpx.
 logging.getLogger("httpx").setLevel(logging.WARNING)
 ROOT_DIR = Path(__file__).parent
+print(f"{ROOT_DIR=}")
 location_db = LocationDB.from_files(CONFIG.data.location_files)
 connection_db = ConnectionDB.from_files(CONFIG.data.connection_files, location_db=location_db)
 route_builder = RouteBuilder(connection_db)

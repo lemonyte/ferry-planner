@@ -1,0 +1,15 @@
+[project]
+name = "ferry-planner-worker"
+version = "0.1.0"
+description = "BC Ferries sailing planner website server"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "ferry-planner @ file://..",
+    "workers-py",
+    "workers-runtime-sdk",
+]
+
+[tool.uv.sources]
+# workers-py = { git = "https://github.com/cloudflare/workers-py", subdirectory = "packages/cli", rev = "gyeongjae/local-path" }
+# workers-runtime-sdk = { git = "https://github.com/cloudflare/workers-py", subdirectory = "packages/runtime-sdk", rev = "gyeongjae/local-path" }
+ferry-planner = { path = "../" }

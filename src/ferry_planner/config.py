@@ -1,10 +1,11 @@
 import logging
 from importlib import resources
+from importlib.abc import Traversable
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Literal, TypeVar
+from typing import Annotated, Literal, TypeVar
 from zoneinfo import ZoneInfo
 
-from pydantic import AfterValidator, BaseModel, ImportString, field_serializer, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, ImportString, field_serializer, field_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -16,26 +17,23 @@ from pydantic_settings import (
 from ferry_planner.connection import AirConnection, BusConnection, CarConnection, Connection, FerryConnection
 from ferry_planner.location import Airport, BusStop, City, Location, Terminal
 
-if TYPE_CHECKING:
-    from importlib.abc import Traversable
 
-
-def check_is_file(path: "Traversable", /) -> "Traversable":
+def check_is_file(path: Path, /) -> Path:
     if not path.is_file():
         msg = f"path '{path}' is not a file"
         raise ValueError(msg)
     return path
 
 
-def check_is_dir(path: "Traversable", /) -> "Traversable":
+def check_is_dir(path: Path, /) -> Path:
     if not path.is_dir():
         msg = f"path '{path}' is not a directory"
         raise ValueError(msg)
     return path
 
 
-FilePath = Annotated["Traversable", AfterValidator(check_is_file)]
-DirectoryPath = Annotated["Traversable", AfterValidator(check_is_dir)]
+FilePath = Annotated[Path, AfterValidator(check_is_file)]
+DirectoryPath = Annotated[Path, AfterValidator(check_is_dir)]
 DataFileT = TypeVar("DataFileT", Location, Connection)
 DBProvider = Literal["json_files", "cloudflare_d1"]
 
@@ -55,8 +53,10 @@ DATA_MODEL_CLASS_MAP = {
 
 
 class DataFileInfo[DataFileT](BaseModel):
-    path: FilePath
+    path: FilePath | Traversable
     cls: type[DataFileT] | ImportString
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("cls", when_used="json")
     def _serialize_cls(self, value: type[Location | Connection]) -> str:
@@ -76,7 +76,7 @@ class DataFileInfo[DataFileT](BaseModel):
         raise ValueError(msg)
 
 
-RESOURCE_DIR = resources.files("ferry_planner.data")
+RESOURCE_DIR = resources.files("ferry_planner.const_data")
 DEFAULT_DATA_FILES = {
     "locations": (
         DataFileInfo(
@@ -118,7 +118,7 @@ class Config(BaseSettings):
     timezone: ZoneInfo = ZoneInfo("America/Vancouver")
     log_level: ImportString | int = logging.INFO
     schedules: SchedulesConfig = SchedulesConfig()
-    data: DataConfig
+    data: DataConfig = DataConfig()
 
     model_config = SettingsConfigDict(env_file=".env", toml_file="config.toml", yaml_file="config.yaml")
 

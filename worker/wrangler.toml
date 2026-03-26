@@ -1,11 +1,14 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "ferry-planner-backend"
-main = "src/worker.py"
+main = "worker.py"
 compatibility_date = "2025-12-26"
 compatibility_flags = ["python_workers"]
 
 [observability]
 enabled = true
+
+[vars]
+DB_PROVIDER = "cloudflare_d1"
 
 [[routes]]
 pattern = "beta.ferryplanner.ca/api/*"
