@@ -47,7 +47,7 @@ class Connection(BaseModel, ABC, Generic[OriginT_co, DestinationT_co]):
         # Further, we don't expect to compare with anything other than Connection objects in the
         # recursive function, so the overhead introduced by `AttributeError` being raised is not relevant.
         try:
-            return self.id == other.id  # type: ignore[attr-defined]
+            return self.id == other.id  # type: ignore[ty:unresolved-attribute]
         except AttributeError:
             return False
 

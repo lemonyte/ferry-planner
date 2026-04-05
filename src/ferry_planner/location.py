@@ -19,7 +19,7 @@ class Location(BaseModel, ABC):
         # Further, we don't expect to compare with anything other than Location objects in the
         # recursive function, so the overhead introduced by `AttributeError` being raised is not relevant.
         try:
-            return self.id == other.id  # type: ignore[attr-defined]
+            return self.id == other.id  # type: ignore[ty:unresolved-attribute]
         except AttributeError:
             return False
 
