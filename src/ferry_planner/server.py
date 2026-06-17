@@ -55,17 +55,17 @@ templates = Jinja2Templates(directory=ROOT_DIR / "templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 @app.get("/about", response_class=HTMLResponse)
 async def about(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse("about.html", {"request": request})
+    return templates.TemplateResponse(request, "about.html")
 
 
 @app.get("/api", response_class=HTMLResponse)
 async def api(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse("api.html", {"request": request})
+    return templates.TemplateResponse(request, "api.html")
 
 
 @app.get("/api/locations", response_model=Mapping[LocationId, Location])
@@ -103,7 +103,7 @@ async def api_routeplans(options: RoutePlansOptions) -> Sequence[RoutePlan]:
 @app.exception_handler(404)
 async def not_found_handler(request: Request, _: Exception) -> HTMLResponse:
     return templates.TemplateResponse(
+        request,
         "404.html",
-        {"request": request},
         status_code=status.HTTP_404_NOT_FOUND,
     )
