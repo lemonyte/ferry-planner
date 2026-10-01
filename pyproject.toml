@@ -12,7 +12,7 @@ dependencies = [
     "pydantic-settings>=2.14.2,<2.16.0",
     "pydantic>=2.13.4,<3.0.0",
     "tzdata~=2026.3",
-    "uvicorn[standard]~=0.52.0",
+    "uvicorn[standard]>=0.52,<0.55",
 ]
 
 [dependency-groups]
