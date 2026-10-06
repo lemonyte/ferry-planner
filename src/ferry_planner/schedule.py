@@ -1,50 +1,24 @@
 import asyncio
-import itertools
 import logging
 import os
 import time
-from collections.abc import Iterable, Sequence
+import zipfile
+from collections.abc import Iterable
 from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Thread
 from typing import Protocol
 
 import httpx
-from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
 
 from ferry_planner.config import CONFIG
 from ferry_planner.connection import FerryConnection
+from ferry_planner.gtfs import GtfsFeed
 from ferry_planner.location import LocationId
-from ferry_planner.utils import datetime_to_timedelta
 
-MONTHS = (
-    "JAN",
-    "FEB",
-    "MAR",
-    "APR",
-    "MAY",
-    "JUN",
-    "JUL",
-    "AUG",
-    "SEP",
-    "OCT",
-    "NOV",
-    "DEC",
-)
-WEEKDAY_NAMES = (
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday",
-)
-NO_SAILINGS_MESSAGES = (
-    "Seasonal schedules have not been posted for these dates",
-    "Schedules for your selected date and route are currently unavailable",
-)
+NO_SAILINGS_NOTE = "No sailings found"
+SCHEDULE_NOT_POSTED_NOTE = "Seasonal schedules have not been posted for these dates"
 
 
 class FerrySailing(BaseModel):
@@ -82,26 +56,6 @@ class ScheduleGetter(Protocol):
     ) -> FerrySchedule | None: ...
 
 
-class HtmlParseResult:
-    redirect_url: str = ""
-    sailings: tuple[FerrySailing, ...] = ()
-    notes: tuple[str, ...] = ()
-    """Notes or comments posted about this schedule."""
-
-    @classmethod
-    def redirect(cls, redirect_url: str) -> "HtmlParseResult":
-        result = HtmlParseResult()
-        result.redirect_url = redirect_url
-        return result
-
-    @classmethod
-    def from_sailings(cls, sailings: Iterable[FerrySailing], notes: Iterable[str]) -> "HtmlParseResult":
-        result = HtmlParseResult()
-        result.sailings = tuple(sailings)
-        result.notes = tuple(notes)
-        return result
-
-
 class ScheduleDownloadError(Exception):
     def __init__(self, msg: str, /, *args: Iterable, url: str) -> None:
         self.url = url
@@ -115,29 +69,35 @@ class ScheduleParseError(Exception):
 
 
 class ScheduleDB:
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *,
         ferry_connections: Iterable[FerryConnection],
-        base_url: str | None = None,
+        schedule_base_url: str | None = None,
+        gtfs_url: str | None = None,
         cache_dir: Path | None = None,
         cache_ahead_days: int | None = None,
         refresh_interval: int | None = None,
     ) -> None:
         self.ferry_connections = ferry_connections
-        self.base_url = base_url or CONFIG.schedules.base_url
+        self.schedule_base_url = schedule_base_url or CONFIG.schedules.schedule_base_url
+        self.gtfs_url = gtfs_url or CONFIG.schedules.gtfs_url
         self.cache_dir = cache_dir or CONFIG.schedules.cache_dir
         self.cache_ahead_days = cache_ahead_days or CONFIG.schedules.cache_ahead_days
         self.refresh_interval = refresh_interval or CONFIG.schedules.refresh_interval_seconds
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
         self._mem_cache = {}
+        self._gtfs_feed: GtfsFeed | None = None
+        self._gtfs_feed_time = 0.0
+        # Prevents the feed from being downloaded more than once when several schedules are requested at once.
+        self._gtfs_feed_lock = asyncio.Lock()
         self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
         timeout = httpx.Timeout(30.0, pool=None)
         limits = httpx.Limits(max_connections=5)
         self._client = httpx.AsyncClient(timeout=timeout, limits=limits, follow_redirects=True)
         self._logger = logging.getLogger(self.__class__.__name__)
 
-    def _get_download_url(
+    def _get_schedule_url(
         self,
         origin_id: LocationId,
         destination_id: LocationId,
@@ -145,7 +105,7 @@ class ScheduleDB:
         *,
         date: datetime,
     ) -> str:
-        return f"{self.base_url}{origin_id}-{destination_id}?&scheduleDate={date.strftime('%m/%d/%Y')}"
+        return f"{self.schedule_base_url}{origin_id}-{destination_id}?&scheduleDate={date.strftime('%m/%d/%Y')}"
 
     def _get_filepath(
         self,
@@ -199,7 +159,7 @@ class ScheduleDB:
         date: datetime,
     ) -> FerrySchedule | None:
         try:
-            return await self._download_schedule_async(origin_id, destination_id, date=date)
+            return await self._get_gtfs_schedule(origin_id, destination_id, date=date)
         except (ScheduleDownloadError, ScheduleParseError) as exc:
             msg = "failed to parse schedule" if isinstance(exc, ScheduleParseError) else "failed to download schedule"
             self._logger.exception(
@@ -212,7 +172,33 @@ class ScheduleDB:
             )
             return None
 
-    async def _download_schedule_async(
+    async def _get_gtfs_feed(self) -> GtfsFeed:
+        async with self._gtfs_feed_lock:
+            if self._gtfs_feed is None or time.monotonic() - self._gtfs_feed_time > self.refresh_interval:
+                self._logger.info("fetching GTFS feed")
+                try:
+                    response = await self._client.get(self.gtfs_url)
+                except httpx.HTTPError as exc:
+                    msg = "failed to download GTFS feed"
+                    raise ScheduleDownloadError(msg, url=self.gtfs_url) from exc
+                if not httpx.codes.is_success(response.status_code):
+                    msg = f"status {response.status_code}"
+                    raise ScheduleDownloadError(msg, url=self.gtfs_url)
+                locations = {}
+                for connection in self.ferry_connections:
+                    for terminal in (connection.origin, connection.destination):
+                        latitude, longitude = terminal.coordinates.split(",")
+                        locations[terminal.id] = (float(latitude), float(longitude))
+                try:
+                    self._gtfs_feed = GtfsFeed(response.content, locations=locations, timezone=CONFIG.timezone)
+                except (zipfile.BadZipFile, KeyError, ValueError) as exc:
+                    msg = "failed to parse GTFS feed"
+                    raise ScheduleParseError(msg, url=self.gtfs_url) from exc
+                self._gtfs_feed_time = time.monotonic()
+                self._logger.info("fetched GTFS feed")
+            return self._gtfs_feed
+
+    async def _get_gtfs_schedule(
         self,
         origin_id: LocationId,
         destination_id: LocationId,
@@ -220,41 +206,29 @@ class ScheduleDB:
         *,
         date: datetime,
     ) -> FerrySchedule:
-        url = self._get_download_url(origin_id, destination_id, date=date)
-        route = f"{origin_id}-{destination_id}"
-        self._logger.info("fetching schedule: %s:%s", route, date.date())
-        max_redirects_count = 3
-        redirects = []
-        while True:
-            try:
-                response = await self._client.get(url)
-            except httpx.HTTPError as exc:
-                msg = "failed to download schedule"
-                raise ScheduleDownloadError(msg, url=url) from exc
-            if not httpx.codes.is_success(response.status_code):
-                msg = f"status {response.status_code}"
-                raise ScheduleDownloadError(msg, url=url)
-            self._logger.info("fetched schedule: %s:%s", route, date.date())
-            schedule_parser = ScheduleParser()
-            result = schedule_parser.parse_schedule_html(response, date)
-            if result.redirect_url:
-                if len(redirects) > max_redirects_count:
-                    msg = "too many redirects"
-                    raise ScheduleDownloadError(msg, url=url)
-                if url in redirects:
-                    msg = "redirects loop"
-                    raise ScheduleDownloadError(msg, url=url)
-                url = result.redirect_url
-                redirects.append(url)
-                continue
-            return FerrySchedule(
-                date=date,
-                origin=origin_id,
-                destination=destination_id,
-                sailings=tuple(result.sailings),
-                url=url,
-                notes=result.notes,
+        feed = await self._get_gtfs_feed()
+        # The feed can list sailings for dates it does not cover, but those are not reliable.
+        if not feed.covers(date.date()):
+            sailings = ()
+            notes = (SCHEDULE_NOT_POSTED_NOTE,)
+        else:
+            sailings = tuple(
+                FerrySailing(
+                    departure=sailing.departure,
+                    arrival=sailing.arrival,
+                    duration=int((sailing.arrival - sailing.departure).total_seconds()),
+                )
+                for sailing in feed.sailings(origin_id, destination_id, date.date())
             )
+            notes = () if sailings else (NO_SAILINGS_NOTE,)
+        return FerrySchedule(
+            date=date,
+            origin=origin_id,
+            destination=destination_id,
+            sailings=sailings,
+            url=self._get_schedule_url(origin_id, destination_id, date=date),
+            notes=notes,
+        )
 
     async def _download_and_save_schedule(
         self,
@@ -315,202 +289,3 @@ class ScheduleDB:
         while True:
             asyncio.run(self.refresh_cache())
             time.sleep(self.refresh_interval)
-
-
-class ScheduleParser:
-    def __init__(self) -> None:
-        self._logger = logging.getLogger(self.__class__.__name__)
-
-    def parse_schedule_html(self, response: httpx.Response, date: datetime) -> HtmlParseResult:
-        html = response.text.replace("\u2060", "")
-        soup = BeautifulSoup(markup=html, features="html.parser")
-        table_tag = soup.find("table", id="dailyScheduleTableOnward")
-        daterange_tag = soup.find("div", id="dateRangeModal")  # for seasonal
-        rows = []
-        if table_tag and table_tag.tbody:
-            rows = table_tag.tbody.find_all("tr")
-        elif daterange_tag:
-            hrefs = [a.attrs["href"] for a in daterange_tag.find_all("a") if isinstance(a.attrs["href"], str)]
-            try:
-                index = self.get_seasonal_schedule_daterange_index(hrefs, date)
-            except Exception as exc:
-                msg = "failed to parse seasonal schedule daterange"
-                raise ScheduleParseError(msg, url=str(response.url)) from exc
-            if index < 0:
-                msg = f"date {date} is out of seasonal schedules range"
-                raise ScheduleParseError(msg, url=str(response.url))
-            url = f"{response.url.scheme}://{response.url.host}{hrefs[index]}"
-            if index > 0 and url != str(response.url):
-                return HtmlParseResult.redirect(url)
-            rows = self.get_seasonal_schedule_rows(str(response.url), soup, date)
-        try:
-            sailings = self.parse_sailings_from_html_rows(rows, date)
-        except Exception as exc:
-            msg = "failed to parse schedule from HTML rows"
-            raise ScheduleParseError(msg, url=str(response.url)) from exc
-        notes = []
-        if not sailings:
-            err = "No sailings found"
-            for msg in NO_SAILINGS_MESSAGES:
-                if msg in html:
-                    err = msg
-                    break
-            notes.append(err)
-            self._logger.warning("%s at %s", err, response.url)
-        return HtmlParseResult.from_sailings(sailings, notes)
-
-    def parse_sailings_from_html_rows(self, rows: Iterable[Tag], date: datetime) -> Sequence[FerrySailing]:
-        sailing_row_min_td_count = 3
-        sailings = []
-        for row in rows:
-            tds = row.find_all("td")
-            if (
-                len(tds) < sailing_row_min_td_count
-                or "No sailings available" in tds[1].text
-                or "No passengers permitted" in tds[1].text
-            ):
-                continue
-            td1 = tds[1].text.strip().split("\n", maxsplit=1)
-            departure_time, comments = td1 if len(td1) > 1 else (td1[0], "")
-            if comments:
-                notes = self.parse_sailing_comments(comments)
-                if any(self.is_sailing_excluded_on_date(note, date) for note in notes):
-                    continue
-            else:
-                notes = []
-            departure = datetime.strptime(
-                departure_time.strip(),
-                "%I:%M %p",
-            ).replace(year=date.year, month=date.month, day=date.day, tzinfo=CONFIG.timezone)
-            arrival = datetime.strptime(
-                row.find_all("td")[2].text.strip(),
-                "%I:%M %p",
-            ).replace(year=date.year, month=date.month, day=date.day, tzinfo=CONFIG.timezone)
-            td3 = tds[3].text.strip()
-            if "h " in td3 and "m" in td3:
-                td3format = "%Hh %Mm"
-            elif "m" in td3:
-                td3format = "%Mm"
-            elif "h" in td3:
-                td3format = "%Hh"
-            else:
-                td3format = "%H:%M"
-            duration = int(
-                datetime_to_timedelta(
-                    datetime.strptime(
-                        td3,
-                        td3format,
-                    ).replace(tzinfo=CONFIG.timezone),
-                ).total_seconds(),
-            )
-            sailing = FerrySailing(
-                departure=departure,
-                arrival=arrival,
-                duration=duration,
-                notes=tuple(notes),
-            )
-            sailings.append(sailing)
-        return sailings
-
-    def parse_sailing_comments(self, comments: str) -> list[str]:
-        comments = comments.strip()
-        notes = comments.splitlines()
-        for i, note in enumerate(notes):
-            if note.startswith("Note:"):
-                notes[i] = note.lstrip("Note:").strip()
-        return [note.strip() for note in notes if note]
-
-    def get_seasonal_schedule_rows(self, url: str, soup: BeautifulSoup, date: datetime) -> Sequence[Tag]:
-        rows = []
-        form = soup.find("form", id="seasonalSchedulesForm")
-        if form is None:
-            msg = "'seasonalSchedulesForm' not found"
-            raise ScheduleParseError(msg, url=url)
-        weekday = WEEKDAY_NAMES[date.weekday()]
-        for thead in form.find_all("thead"):
-            if thead.get_text().lower().strip().startswith(weekday):
-                rows = [
-                    x
-                    for x in itertools.takewhile(
-                        lambda t: not isinstance(t, Tag) or t.name != "thead",
-                        thead.next_siblings,
-                    )
-                    if isinstance(x, Tag) and x.name == "tr"
-                ]
-                break
-        return rows
-
-    def get_seasonal_schedule_daterange_index(self, hrefs: Iterable[str], date: datetime) -> int:
-        for i, href in enumerate(hrefs):
-            dates = self.get_seasonal_schedule_daterange_from_url(href)
-            if dates and date.date() >= dates[0].date() and date.date() <= dates[1].date():
-                return i
-        return -1
-
-    def get_seasonal_schedule_daterange_from_url(self, href: str) -> tuple[datetime, datetime] | None:
-        dates = href.replace("=", "-").replace("_", "-").split("-")[-2:]
-        expected_dates_count = 2
-        if (len(dates)) != expected_dates_count:
-            return None
-        date_from = datetime.strptime(dates[0], "%Y%m%d").replace(tzinfo=CONFIG.timezone)
-        date_to = datetime.strptime(dates[1], "%Y%m%d").replace(tzinfo=CONFIG.timezone)
-        return (date_from, date_to)
-
-    def is_sailing_excluded_on_date(self, schedule_comment: str, date: datetime) -> bool:
-        if not schedule_comment:
-            return False
-        schedule_comment = schedule_comment.strip()
-        if schedule_comment.upper() == "FOOT PASSENGERS ONLY":
-            return True
-        if schedule_comment.upper().startswith("ONLY"):
-            return not self.match_specific_sailing_date(schedule_comment, date)
-        if schedule_comment.upper().startswith(("EXCEPT", "NOT AVAILABLE")):
-            return self.match_specific_sailing_date(schedule_comment, date)
-        self._logger.warning("unknown sailing comment: %r", schedule_comment)
-        return False
-
-    def match_specific_sailing_date(self, schedule_dates: str, date: datetime) -> bool:
-        month: int | None = None
-        schedule_dates = schedule_dates.upper()
-        for c in [".", "&", " ON ", " ON:"]:
-            schedule_dates = schedule_dates.replace(c, ",")
-        tokens = [x.strip() for x in schedule_dates.split(",")]
-        tokens = [x for x in tokens if x and x not in ["ONLY", "EXCEPT", "NOT AVAILABLE", "FOOT PASSENGERS ONLY"]]
-        for token in tokens:
-            if token in MONTHS:
-                month = MONTHS.index(token) + 1
-                continue
-            if token.isnumeric():
-                if not month:
-                    self._logger.warning(
-                        "failed to parse schedule dates: No month for %r in %r",
-                        token,
-                        schedule_dates,
-                    )
-                    return False
-                _date = datetime(year=date.year, month=month, day=int(token), tzinfo=CONFIG.timezone)
-            else:
-                dt = token.split(" ")
-                expected_tokens_count = 2
-                if len(dt) == expected_tokens_count and dt[0].isnumeric() and dt[1] in MONTHS:
-                    # 01 JAN, 02 JAN, 05 FEB, 06 FEB
-                    _date = datetime(
-                        year=date.year,
-                        month=MONTHS.index(dt[1]) + 1,
-                        day=int(dt[0]),
-                        tzinfo=CONFIG.timezone,
-                    )
-                elif len(dt) == expected_tokens_count and dt[1].isnumeric() and dt[0] in MONTHS:
-                    # Jan 1, 2, Feb 5 & 6
-                    month = MONTHS.index(dt[0]) + 1
-                    _date = datetime(year=date.year, month=month, day=int(dt[1]), tzinfo=CONFIG.timezone)
-                else:
-                    self._logger.warning(
-                        "failed to parse schedule dates: Unknown word %r in %r",
-                        token,
-                        schedule_dates,
-                    )
-                    break
-            if date.month == _date.month and date.day == _date.day:
-                return True
-        return False

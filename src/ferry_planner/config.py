@@ -77,7 +77,8 @@ class DataConfig(BaseModel):
 
 
 class SchedulesConfig(BaseModel):
-    base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/"
+    schedule_base_url: str = "https://www.bcferries.com/routes-fares/schedules/daily/"
+    gtfs_url: str = "https://data.trilliumtransit.com/gtfs/bcferries-bc-ca/bcferries-bc-ca.zip"
     cache_dir: DirectoryPath = Path("./data/schedule_cache")
     cache_ahead_days: int = 1
     refresh_interval_seconds: int = 24 * 60 * 60  # 24 hours
