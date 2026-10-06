@@ -2,12 +2,12 @@ import asyncio
 import logging
 import os
 import time
-import zipfile
 from collections.abc import Iterable
 from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Thread
 from typing import Protocol
+from weakref import WeakKeyDictionary
 
 import httpx
 from pydantic import BaseModel
@@ -19,6 +19,8 @@ from ferry_planner.location import LocationId
 
 NO_SAILINGS_NOTE = "No sailings found"
 SCHEDULE_NOT_POSTED_NOTE = "Seasonal schedules have not been posted for these dates"
+FEED_RETRY_SECONDS = 60
+"""Time to wait before downloading the feed again after failing to."""
 
 
 class FerrySailing(BaseModel):
@@ -87,10 +89,17 @@ class ScheduleDB:
         self.refresh_interval = refresh_interval or CONFIG.schedules.refresh_interval_seconds
         self._refresh_thread = Thread(target=self._refresh_task, daemon=True)
         self._mem_cache = {}
+        self._terminals = {
+            terminal.id: terminal
+            for connection in ferry_connections
+            for terminal in (connection.origin, connection.destination)
+        }
         self._gtfs_feed: GtfsFeed | None = None
-        self._gtfs_feed_time = 0.0
-        # Prevents the feed from being downloaded more than once when several schedules are requested at once.
-        self._gtfs_feed_lock = asyncio.Lock()
+        # Time after which the feed is downloaded again.
+        self._gtfs_feed_expiry = float("-inf")
+        # Prevent the feed from being downloaded more than once when several schedules are requested at once.
+        # A lock only works in one event loop, and the refresh thread runs its own.
+        self._gtfs_feed_locks: WeakKeyDictionary[asyncio.AbstractEventLoop, asyncio.Lock] = WeakKeyDictionary()
         self.cache_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
         timeout = httpx.Timeout(30.0, pool=None)
         limits = httpx.Limits(max_connections=5)
@@ -127,14 +136,14 @@ class ScheduleDB:
     ) -> FerrySchedule | None:
         filepath = self._get_filepath(origin_id, destination_id, date=date)
         schedule = self._mem_cache.get(filepath)
-        if schedule:
-            return schedule
-        if filepath.exists():
+        if schedule is None and filepath.exists():
             schedule = FerrySchedule.model_validate_json(filepath.read_text(encoding="utf-8"))
             self._mem_cache[filepath] = schedule
+        # Schedules without sailings can gain them when the feed is updated, so only those with sailings are cached.
+        if schedule and schedule.sailings:
             return schedule
         schedule = await self.download_schedule(origin_id, destination_id, date=date)
-        if schedule:
+        if schedule and schedule.sailings:
             self.put(schedule)
         return schedule
 
@@ -173,30 +182,44 @@ class ScheduleDB:
             return None
 
     async def _get_gtfs_feed(self) -> GtfsFeed:
-        async with self._gtfs_feed_lock:
-            if self._gtfs_feed is None or time.monotonic() - self._gtfs_feed_time > self.refresh_interval:
-                self._logger.info("fetching GTFS feed")
+        async with self._gtfs_feed_locks.setdefault(asyncio.get_running_loop(), asyncio.Lock()):
+            if time.monotonic() > self._gtfs_feed_expiry:
                 try:
-                    response = await self._client.get(self.gtfs_url)
-                except httpx.HTTPError as exc:
-                    msg = "failed to download GTFS feed"
-                    raise ScheduleDownloadError(msg, url=self.gtfs_url) from exc
-                if not httpx.codes.is_success(response.status_code):
-                    msg = f"status {response.status_code}"
-                    raise ScheduleDownloadError(msg, url=self.gtfs_url)
-                locations = {}
-                for connection in self.ferry_connections:
-                    for terminal in (connection.origin, connection.destination):
-                        latitude, longitude = terminal.coordinates.split(",")
-                        locations[terminal.id] = (float(latitude), float(longitude))
-                try:
-                    self._gtfs_feed = GtfsFeed(response.content, locations=locations, timezone=CONFIG.timezone)
-                except (zipfile.BadZipFile, KeyError, ValueError) as exc:
-                    msg = "failed to parse GTFS feed"
-                    raise ScheduleParseError(msg, url=self.gtfs_url) from exc
-                self._gtfs_feed_time = time.monotonic()
-                self._logger.info("fetched GTFS feed")
+                    self._gtfs_feed = await self._download_gtfs_feed()
+                except (ScheduleDownloadError, ScheduleParseError):
+                    # Schedules requested in the meantime do not each wait for another attempt.
+                    self._gtfs_feed_expiry = time.monotonic() + FEED_RETRY_SECONDS
+                    if self._gtfs_feed is None:
+                        raise
+                    self._logger.exception("failed to update GTFS feed, using the previous one")
+                else:
+                    self._gtfs_feed_expiry = time.monotonic() + self.refresh_interval
+            if self._gtfs_feed is None:
+                msg = "previous attempt failed"
+                raise ScheduleDownloadError(msg, url=self.gtfs_url)
             return self._gtfs_feed
+
+    async def _download_gtfs_feed(self) -> GtfsFeed:
+        self._logger.info("fetching GTFS feed")
+        try:
+            response = await self._client.get(self.gtfs_url)
+        except httpx.HTTPError as exc:
+            msg = "failed to download GTFS feed"
+            raise ScheduleDownloadError(msg, url=self.gtfs_url) from exc
+        if not httpx.codes.is_success(response.status_code):
+            msg = f"status {response.status_code}"
+            raise ScheduleDownloadError(msg, url=self.gtfs_url)
+        locations = {}
+        for terminal in self._terminals.values():
+            latitude, longitude = terminal.coordinates.split(",")
+            locations[terminal.id] = (float(latitude), float(longitude))
+        try:
+            feed = GtfsFeed(response.content, locations=locations, timezone=CONFIG.timezone)
+        except Exception as exc:
+            msg = "failed to parse GTFS feed"
+            raise ScheduleParseError(msg, url=self.gtfs_url) from exc
+        self._logger.info("fetched GTFS feed")
+        return feed
 
     async def _get_gtfs_schedule(
         self,
@@ -217,6 +240,9 @@ class ScheduleDB:
                     departure=sailing.departure,
                     arrival=sailing.arrival,
                     duration=int((sailing.arrival - sailing.departure).total_seconds()),
+                    notes=(f"Via {', '.join(self._terminals[stop].name for stop in sailing.stops)}",)
+                    if sailing.stops
+                    else (),
                 )
                 for sailing in feed.sailings(origin_id, destination_id, date.date())
             )
@@ -243,10 +269,9 @@ class ScheduleDB:
             destination_id,
             date=date,
         )
-        if schedule is not None:
+        if schedule is not None and schedule.sailings:
             self.put(schedule)
-            return True
-        return False
+        return schedule is not None
 
     async def refresh_cache(self) -> None:
         current_date = datetime.now(tz=CONFIG.timezone).replace(hour=0, minute=0, second=0, microsecond=0)
