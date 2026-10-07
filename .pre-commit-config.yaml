@@ -2,6 +2,8 @@ repos:
   - repo: builtin
     hooks:
       - id: check-added-large-files
+        # The car connections of the worker are a single file of about 700 KB.
+        args: [--maxkb=1024]
       - id: check-case-conflict
       - id: check-json
       - id: check-toml
@@ -20,3 +22,12 @@ repos:
     rev: v0.0.49
     hooks:
       - id: ty
+
+  - repo: local
+    hooks:
+      - id: worker-check
+        name: worker check
+        entry: bun run --cwd worker check
+        language: system
+        files: ^worker/
+        pass_filenames: false

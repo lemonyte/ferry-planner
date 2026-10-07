@@ -1,4 +1,7 @@
 # Custom ignores
+node_modules/
+.wrangler/
+worker-configuration.d.ts
 .vscode/
 __pycache__/
 [Bb]uild/
