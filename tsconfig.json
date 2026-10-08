@@ -5,5 +5,5 @@
         "types": ["$app/types", "./worker-configuration.d.ts"],
         "checkJs": false
     },
-    "include": ["src", "vite.config.ts"]
+    "include": ["src", "test", "vite.config.ts"]
 }

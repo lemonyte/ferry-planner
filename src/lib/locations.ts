@@ -1,4 +1,4 @@
-import { cities, terminals } from "../../../worker/src/data/locations";
+import { cities, terminals } from "./planner/data/locations";
 
 /** City or ferry terminal that a journey can start or end at. */
 export interface Place {

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { formatLocal, parseLocal, startOfDay, toLocal, utcOffset } from "../src/time";
+import { formatLocal, parseLocal, startOfDay, toLocal, utcOffset } from "./time";
 
 test("date is parsed as the start of its day", () => {
     expect(parseLocal("2026-10-08")).toBe(Date.UTC(2026, 9, 8));

@@ -1,5 +1,5 @@
 {
-    "name": "ferry-planner-web",
+    "name": "ferry-planner",
     "private": true,
     "type": "module",
     "scripts": {
@@ -18,6 +18,7 @@
         "@sveltejs/kit": "^3.0.0",
         "@sveltejs/vite-plugin-svelte": "^7.2.0",
         "@tailwindcss/vite": "^4.3.0",
+        "@types/node": "^26.6.4",
         "svelte": "^5.57.1",
         "svelte-check": "^4.6.0",
         "tailwindcss": "^4.3.0",
@@ -27,10 +28,12 @@
         "wrangler": "^4.97.0"
     },
     "imports": {
-        "#lib/*": "./src/lib/*"
+        "#lib/*": "./src/lib/*",
+        "#test/*": "./test/*"
     },
     "dependencies": {
         "@lucide/svelte": "^1.52.0",
-        "bits-ui": "^2.19.5"
+        "bits-ui": "^2.19.5",
+        "fflate": "^0.8.3"
     }
 }

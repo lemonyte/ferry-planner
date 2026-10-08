@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
-import type { TerminalId } from "../src/data/locations";
-import { getSchedule, scheduleResponse } from "../src/schedule";
-import { parseLocal } from "../src/time";
-import { makeTimetable } from "./fixtures";
-import schedules from "./fixtures/schedules.json";
+import schedules from "#test/fixtures/schedules.json";
+import { makeTimetable } from "#test/fixtures.ts";
+import type { TerminalId } from "./data/locations";
+import { getSchedule, scheduleResponse } from "./schedule";
+import { parseLocal } from "./time";
 
 const timetable = makeTimetable();
 

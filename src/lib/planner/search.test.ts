@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
-import type { Itinerary } from "../src/api";
-import type { LocationId } from "../src/data/locations";
-import { type PlanOptions, type RoutePlan, routePlans } from "../src/route";
-import { findItinerary, selectItineraries } from "../src/search";
-import { makeTimetable } from "./fixtures";
+import { makeTimetable } from "#test/fixtures.ts";
+import type { Itinerary } from "./api";
+import type { LocationId } from "./data/locations";
+import { type PlanOptions, type RoutePlan, routePlans } from "./route";
+import { findItinerary, selectItineraries } from "./search";
 
 const timetable = makeTimetable();
 const DATE = Date.UTC(2026, 9, 8);

@@ -2,39 +2,19 @@ repos:
   - repo: builtin
     hooks:
       - id: check-added-large-files
-        # The car connections of the worker are a single file of about 700 KB.
+        # The car connections are a single file of about 700 KB.
         args: [--maxkb=1024]
       - id: check-case-conflict
       - id: check-json
-      - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.17
-    hooks:
-      - id: ruff-check
-      - id: ruff-format
-
-  - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.49
-    hooks:
-      - id: ty
-
   - repo: local
     hooks:
-      - id: worker-check
-        name: worker check
-        entry: bun run --cwd worker check
+      - id: check
+        name: check
+        entry: bun run check
         language: system
-        files: ^worker/
-        pass_filenames: false
-      - id: web-check
-        name: web check
-        entry: bun run --cwd web check
-        language: system
-        # The web app uses the types and the locations of the worker.
-        files: ^(web|worker/src)/
         pass_filenames: false

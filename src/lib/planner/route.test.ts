@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
-import type { LocationId } from "../src/data/locations";
-import { findRoutes, type PlanOptions, routePlans } from "../src/route";
-import { parseLocal } from "../src/time";
-import { digest, makeTimetable } from "./fixtures";
-import plans from "./fixtures/plans.json";
-import routes from "./fixtures/routes.json";
+import plans from "#test/fixtures/plans.json";
+import routes from "#test/fixtures/routes.json";
+import { digest, makeTimetable } from "#test/fixtures.ts";
+import type { LocationId } from "./data/locations";
+import { findRoutes, type PlanOptions, routePlans } from "./route";
+import { parseLocal } from "./time";
 
 const timetable = makeTimetable();
 const DATE = Date.UTC(2026, 9, 8);

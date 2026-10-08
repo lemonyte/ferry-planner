@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "uv"
+  - package-ecosystem: "bun"
     directory: "/"
     schedule:
       interval: "monthly"

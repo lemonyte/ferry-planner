@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
-import { carConnections } from "../src/data/car-connections";
-import { ferryConnections } from "../src/data/ferry-connections";
-import { cities, locations, terminals } from "../src/data/locations";
+import { carConnections } from "./data/car-connections";
+import { ferryConnections } from "./data/ferry-connections";
+import { cities, locations, terminals } from "./data/locations";
 
 // These checks stand in for the validation that the Python server ran on the data files every time it started.
 

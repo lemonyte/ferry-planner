@@ -1,6 +1,14 @@
 import { expect, test } from "vitest";
-import { parseFeed, type Sailing, Timetable } from "../src/gtfs";
-import { EVERY_DAY, type FeedFiles, HSB_TO_LNG, LOCATIONS, makeArchive, STOP_TIMES_COLUMNS, STOPS } from "./feeds";
+import {
+    EVERY_DAY,
+    type FeedFiles,
+    HSB_TO_LNG,
+    LOCATIONS,
+    makeArchive,
+    STOP_TIMES_COLUMNS,
+    STOPS,
+} from "#test/feeds.ts";
+import { parseFeed, type Sailing, Timetable } from "./gtfs";
 
 // Tuesday.
 const DATE = Date.UTC(2026, 9, 6);

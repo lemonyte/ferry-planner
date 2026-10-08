@@ -3,11 +3,17 @@
     "vcs": {
         "enabled": true,
         "clientKind": "git",
-        "useIgnoreFile": true,
-        "root": ".."
+        "useIgnoreFile": true
     },
     "files": {
-        "includes": ["**", "!worker-configuration.d.ts"]
+        "includes": [
+            "**",
+            "!worker-configuration.d.ts",
+            "!test/fixtures",
+            "!src/ferry_planner",
+            "!data",
+            "!tailwind.config.js"
+        ]
     },
     "formatter": {
         "indentStyle": "space",
@@ -21,6 +27,8 @@
     },
     "html": {
         "experimentalFullSupportEnabled": true,
-        "formatter": { "enabled": true }
+        "formatter": {
+            "enabled": true
+        }
     }
 }

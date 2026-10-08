@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import { parseFeed, Timetable } from "../src/gtfs";
-import { terminalCoordinates } from "../src/schedule";
+import { parseFeed, Timetable } from "#lib/planner/gtfs.ts";
+import { terminalCoordinates } from "#lib/planner/schedule.ts";
 import feedUrl from "./fixtures/feed.zip?inline";
 
 /** The BC Ferries feed as of 2026-09-27, which the fixtures exported from the Python planner were made with. */

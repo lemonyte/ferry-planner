@@ -14,10 +14,8 @@ export default defineConfig({
             adapter: adapter(),
         }),
     ],
-    server: {
-        // The locations and the types of the API come from the backend Worker beside this app.
-        fs: { allow: [".."] },
-    },
+    // Lets tests import the feed archive in `test/fixtures`.
+    assetsInclude: ["**/*.zip"],
     test: {
         expect: { requireAssertions: true },
         environment: "node",
