@@ -7,6 +7,8 @@ export const MAX_EARLY = 120;
 /** What trips can be put in order of, the first unless asked otherwise. */
 export const SORTS = ["duration", "departure", "arrival"] as const;
 
+const DAY_FORMAT = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Vancouver" });
+
 export interface Query {
     /** ID of the place to leave from, or nothing when none has been picked. */
     from: string;
@@ -47,34 +49,9 @@ export const parseQuery = (params: URLSearchParams, today: string): Query => {
     };
 };
 
-/** Write a search as the query that the backend takes. */
-export const toBackendQuery = (query: Query): string => {
-    const params = new URLSearchParams({
-        origin: query.from,
-        destination: query.to,
-        date: query.date,
-        buffer: String(query.early),
-    });
-    if (query.checkin === "assured") {
-        params.set("assured", "true");
-    }
-    if (query.checkin === "hostled") {
-        params.set("hostled", "true");
-    }
-    if (query.long) {
-        params.set("show_all", "true");
-    }
-    if (query.all) {
-        params.set("routes", "all");
-    }
-    // The routes shown are the best by what the trips are in order of.
-    if (query.sort !== "duration") {
-        params.set("sort", query.sort);
-    }
-    if (query.underway) {
-        params.set("underway", "true");
-    }
-    return params.toString();
+/** Read the search in a URL, for the current day in British Columbia unless it says another. */
+export const readQuery = (url: URL): Query => {
+    return parseQuery(url.searchParams, DAY_FORMAT.format(Date.now()));
 };
 
 /** Write a search as the query of a link to it, leaving out what is as usual. */

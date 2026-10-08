@@ -6,14 +6,7 @@
         "useIgnoreFile": true
     },
     "files": {
-        "includes": [
-            "**",
-            "!worker-configuration.d.ts",
-            "!test/fixtures",
-            "!src/ferry_planner",
-            "!data",
-            "!tailwind.config.js"
-        ]
+        "includes": ["**", "!worker-configuration.d.ts", "!test/fixtures"]
     },
     "formatter": {
         "indentStyle": "space",

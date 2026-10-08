@@ -8,7 +8,7 @@
         "preview": "wrangler dev --port 4173",
         "deploy": "bun run build && wrangler deploy",
         "prepare": "svelte-kit sync || echo ''",
-        "check": "wrangler types && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && biome check",
+        "check": "wrangler types && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && tsc --noEmit -p src/service-worker && biome check",
         "format": "biome check --write",
         "test": "vitest run"
     },

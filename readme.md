@@ -2,49 +2,34 @@
 
 This website is a tool that calculates possible routes between places with [BC Ferries](https://bcferries.com) sailings.
 
-## Requirements
+## How it works
 
-- [Python 3.11](https://www.python.org/downloads/) or higher
+The site is a [SvelteKit](https://svelte.dev/docs/kit) app that does its work in the browser:
+
+- The browser downloads the BC Ferries [GTFS](https://gtfs.org) feed, reads it, and keeps it in local storage. It asks whether the feed has changed when the site is opened or come back to, at most once an hour.
+- Routes are planned in the browser from that feed and the locations and connections in [`src/lib/planner/data/`](src/lib/planner/data).
+- A service worker keeps the site itself, so it opens without a connection, and it can be installed as an app. Trips can be found offline once the feed has been downloaded.
+
+The app is served by a [Cloudflare Worker](https://developers.cloudflare.com/workers/), which does nothing but pass the feed on at `/feed.zip`, as browsers are not let read it from the server that it is on.
 
 ## Development
 
-To develop this project, install the required packages and run the server with the following commands:
+You need [Bun](https://bun.sh).
 
 ```bash
-pip install -e .
-uvicorn ferry_planner.server:app --reload
-```
-
-### Building CSS output
-
-You need to build the CSS file with [Tailwind](https://tailwindcss.com/docs/installation/tailwind-cli) before running the server for the first time:
-
-```bash
-npx @tailwindcss/cli -i ./src/ferry_planner/static/style-in.css -o ./src/ferry_planner/static/style-out.css
-```
-
-Navigate to <http://localhost:8000> to preview the website.
-
-## Workers
-
-The site is being moved to [Cloudflare Workers](https://developers.cloudflare.com/workers/), sized for the Workers Free plan. There are two, each a project of its own that needs [Bun](https://bun.sh):
-
-- [`worker/`](worker) is the backend, written in TypeScript. It answers `/api/locations` itself and passes the rest of `/api/*` to a single [Durable Object](https://developers.cloudflare.com/durable-objects/), which keeps the BC Ferries GTFS feed and plans routes with it. The feed is checked for changes every hour.
-- [`web/`](web) is the website, a [SvelteKit](https://svelte.dev/docs/kit) app rendered on the server. It asks the backend for the routes worth taking through a service binding, at `/api/search`.
-
-```bash
-cd worker       # or web
 bun install
-bun run dev     # the backend at http://localhost:8787, the website at http://localhost:5173
+bun run dev      # the website at http://localhost:5173
 bun run test
-bun run check   # check types, lint, and formatting
+bun run check    # check types, lint, and formatting
+bun run build
+bun run preview  # the built site as Cloudflare serves it, at http://localhost:4173
 bun run deploy
 ```
 
-The website needs the backend running beside it. Deploy the backend first when both have changed.
+The service worker only keeps files in the built site, so try the site offline with `bun run preview`.
 
-The locations and connections in `worker/src/data/` are checked by the type checker and the tests, not when the Worker starts.
-The expected results in `worker/test/fixtures/` come from the Python planner, and are made again with `uv run python tests/export_worker_fixtures.py`.
+The locations and connections are checked by the type checker and the tests, not when the site starts.
+The expected results in [`test/fixtures/`](test/fixtures) are written by the planner itself. After a change that is meant to change them, write them again with `bun test/export-fixtures.ts` and look over what has changed.
 
 ## Disclaimer
 

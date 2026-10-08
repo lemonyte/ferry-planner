@@ -11,13 +11,13 @@
     "preview_urls": false,
     "assets": {
         "binding": "ASSETS",
-        "directory": ".svelte-kit/cloudflare"
+        "directory": ".svelte-kit/cloudflare",
+        // Pages are made in the browser, so any page that is not a file is the same one, served without the Worker.
+        "not_found_handling": "single-page-application"
     },
     "observability": {
         "enabled": true,
         "logs": { "enabled": true, "head_sampling_rate": 1 },
         "traces": { "enabled": true, "head_sampling_rate": 0.01 }
-    },
-    // The Worker in `../worker`, which finds the routes.
-    "services": [{ "binding": "BACKEND", "service": "ferry-planner-backend" }]
+    }
 }

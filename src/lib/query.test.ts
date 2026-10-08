@@ -1,5 +1,5 @@
-import { expect, test } from "vitest";
-import { parseQuery, type Query, toBackendQuery, toSearch } from "./query";
+import { afterEach, expect, test, vi } from "vitest";
+import { parseQuery, type Query, readQuery, toSearch } from "./query";
 
 const TODAY = "2026-10-08";
 const VAN_ANDA: Query = {
@@ -14,6 +14,10 @@ const VAN_ANDA: Query = {
     group: false,
     underway: false,
 };
+
+afterEach(() => {
+    vi.restoreAllMocks();
+});
 
 const parse = (search: string): Query => parseQuery(new URLSearchParams(search), TODAY);
 
@@ -52,17 +56,12 @@ test.each([
     expect(parse(search)).toMatchObject(expected);
 });
 
-test("backend is asked with its own names for the options", () => {
-    expect(toBackendQuery(VAN_ANDA)).toBe("origin=vancouver&destination=van_anda&date=2026-10-09&buffer=15");
-    expect(toBackendQuery({ ...VAN_ANDA, checkin: "assured", early: 30, long: true, all: true })).toBe(
-        "origin=vancouver&destination=van_anda&date=2026-10-09&buffer=30&assured=true&show_all=true&routes=all",
-    );
-    expect(toBackendQuery({ ...VAN_ANDA, checkin: "hostled" })).toContain("hostled=true");
-    expect(toBackendQuery({ ...VAN_ANDA, sort: "arrival", underway: true })).toBe(
-        "origin=vancouver&destination=van_anda&date=2026-10-09&buffer=15&sort=arrival&underway=true",
-    );
-    // Trips are put together by route here, which the backend has no part in.
-    expect(toBackendQuery({ ...VAN_ANDA, group: true })).toBe(toBackendQuery(VAN_ANDA));
+test("search in a URL without a date is for the current day in British Columbia", () => {
+    // Late in the evening of the 8th in British Columbia.
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 9, 5));
+
+    expect(readQuery(new URL("https://site/?from=vancouver&to=van_anda")).date).toBe("2026-10-08");
+    expect(readQuery(new URL("https://site/?from=vancouver&to=van_anda&date=2026-10-12")).date).toBe("2026-10-12");
 });
 
 test("link to a search leaves out the options that are as usual", () => {

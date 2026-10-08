@@ -1,13 +1,19 @@
 <script lang="ts">
 import "./layout.css";
-import favicon from "#lib/assets/favicon.svg";
+import { onMount } from "svelte";
+import { formatDay } from "#lib/format.ts";
+import { formatLocal, toLocal } from "#lib/planner/time.ts";
+import { schedules, watchSchedules } from "#lib/schedules.svelte.ts";
 
 let { children } = $props();
-</script>
 
-<svelte:head>
-    <link rel="icon" href={favicon}>
-</svelte:head>
+// Day in British Columbia that the schedules in use were downloaded on.
+const downloaded = $derived(
+    schedules.fetchedAt === undefined ? undefined : formatDay(formatLocal(toLocal(schedules.fetchedAt))),
+);
+
+onMount(watchSchedules);
+</script>
 
 <div class="flex min-h-dvh flex-col bg-slate-50 text-slate-900 print:bg-white">
     <p class="bg-sky-900 px-4 text-center text-sm text-sky-100 print:hidden">
@@ -32,6 +38,14 @@ let { children } = $props();
     </main>
     <footer class="border-t border-slate-200 print:hidden">
         <div class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-4 px-4 text-sm text-slate-600">
+            {#if downloaded || !schedules.online}
+                <p class="w-full pt-2" role="status">
+                    {#if !schedules.online}
+                        <span class="font-semibold text-slate-900">Offline.</span>
+                    {/if}
+                    {downloaded ? `Schedules downloaded ${downloaded}.` : "No schedules downloaded yet."}
+                </p>
+            {/if}
             <p class="py-2">Not affiliated with BC Ferries.</p>
             <a
                 href="https://github.com/lemonyte/ferry-planner"

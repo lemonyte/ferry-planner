@@ -27,7 +27,7 @@ const title = $derived(
 <SearchForm {query} />
 
 {#await data.outcome}
-    <p class="mt-6 text-slate-600" role="status">Finding every route…</p>
+    <p class="mt-6 text-slate-600" role="status">Getting the schedules…</p>
 {:then outcome}
     {#if outcome.error}
         <p class="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4" role="alert">{outcome.error}</p>

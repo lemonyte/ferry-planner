@@ -3,7 +3,7 @@ import { carConnections } from "./data/car-connections";
 import { ferryConnections } from "./data/ferry-connections";
 import { cities, locations, terminals } from "./data/locations";
 
-// These checks stand in for the validation that the Python server ran on the data files every time it started.
+// These checks stand in for validating the data files every time the site starts.
 
 test("locations are listed under their own ID", () => {
     for (const [id, location] of Object.entries(locations)) {

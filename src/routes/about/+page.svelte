@@ -16,9 +16,10 @@
         wait for the next sailing where a journey takes more than one ferry.
     </p>
     <p>
-        Sailing times come from the schedule that BC Ferries publishes, and are checked for changes every hour. Driving
-        times are estimates. Delays, cancellations, and full sailings are not known to this site, so check with BC
-        Ferries before you travel.
+        Sailing times come from the schedule that BC Ferries publishes. It is downloaded to your device and checked for
+        changes every hour while the site is open, so trips can be found without a connection once the site has been
+        opened with one. Driving times are estimates. Delays, cancellations, and full sailings are not known to this
+        site, so check with BC Ferries before you travel.
     </p>
     <p>
         Ferry Planner is not affiliated with BC Ferries. The code is on
