@@ -377,7 +377,7 @@ class RoutePlanBuilder:
             if options.hostled and departure_terminal.hostled_close and departure_terminal.hostled_close > 0:
                 deadline_name = "hostled vehicles check-in close"
                 wait_minutes = departure_terminal.hostled_close
-            if options.assured and departure_terminal.assured_close and departure_terminal.assured_close > 0:
+            elif options.assured and departure_terminal.assured_close and departure_terminal.assured_close > 0:
                 deadline_name = "assured loading check-in close"
                 wait_minutes = departure_terminal.assured_close
             elif departure_terminal.res_close and departure_terminal.res_close > 0 and connection.bookable:

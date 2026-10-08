@@ -6,23 +6,22 @@ import { unzipSync } from "fflate";
  * Less than half the distance between the two terminals closest to each other, so no stop is near two of them.
  */
 const MAX_STOP_DISTANCE_KM = 0.5;
-/** Longest wait between two trips of a sailing. */
-const MAX_TRANSFER_SECONDS = 2 * 60 * 60;
+/**
+ * Longest that a vessel stays at a terminal that it calls at on its way.
+ *
+ * The feed does not say which vessel makes a trip, so two trips of a route are taken to be one vessel calling
+ * at a terminal when the second leaves from where the first arrives no later than this.
+ */
+const MAX_CALL_SECONDS = 20 * 60;
 const KM_PER_DEGREE = 111.2;
 const WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 const SERVICE_ADDED = "1";
 const NOT_AVAILABLE = "1";
 const SECONDS_PER_DAY = 24 * 60 * 60;
 const MS_PER_DAY = SECONDS_PER_DAY * 1000;
-const FILES = [
-    "stops.txt",
-    "feed_info.txt",
-    "trips.txt",
-    "calendar.txt",
-    "calendar_dates.txt",
-    "transfers.txt",
-    "stop_times.txt",
-];
+/** Number of days to remember lookups for, more than a feed covers, so that asking for ever more does not fill memory. */
+const MAX_DAYS_REMEMBERED = 400;
+const FILES = ["stops.txt", "feed_info.txt", "trips.txt", "calendar.txt", "calendar_dates.txt", "stop_times.txt"];
 
 /**
  * Part of a trip between two locations that it calls at one after the other.
@@ -35,6 +34,8 @@ export interface Leg {
     origin: string;
     destination: string;
     trip: string;
+    /** Route that the trip is of, which a vessel stays on. */
+    route: string;
     canBoard: boolean;
     canAlight: boolean;
     /** Services that say when the trip runs, the first that says anything about a date deciding. */
@@ -51,8 +52,6 @@ export interface Feed {
     calendar: Record<string, { weekdays: boolean[]; startDate: string; endDate: string }>;
     /** Whether a service is added to or removed from a date regardless of its calendar, by service then `YYYYMMDD`. */
     calendarDates: Record<string, Record<string, boolean>>;
-    /** Shortest time to change trips in at each location that has one. */
-    transferSeconds: Record<string, number>;
     /** Locations that the feed has no sailings for. */
     unserved: string[];
 }
@@ -95,8 +94,11 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
         }
     }
     const feedInfo = readTable(archive, "feed_info.txt", true)[0];
-    const tripServices = new Map(
-        readTable(archive, "trips.txt").map((row) => [required(row, "trip_id"), required(row, "service_id")]),
+    const trips = new Map(
+        readTable(archive, "trips.txt").map((row) => [
+            required(row, "trip_id"),
+            { service: required(row, "service_id"), route: required(row, "route_id") },
+        ]),
     );
     const calendar: Feed["calendar"] = {};
     for (const row of readTable(archive, "calendar.txt", true)) {
@@ -112,13 +114,6 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
         const dates = calendarDates[service] ?? {};
         calendarDates[service] = dates;
         dates[parseDate(row.date)] = row.exception_type === SERVICE_ADDED;
-    }
-    const transferSeconds: Feed["transferSeconds"] = {};
-    for (const row of readTable(archive, "transfers.txt", true)) {
-        const location = stopLocations.get(required(row, "from_stop_id"));
-        if (location && location === stopLocations.get(required(row, "to_stop_id")) && row.min_transfer_time) {
-            transferSeconds[location] = Math.max(transferSeconds[location] ?? 0, parseInteger(row.min_transfer_time));
-        }
     }
     const tripCalls = new Map<string, Call[]>();
     for (const row of readTable(archive, "stop_times.txt")) {
@@ -142,8 +137,8 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
     }
     const legs: Leg[] = [];
     for (const [trip, calls] of tripCalls) {
-        const service = tripServices.get(trip);
-        if (service === undefined) {
+        const { service, route } = trips.get(trip) ?? {};
+        if (service === undefined || route === undefined) {
             throw new Error(`trip ${trip} has stop times but no service`);
         }
         calls.sort((a, b) => a.sequence - b.sequence);
@@ -156,6 +151,7 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
                     origin: call.location,
                     destination: nextCall.location,
                     trip,
+                    route,
                     canBoard: call.canBoard,
                     canAlight: nextCall.canAlight,
                     // The BC Ferries feed lists the dates that a single trip is added to or removed from
@@ -173,7 +169,6 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
         legs,
         calendar,
         calendarDates,
-        transferSeconds,
         unserved: Object.keys(locations)
             .filter((location) => !served.has(location))
             .sort(),
@@ -213,12 +208,7 @@ export class Timetable {
         // Sailings that depart past midnight are listed under the day before, which is their service day.
         for (const daysBefore of [0, 1]) {
             const serviceDate = date - daysBefore * MS_PER_DAY;
-            for (const [departure, arrival, stops] of findJourneys(
-                this.legsFrom(serviceDate),
-                origin,
-                destination,
-                this.feed.transferSeconds,
-            )) {
+            for (const [departure, arrival, stops] of findJourneys(this.legsFrom(serviceDate), origin, destination)) {
                 if (Math.floor(departure / SECONDS_PER_DAY) === daysBefore) {
                     const sailing = {
                         departure: serviceDate + departure * 1000,
@@ -248,6 +238,10 @@ export class Timetable {
                     legsFrom.set(leg.origin, legs);
                     legs.push(leg);
                 }
+            }
+            if (this.running.size >= MAX_DAYS_REMEMBERED) {
+                this.running.clear();
+                this.found.clear();
             }
             this.running.set(serviceDate, legsFrom);
         }
@@ -404,54 +398,37 @@ const compareStops = (a: string[], b: string[]): number => {
  * Find the departure, arrival, and stops on the way of the sailings between two locations on a service day.
  *
  * The BC Ferries feed lists each part of a sailing that calls at several terminals as a trip of its own,
- * the same as a sailing that connects with another, so a sailing can be made of several trips.
+ * so a sailing can be made of several trips. Trips that are not the same vessel carrying on are not joined up,
+ * as getting from one vessel to another is not a sailing but two, with a wait at the terminal in between.
  */
 const findJourneys = (
     legsFrom: Map<string, Leg[]>,
     origin: string,
     destination: string,
-    transferSeconds: Record<string, number>,
 ): [departure: number, arrival: number, stops: string[]][] => {
-    // Departure, arrival, number of transfers, and stops on the way, for each departure and arrival.
-    const journeys = new Map<string, [number, number, number, string[]]>();
+    // Each departure and arrival, with the fewest stops on the way of those that there are several ways for.
+    const journeys = new Map<string, [number, number, string[]]>();
     for (const firstLeg of legsFrom.get(origin) ?? []) {
-        const path = fastestPath(firstLeg, destination, legsFrom, transferSeconds);
+        const path = fastestPath(firstLeg, destination, legsFrom);
         const lastLeg = path.at(-1);
         if (lastLeg) {
             const key = `${firstLeg.departure} ${lastLeg.arrival}`;
-            const transfers = path.filter((leg, index) => index > 0 && leg.trip !== path[index - 1]?.trip).length;
             const stops = path.slice(0, -1).map((leg) => leg.destination);
-            const other = journeys.get(key);
-            if (!other || transfers < other[2] || (transfers === other[2] && compareStops(stops, other[3]) < 0)) {
-                journeys.set(key, [firstLeg.departure, lastLeg.arrival, transfers, stops]);
+            const other = journeys.get(key)?.[2];
+            if (
+                !other ||
+                stops.length < other.length ||
+                (stops.length === other.length && compareStops(stops, other) < 0)
+            ) {
+                journeys.set(key, [firstLeg.departure, lastLeg.arrival, stops]);
             }
         }
     }
-    const found = [...journeys.values()];
-    return (
-        found
-            // Changing trips is only worth it when no later sailing arrives as early.
-            .filter(
-                ([departure, arrival, transfers]) =>
-                    !transfers ||
-                    !found.some(
-                        ([otherDeparture, otherArrival]) =>
-                            otherDeparture >= departure &&
-                            otherArrival <= arrival &&
-                            (otherDeparture !== departure || otherArrival !== arrival),
-                    ),
-            )
-            .map(([departure, arrival, , stops]) => [departure, arrival, stops])
-    );
+    return [...journeys.values()];
 };
 
-/** Find the legs that arrive at a destination the earliest after a first leg, with as few legs as possible. */
-const fastestPath = (
-    firstLeg: Leg,
-    destination: string,
-    legsFrom: Map<string, Leg[]>,
-    transferSeconds: Record<string, number>,
-): Leg[] => {
+/** Find the legs of one vessel that arrive at a destination the earliest after a first leg. */
+const fastestPath = (firstLeg: Leg, destination: string, legsFrom: Map<string, Leg[]>): Leg[] => {
     if (!firstLeg.canBoard) {
         return [];
     }
@@ -470,10 +447,7 @@ const fastestPath = (
                 const canContinue =
                     nextLeg.trip === leg.trip
                         ? wait >= 0
-                        : leg.canAlight &&
-                          nextLeg.canBoard &&
-                          (transferSeconds[leg.destination] ?? 0) <= wait &&
-                          wait <= MAX_TRANSFER_SECONDS;
+                        : nextLeg.route === leg.route && wait >= 0 && wait <= MAX_CALL_SECONDS;
                 if (canContinue && !previousLegs.has(nextLeg)) {
                     previousLegs.set(nextLeg, leg);
                     queue.push(nextLeg);

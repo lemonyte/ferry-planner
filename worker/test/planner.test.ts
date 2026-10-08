@@ -135,6 +135,22 @@ test("feed is kept when the planner restarts", async () => {
     expect(fetch).toHaveBeenCalledTimes(1);
 });
 
+test("feed stored in the form of an older version is downloaded again", async () => {
+    const fetch = serve({ body: makeArchive(), etag: '"first"' });
+    const planner = makePlanner();
+    await planner.refresh();
+    await runInDurableObject(planner, (_, state) => {
+        state.storage.kv.put("feed", { ...state.storage.kv.get<object>("feed"), version: 1 });
+    });
+
+    await evictDurableObject(planner);
+    const schedule = await (await getSchedule(planner, "HSB", "LNG")).json<Schedule>();
+
+    expect(schedule.sailings).toHaveLength(1);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenLastCalledWith(GTFS_URL, { headers: {} });
+});
+
 test.each([
     ["cannot be downloaded", 503],
     ["is not a GTFS archive", "<html>Waiting room</html>"],
@@ -292,7 +308,17 @@ test.each([
     [
         "has a buffer that is not a number",
         { origin: "HSB", destination: "LNG", buffer: "long" },
-        "buffer is not a number",
+        "buffer must be a number of minutes from 0 to 1440",
+    ],
+    [
+        "has a buffer of less than nothing",
+        { origin: "HSB", destination: "LNG", buffer: -1 },
+        "buffer must be a number of minutes from 0 to 1440",
+    ],
+    [
+        "has a buffer of more than a day",
+        { origin: "HSB", destination: "LNG", buffer: 1441 },
+        "buffer must be a number of minutes from 0 to 1440",
     ],
 ])("request is refused when it %s", async (_, body, detail) => {
     const fetch = serve(makeArchive());
@@ -306,4 +332,159 @@ test.each([
     expect(response.status).toBe(422);
     expect(await response.json()).toEqual({ detail });
     expect(fetch).not.toHaveBeenCalled();
+});
+
+interface Search {
+    itineraries: { id: string; depart: string; arrive: string }[];
+    moreRoutes: number;
+    departed: number;
+    covered: boolean;
+}
+
+const search = (planner: ReturnType<typeof makePlanner>, query: string): Promise<Response> => {
+    return planner.fetch(`https://planner/api/search?${query}`);
+};
+
+test("search has the itineraries worth taking from the feed", async () => {
+    serve(makeArchive());
+    // The evening before in Vancouver.
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 6, 3));
+
+    const response = await search(makePlanner(), "origin=HSB&destination=LNG&date=2026-10-06");
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+        origin: "HSB",
+        destination: "LNG",
+        date: "2026-10-06",
+        covered: true,
+        itineraries: [
+            expect.objectContaining({
+                depart: "2026-10-06T06:45:00",
+                arrive: "2026-10-06T08:10:00",
+                duration: 85 * 60,
+            }),
+        ],
+        moreRoutes: 0,
+        departed: 0,
+        underway: 0,
+        now: "2026-10-05T20:00:00",
+    });
+});
+
+test("search without a date is for today", async () => {
+    serve(makeArchive());
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 6, 13));
+
+    const response = await search(makePlanner(), "origin=HSB&destination=LNG");
+
+    expect(await response.json()).toMatchObject({ date: "2026-10-06", itineraries: [expect.anything()] });
+});
+
+test("search leaves out what has already left today", async () => {
+    serve(makeArchive());
+    // Noon in Vancouver, after the only sailing of the day.
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 6, 19));
+
+    const found = await (await search(makePlanner(), "origin=HSB&destination=LNG&date=2026-10-06")).json<Search>();
+
+    expect(found).toMatchObject({ itineraries: [], departed: 1 });
+});
+
+test("search says when the feed does not cover the date", async () => {
+    serve(makeArchive({ feedInfo: "Publisher,20260101,20261005" }));
+
+    const found = await (await search(makePlanner(), "origin=HSB&destination=LNG&date=2026-10-06")).json<Search>();
+
+    expect(found).toMatchObject({ covered: false, itineraries: [] });
+});
+
+test("search reads its options from the query", async () => {
+    serve(makeArchive());
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 6, 3));
+
+    const found = await (
+        await search(makePlanner(), "origin=HSB&destination=LNG&date=2026-10-06&buffer=30&assured=true")
+    ).json<Search>();
+
+    // Assured loading closes 20 minutes before the sailing at 07:30, and the buffer is 30 minutes.
+    expect(found.itineraries[0]?.depart).toBe("2026-10-06T06:40:00");
+});
+
+test.each([
+    ["has no origin", "destination=LNG", "origin is not a known location"],
+    ["has an unknown destination", "origin=HSB&destination=ATLANTIS", "destination is not a known location"],
+    ["has a date that is not one", "origin=HSB&destination=LNG&date=tomorrow", "date is not a valid date"],
+    [
+        "has a buffer that is not a number",
+        "origin=HSB&destination=LNG&buffer=long",
+        "buffer must be a number of minutes from 0 to 1440",
+    ],
+])("search is refused when it %s", async (_, query, detail) => {
+    serve(makeArchive());
+
+    const response = await search(makePlanner(), query);
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ detail });
+});
+
+test("no search when there is no feed", async () => {
+    serve(503);
+
+    const response = await search(makePlanner(), "origin=HSB&destination=LNG");
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ detail: "Schedules are not available" });
+});
+
+const HSB_LNG = "origin=HSB&destination=LNG&date=2026-10-06";
+
+test("itinerary of a search is found by its ID, even after it has left", async () => {
+    serve(makeArchive());
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 6, 3));
+    const planner = makePlanner();
+    const found = await (await search(planner, HSB_LNG)).json<Search>();
+    const [itinerary] = found.itineraries;
+    // Noon in Vancouver, after the only sailing of the day.
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 6, 19));
+
+    const response = await planner.fetch(`https://planner/api/itinerary?${HSB_LNG}&id=${itinerary?.id}`);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(itinerary);
+});
+
+test.each([
+    ["an ID that none has", `${HSB_LNG}&id=000000000000`],
+    ["no ID", HSB_LNG],
+])("no itinerary is found by %s", async (_, query) => {
+    serve(makeArchive());
+
+    const response = await makePlanner().fetch(`https://planner/api/itinerary?${query}`);
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ detail: "Itinerary not found" });
+});
+
+test("itinerary is refused when its search is", async () => {
+    serve(makeArchive());
+
+    const response = await makePlanner().fetch("https://planner/api/itinerary?origin=HSB&id=000000000000");
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ detail: "destination is not a known location" });
+});
+
+test("search reads what to show from the query", async () => {
+    serve(makeArchive());
+    // Half past seven in Vancouver, when the only sailing of the day is under way.
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 6, 14, 30));
+    const planner = makePlanner();
+
+    const without = await (await search(planner, HSB_LNG)).json<Search>();
+    const found = await (await search(planner, `${HSB_LNG}&underway=true&sort=arrival`)).json<Search>();
+
+    expect(without).toMatchObject({ itineraries: [], departed: 1, underway: 1 });
+    expect(found).toMatchObject({ itineraries: [{ depart: "2026-10-06T06:45:00" }], departed: 0, underway: 0 });
 });

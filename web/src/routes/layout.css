@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* The page behind the options does not scroll while they are open. */
+html:has(dialog[open]) {
+    overflow: hidden;
+}
+
+/* Safari on iOS makes a date as wide as it likes and puts it in the middle, unless told how it is to look.
+   The date is then a line at the top of its field, which the padding of the field brings to the middle. */
+input[type="date"]::-webkit-date-and-time-value {
+    min-height: 1.5em;
+    margin: 0;
+    text-align: left;
+}

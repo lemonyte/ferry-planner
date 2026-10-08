@@ -62,8 +62,60 @@ test("schedule is for the terminals and date asked for", async () => {
         origin: "TSA",
         destination: "SWB",
         date: "2026-10-08T00:00:00",
-        sailings: expect.objectContaining({ length: 15 }),
+        // Fifteen straight across, and one that calls at three islands on its way.
+        sailings: expect.objectContaining({ length: 16 }),
     });
+});
+
+// Vancouver to Van Anda takes three ferries, by way of the Sunshine Coast or Vancouver Island.
+const VAN_ANDA = "origin=vancouver&destination=van_anda&date=2026-10-08";
+
+const search = async (query: string) => {
+    // Midnight in Vancouver, before anything has left.
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 8, 7));
+    const response = await exports.default.fetch(`https://ferryplanner.ca/api/search?${query}`);
+    expect(response.status).toBe(200);
+    return response.json<{
+        itineraries: { id: string; steps: { kind: string; from?: string; to?: string }[] }[];
+        moreRoutes: number;
+    }>();
+};
+
+test("search for a journey over several ferries has the itineraries of the route worth taking", async () => {
+    serveFeed();
+
+    const found = await search(VAN_ANDA);
+
+    expect(
+        found.itineraries.map((itinerary) =>
+            itinerary.steps
+                .filter((step) => step.kind === "FERRY")
+                .map((step) => `${step.from}>${step.to}`)
+                .join(" "),
+        ),
+    ).toEqual(Array(4).fill("HSB>LNG ERL>SLT PWR>TEX"));
+    expect(found.moreRoutes).toBe(8);
+});
+
+test("search for all routes has the itineraries of the rest as well", async () => {
+    serveFeed();
+
+    const found = await search(`${VAN_ANDA}&routes=all`);
+
+    expect(found.itineraries.length).toBeGreaterThan(4);
+    expect(found.moreRoutes).toBe(0);
+});
+
+test("itinerary of a search is found by its ID", async () => {
+    serveFeed();
+    const [itinerary] = (await search(VAN_ANDA)).itineraries;
+
+    const response = await exports.default.fetch(
+        `https://ferryplanner.ca/api/itinerary?${VAN_ANDA}&id=${itinerary?.id}`,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(itinerary);
 });
 
 test.each(["/", "/api", "/api/routes", "/api/routeplans/"])("nothing is found at %s", async (path) => {
@@ -77,6 +129,8 @@ test.each([
     ["POST", "/api/locations"],
     ["GET", "/api/routeplans"],
     ["GET", "/api/ferry_schedule"],
+    ["POST", "/api/search"],
+    ["POST", "/api/itinerary"],
 ])("%s is not allowed at %s", async (method, path) => {
     const fetch = serveFeed();
 

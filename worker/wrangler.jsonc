@@ -1,6 +1,7 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "ferry-planner-backend",
+    "account_id": "ae45a1d061b34cb20834281764537327",
     "main": "src/index.ts",
     "compatibility_date": "2026-10-07",
     "compatibility_flags": ["nodejs_compat"],

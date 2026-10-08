@@ -1,17 +1,27 @@
 import { DurableObject } from "cloudflare:workers";
+import type { SearchResult, Sort } from "./api";
 import { type LocationId, locations, type TerminalId } from "./data/locations";
 import { type Feed, parseFeed, Timetable } from "./gtfs";
 import { type PlanOptions, routePlans } from "./route";
 import { getSchedule, scheduleResponse, terminalCoordinates } from "./schedule";
-import { parseLocal, toLocal } from "./time";
+import { findItinerary, selectItineraries } from "./search";
+import { formatLocal, parseLocal, startOfDay, toLocal } from "./time";
 
 const GTFS_URL = "https://data.trilliumtransit.com/gtfs/bcferries-bc-ca/bcferries-bc-ca.zip";
 /** Time to wait before downloading the feed again after failing to, when there is no feed yet. */
 const FEED_RETRY_MS = 60 * 1000;
 /** Largest feed archive to read, many times the size of the feed. */
 const MAX_FEED_BYTES = 20 * 1024 * 1024;
+/** Longest buffer time in minutes, as longer ones only add to the work of finding no route plans. */
+const MAX_BUFFER = 24 * 60;
+
+const SORTS: Sort[] = ["duration", "departure", "arrival"];
+
+/** Changed whenever the form of a stored feed is, so that one stored in another form is not taken for this one. */
+const FEED_VERSION = 2;
 
 interface StoredFeed {
+    version: number;
     /** Version of the feed as given by the server it was downloaded from, to ask for the feed only if it has changed. */
     etag?: string;
     feed: Feed;
@@ -37,7 +47,7 @@ export class Planner extends DurableObject<Env> {
     constructor(ctx: DurableObjectState, env: Env) {
         super(ctx, env);
         const stored = ctx.storage.kv.get<StoredFeed>("feed");
-        if (stored) {
+        if (stored?.version === FEED_VERSION) {
             this.etag = stored.etag;
             this.timetable = new Timetable(stored.feed);
         }
@@ -67,7 +77,7 @@ export class Planner extends DurableObject<Env> {
             );
         }
         // The previous feed stays in use if the new one cannot be stored.
-        this.ctx.storage.kv.put<StoredFeed>("feed", { etag, feed });
+        this.ctx.storage.kv.put<StoredFeed>("feed", { version: FEED_VERSION, etag, feed });
         this.etag = etag;
         this.timetable = new Timetable(feed);
         console.log(JSON.stringify({ message: "updated GTFS feed", etag, legs: feed.legs.length }));
@@ -75,13 +85,16 @@ export class Planner extends DurableObject<Env> {
     }
 
     async fetch(request: Request): Promise<Response> {
-        const parsed = parseRequest(await request.json().catch(() => undefined));
+        const { pathname, searchParams } = new URL(request.url);
+        const parsed = parseRequest(
+            request.method === "GET" ? parseQuery(searchParams) : await request.json().catch(() => undefined),
+        );
         if (typeof parsed === "string") {
             return Response.json({ detail: parsed }, { status: 422 });
         }
         const { origin, destination, options } = parsed;
         const timetable = await this.getTimetable();
-        if (new URL(request.url).pathname === "/api/ferry_schedule") {
+        if (pathname === "/api/ferry_schedule") {
             if (!timetable) {
                 return Response.json({ detail: "Schedule not found" }, { status: 404 });
             }
@@ -91,7 +104,29 @@ export class Planner extends DurableObject<Env> {
         if (!timetable) {
             return Response.json({ detail: "Schedules are not available" }, { status: 503 });
         }
-        return Response.json(routePlans(origin, destination, options, timetable, toLocal(Date.now())));
+        const now = toLocal(Date.now());
+        const plans = routePlans(origin, destination, options, timetable, now);
+        if (pathname === "/api/routeplans") {
+            return Response.json(plans);
+        }
+        if (pathname === "/api/itinerary") {
+            const itinerary = findItinerary(plans, searchParams.get("id") ?? "");
+            return itinerary
+                ? Response.json(itinerary)
+                : Response.json({ detail: "Itinerary not found" }, { status: 404 });
+        }
+        return Response.json({
+            origin,
+            destination,
+            date: formatLocal(options.date).slice(0, 10),
+            covered: timetable.covers(startOfDay(options.date)),
+            now: formatLocal(now),
+            ...selectItineraries(plans, formatLocal(now), {
+                all: searchParams.get("routes") === "all",
+                sort: SORTS.find((sort) => sort === searchParams.get("sort")),
+                underway: searchParams.get("underway") === "true",
+            }),
+        } satisfies SearchResult);
     }
 
     private async getTimetable(): Promise<Timetable | undefined> {
@@ -133,8 +168,8 @@ const parseRequest = (body: unknown): PlanRequest | string => {
     if (typeof time !== "number") {
         return "date is not a valid date";
     }
-    if (typeof buffer !== "number") {
-        return "buffer is not a number";
+    if (typeof buffer !== "number" || !(buffer >= 0 && buffer <= MAX_BUFFER)) {
+        return `buffer must be a number of minutes from 0 to ${MAX_BUFFER}`;
     }
     return {
         origin: origin as LocationId,
@@ -146,5 +181,17 @@ const parseRequest = (body: unknown): PlanRequest | string => {
             hostled: hostled === true,
             buffer,
         },
+    };
+};
+
+/** Read the query of a request the way its body would be, with text in place of what is not text. */
+const parseQuery = (query: URLSearchParams): Record<string, unknown> => {
+    const { show_all, assured, hostled, buffer, ...rest } = Object.fromEntries(query);
+    return {
+        ...rest,
+        show_all: show_all === "true",
+        assured: assured === "true",
+        hostled: hostled === "true",
+        buffer: buffer === undefined ? undefined : Number(buffer),
     };
 };

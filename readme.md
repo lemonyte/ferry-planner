@@ -25,22 +25,23 @@ npx @tailwindcss/cli -i ./src/ferry_planner/static/style-in.css -o ./src/ferry_p
 
 Navigate to <http://localhost:8000> to preview the website.
 
-## Worker
+## Workers
 
-The API is being moved to a [Cloudflare Worker](https://developers.cloudflare.com/workers/) in [`worker/`](worker), written in TypeScript and sized for the Workers Free plan.
-The Worker answers `/api/locations` itself and passes `/api/routeplans` and `/api/ferry_schedule` to a single [Durable Object](https://developers.cloudflare.com/durable-objects/), which keeps the BC Ferries GTFS feed and plans routes with it.
-The feed is checked for changes every hour.
+The site is being moved to [Cloudflare Workers](https://developers.cloudflare.com/workers/), sized for the Workers Free plan. There are two, each a project of its own that needs [Bun](https://bun.sh):
 
-You need [Bun](https://bun.sh) to work on it:
+- [`worker/`](worker) is the backend, written in TypeScript. It answers `/api/locations` itself and passes the rest of `/api/*` to a single [Durable Object](https://developers.cloudflare.com/durable-objects/), which keeps the BC Ferries GTFS feed and plans routes with it. The feed is checked for changes every hour.
+- [`web/`](web) is the website, a [SvelteKit](https://svelte.dev/docs/kit) app rendered on the server. It asks the backend for the routes worth taking through a service binding, at `/api/search`.
 
 ```bash
-cd worker
+cd worker       # or web
 bun install
-bun run dev    # serve the API at http://localhost:8787
-bun run test   # run the tests in the Workers runtime
-bun run check  # check types, lint, and formatting
+bun run dev     # the backend at http://localhost:8787, the website at http://localhost:5173
+bun run test
+bun run check   # check types, lint, and formatting
 bun run deploy
 ```
+
+The website needs the backend running beside it. Deploy the backend first when both have changed.
 
 The locations and connections in `worker/src/data/` are checked by the type checker and the tests, not when the Worker starts.
 The expected results in `worker/test/fixtures/` come from the Python planner, and are made again with `uv run python tests/export_worker_fixtures.py`.

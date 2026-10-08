@@ -264,8 +264,7 @@ const addFerrySegments = (state: PlanState, connection: Connection): boolean => 
         if (options.hostled && origin.hostled_close) {
             deadlineName = "hostled vehicles check-in close";
             waitMinutes = origin.hostled_close;
-        }
-        if (options.assured && origin.assured_close) {
+        } else if (options.assured && origin.assured_close) {
             deadlineName = "assured loading check-in close";
             waitMinutes = origin.assured_close;
         } else if (origin.res_close && bookable) {

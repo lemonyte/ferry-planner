@@ -1,0 +1,23 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "ferry-planner-web",
+    "account_id": "ae45a1d061b34cb20834281764537327",
+    "main": ".svelte-kit/cloudflare/_worker.js",
+    "compatibility_date": "2026-10-07",
+    "compatibility_flags": ["nodejs_als"],
+    // The website is only at its own domain.
+    "routes": [{ "pattern": "beta.ferryplanner.ca", "custom_domain": true }],
+    "workers_dev": false,
+    "preview_urls": false,
+    "assets": {
+        "binding": "ASSETS",
+        "directory": ".svelte-kit/cloudflare"
+    },
+    "observability": {
+        "enabled": true,
+        "logs": { "enabled": true, "head_sampling_rate": 1 },
+        "traces": { "enabled": true, "head_sampling_rate": 0.01 }
+    },
+    // The Worker in `../worker`, which finds the routes.
+    "services": [{ "binding": "BACKEND", "service": "ferry-planner-backend" }]
+}

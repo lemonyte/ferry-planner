@@ -69,22 +69,6 @@
    "destination": "PST",
    "sailings": [
     {
-     "departure": "2026-10-08T06:00:00-07:00",
-     "arrival": "2026-10-08T10:20:00-07:00",
-     "duration": 15600,
-     "notes": [
-      "Via Swartz Bay Terminal"
-     ]
-    },
-    {
-     "departure": "2026-10-08T12:00:00-07:00",
-     "arrival": "2026-10-08T16:25:00-07:00",
-     "duration": 15900,
-     "notes": [
-      "Via Swartz Bay Terminal"
-     ]
-    },
-    {
      "departure": "2026-10-08T19:30:00-07:00",
      "arrival": "2026-10-08T21:57:00-07:00",
      "duration": 8820,

@@ -30,7 +30,6 @@ def make_archive(
     stop_times_columns: str = STOP_TIMES_COLUMNS,
     stops: str = STOPS,
     feed_info: str | None = None,
-    transfers: str | None = None,
 ) -> bytes:
     """Build a GTFS feed archive, by default with a single trip `t` that runs every day on service `daily`.
 
@@ -49,8 +48,6 @@ def make_archive(
         files["calendar_dates.txt"] = f"service_id,date,exception_type\n{calendar_dates}"
     if feed_info is not None:
         files["feed_info.txt"] = f"feed_publisher_name,feed_start_date,feed_end_date\n{feed_info}\n"
-    if transfers is not None:
-        files["transfers.txt"] = f"from_stop_id,to_stop_id,transfer_type,min_transfer_time\n{transfers}"
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
         for name, content in files.items():

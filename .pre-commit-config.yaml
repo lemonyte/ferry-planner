@@ -31,3 +31,10 @@ repos:
         language: system
         files: ^worker/
         pass_filenames: false
+      - id: web-check
+        name: web check
+        entry: bun run --cwd web check
+        language: system
+        # The web app uses the types and the locations of the worker.
+        files: ^(web|worker/src)/
+        pass_filenames: false

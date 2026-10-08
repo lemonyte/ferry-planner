@@ -281,12 +281,13 @@ def test_sailing_does_not_run_on_a_date_removed_for_its_trip_only() -> None:
 
 
 # The BC Ferries feed lists each part of a sailing that calls at several terminals as a trip of its own.
+# A vessel that calls at a terminal on its way leaves again within minutes, on the same route.
 TRIPS = "r,daily,a\nr,daily,b\nr,daily,c\n"
 HSB_TO_LNG_BY_8_10 = "a,07:30:00,07:30:00,1,1\na,08:10:00,08:10:00,2,2\n"
 LNG_TO_NAN_AT_8_25 = "b,08:25:00,08:25:00,2,1\nb,10:00:00,10:00:00,3,2\n"
 
 
-def test_sailing_continues_on_the_trip_that_departs_from_where_it_arrives() -> None:
+def test_sailing_continues_on_the_trip_that_leaves_shortly_after_from_where_it_arrives() -> None:
     feed = make_feed(trips=TRIPS, stop_times=HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25)
 
     assert feed.sailings("HSB", "NAN", DATE) == [
@@ -314,13 +315,25 @@ def test_sailing_does_not_continue_on_a_trip_that_departs_before_it_arrives() ->
     assert feed.sailings("HSB", "NAN", DATE) == []
 
 
-def test_sailing_does_not_continue_on_a_trip_that_departs_hours_after_it_arrives() -> None:
+def test_sailing_does_not_continue_on_a_trip_that_leaves_long_enough_after_to_be_another_vessel() -> None:
     feed = make_feed(
         trips=TRIPS,
-        stop_times=HSB_TO_LNG_BY_8_10 + "b,10:15:00,10:15:00,2,1\nb,12:00:00,12:00:00,3,2\n",
+        stop_times=HSB_TO_LNG_BY_8_10 + "b,08:35:00,08:35:00,2,1\nb,10:10:00,10:10:00,3,2\n",
     )
 
     assert feed.sailings("HSB", "NAN", DATE) == []
+
+
+def test_sailing_does_not_continue_on_a_trip_of_another_route() -> None:
+    # Getting from one route to another means leaving the vessel, however soon the other leaves.
+    feed = make_feed(
+        trips="r,daily,a\nother,daily,b\n",
+        stop_times=HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25,
+    )
+
+    assert feed.sailings("HSB", "NAN", DATE) == []
+    assert feed.sailings("HSB", "LNG", DATE) == [GtfsSailing(departure=at(6, 7, 30), arrival=at(6, 8, 10))]
+    assert feed.sailings("LNG", "NAN", DATE) == [GtfsSailing(departure=at(6, 8, 25), arrival=at(6, 10, 0))]
 
 
 def test_sailing_continues_past_midnight() -> None:
@@ -339,62 +352,27 @@ def test_sailing_continues_past_midnight() -> None:
     ]
 
 
-def test_sailing_with_a_transfer_is_left_out_when_a_later_sailing_arrives_no_later() -> None:
+def test_sailing_that_calls_on_the_way_is_listed_along_with_a_faster_one_that_does_not() -> None:
     feed = make_feed(
         trips=TRIPS,
         stop_times=HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25 + "c,08:00:00,08:00:00,1,1\nc,09:40:00,09:40:00,3,2\n",
     )
 
-    assert feed.sailings("HSB", "NAN", DATE) == [GtfsSailing(departure=at(6, 8, 0), arrival=at(6, 9, 40))]
-
-
-def test_sailing_without_a_transfer_is_kept_when_a_later_sailing_arrives_earlier() -> None:
-    feed = make_feed(
-        trips=TRIPS,
-        stop_times=HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25 + "c,07:00:00,07:00:00,1,1\nc,11:00:00,11:00:00,3,2\n",
-    )
-
-    assert feed.sailings("HSB", "NAN", DATE) == [
-        GtfsSailing(departure=at(6, 7, 0), arrival=at(6, 11, 0)),
-        GtfsSailing(departure=at(6, 7, 30), arrival=at(6, 10, 0), stops=("LNG",)),
-    ]
-
-
-# Transfers at Langdale take at least 45 minutes.
-LNG_TRANSFER = "2,2,2,2700\n"
-
-
-def test_sailing_does_not_continue_on_a_trip_that_departs_within_the_minimum_transfer_time() -> None:
-    feed = make_feed(trips=TRIPS, stop_times=HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25, transfers=LNG_TRANSFER)
-
-    assert feed.sailings("HSB", "NAN", DATE) == []
-
-
-def test_sailing_continues_on_a_trip_that_departs_after_the_minimum_transfer_time() -> None:
-    feed = make_feed(
-        trips=TRIPS,
-        stop_times=HSB_TO_LNG_BY_8_10 + "b,08:55:00,08:55:00,2,1\nb,10:30:00,10:30:00,3,2\n",
-        transfers=LNG_TRANSFER,
-    )
-
-    assert feed.sailings("HSB", "NAN", DATE) == [
-        GtfsSailing(departure=at(6, 7, 30), arrival=at(6, 10, 30), stops=("LNG",)),
-    ]
-
-
-def test_sailing_stays_on_its_trip_without_waiting_for_the_minimum_transfer_time() -> None:
-    feed = make_feed(stop_times=THREE_STOPS, transfers=LNG_TRANSFER)
-
     assert feed.sailings("HSB", "NAN", DATE) == [
         GtfsSailing(departure=at(6, 7, 30), arrival=at(6, 10, 0), stops=("LNG",)),
+        GtfsSailing(departure=at(6, 8, 0), arrival=at(6, 9, 40)),
     ]
 
 
-def test_sailing_does_not_continue_from_a_stop_that_cannot_be_alighted_at() -> None:
+def test_sailing_continues_from_a_stop_that_cannot_be_alighted_at() -> None:
+    # Those staying on the vessel do not get off at the stops on the way.
     feed = make_feed(
         trips=TRIPS,
         stop_times_columns=PICKUP_COLUMNS,
         stop_times="a,07:30:00,07:30:00,1,1,0,0\na,08:10:00,08:10:00,2,2,0,1\n" + LNG_TO_NAN_AT_8_25,
     )
 
-    assert feed.sailings("HSB", "NAN", DATE) == []
+    assert feed.sailings("HSB", "LNG", DATE) == []
+    assert feed.sailings("HSB", "NAN", DATE) == [
+        GtfsSailing(departure=at(6, 7, 30), arrival=at(6, 10, 0), stops=("LNG",)),
+    ]

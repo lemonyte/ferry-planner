@@ -99,3 +99,20 @@ test("drive without a sailing starts at the current time of day", () => {
 test("no route plans between a location and itself", () => {
     expect(routePlans("TSA", "TSA", OPTIONS, timetable, NOW)).toEqual([]);
 });
+
+const waitsFor = (options: Partial<PlanOptions>): string[] => {
+    // Prince Rupert has check-in times of its own for reservations and for hostled vehicles.
+    const plan = routePlans("PPR", "PSK", { ...OPTIONS, showAll: true, ...options }, timetable, DATE).find(
+        (plan) => plan.segments.length === 1,
+    );
+    return (plan?.segments ?? []).flatMap((segment) =>
+        segment.times.filter((time) => time.type === "WAIT").map((time) => time.description),
+    );
+};
+
+test("check-in closes for hostled vehicles when they are asked for, and for reservations otherwise", () => {
+    expect(waitsFor({})).toEqual(["Arrive at Prince Rupert Terminal 15 minutes before booking check-in close"]);
+    expect(waitsFor({ hostled: true })).toEqual([
+        "Arrive at Prince Rupert Terminal 15 minutes before hostled vehicles check-in close",
+    ]);
+});

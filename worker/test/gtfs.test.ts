@@ -29,6 +29,19 @@ test("sailings are only worked out once for the same locations and date", () => 
     expect(timetable.sailings("HSB", "LNG", DATE)).toBe(timetable.sailings("HSB", "LNG", DATE));
 });
 
+test("sailings looked up are forgotten once many more days have been looked up", () => {
+    const timetable = makeTimetable({ calendar: "daily,1,1,1,1,1,1,1,20000101,20991231", stopTimes: HSB_TO_LNG });
+    const sailings = timetable.sailings("HSB", "LNG", DATE);
+
+    // More days than a feed covers, as someone could ask for to use up memory.
+    for (let day = 1; day <= 1000; day++) {
+        timetable.sailings("HSB", "LNG", DATE + day * 24 * 60 * 60 * 1000);
+    }
+
+    expect(timetable.sailings("HSB", "LNG", DATE)).not.toBe(sailings);
+    expect(timetable.sailings("HSB", "LNG", DATE)).toEqual(sailings);
+});
+
 test("no sailings on a weekday the service does not run", () => {
     const timetable = makeTimetable({ calendar: "daily,1,0,1,1,1,1,1,20260101,20261231", stopTimes: HSB_TO_LNG });
 
@@ -280,11 +293,12 @@ test("sailing does not run on a date removed for its trip only", () => {
 });
 
 // The BC Ferries feed lists each part of a sailing that calls at several terminals as a trip of its own.
+// A vessel that calls at a terminal on its way leaves again within minutes, on the same route.
 const TRIPS = "r,daily,a\nr,daily,b\nr,daily,c\n";
 const HSB_TO_LNG_BY_8_10 = "a,07:30:00,07:30:00,1,1\na,08:10:00,08:10:00,2,2\n";
 const LNG_TO_NAN_AT_8_25 = "b,08:25:00,08:25:00,2,1\nb,10:00:00,10:00:00,3,2\n";
 
-test("sailing continues on the trip that departs from where it arrives", () => {
+test("sailing continues on the trip that leaves shortly after from where it arrives", () => {
     const timetable = makeTimetable({ trips: TRIPS, stopTimes: HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25 });
 
     expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 10, 0), ["LNG"])]);
@@ -308,13 +322,25 @@ test("sailing does not continue on a trip that departs before it arrives", () =>
     expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([]);
 });
 
-test("sailing does not continue on a trip that departs hours after it arrives", () => {
+test("sailing does not continue on a trip that leaves long enough after to be another vessel", () => {
     const timetable = makeTimetable({
         trips: TRIPS,
-        stopTimes: `${HSB_TO_LNG_BY_8_10}b,10:15:00,10:15:00,2,1\nb,12:00:00,12:00:00,3,2\n`,
+        stopTimes: `${HSB_TO_LNG_BY_8_10}b,08:35:00,08:35:00,2,1\nb,10:10:00,10:10:00,3,2\n`,
     });
 
     expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([]);
+});
+
+test("sailing does not continue on a trip of another route", () => {
+    // Getting from one route to another means leaving the vessel, however soon the other leaves.
+    const timetable = makeTimetable({
+        trips: "r,daily,a\nother,daily,b\n",
+        stopTimes: HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25,
+    });
+
+    expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([]);
+    expect(timetable.sailings("HSB", "LNG", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 8, 10))]);
+    expect(timetable.sailings("LNG", "NAN", DATE)).toEqual([sailing(at(6, 8, 25), at(6, 10, 0))]);
 });
 
 test("sailing continues past midnight", () => {
@@ -328,62 +354,26 @@ test("sailing continues past midnight", () => {
     expect(timetable.sailings("LNG", "NAN", Date.UTC(2026, 9, 7))).toEqual([sailing(at(7, 0, 30), at(7, 1, 30))]);
 });
 
-test("sailing with a transfer is left out when a later sailing arrives no later", () => {
+test("sailing that calls on the way is listed along with a faster one that does not", () => {
     const timetable = makeTimetable({
         trips: TRIPS,
         stopTimes: `${HSB_TO_LNG_BY_8_10}${LNG_TO_NAN_AT_8_25}c,08:00:00,08:00:00,1,1\nc,09:40:00,09:40:00,3,2\n`,
     });
 
-    expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([sailing(at(6, 8, 0), at(6, 9, 40))]);
-});
-
-test("sailing without a transfer is kept when a later sailing arrives earlier", () => {
-    const timetable = makeTimetable({
-        trips: TRIPS,
-        stopTimes: `${HSB_TO_LNG_BY_8_10}${LNG_TO_NAN_AT_8_25}c,07:00:00,07:00:00,1,1\nc,11:00:00,11:00:00,3,2\n`,
-    });
-
     expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([
-        sailing(at(6, 7, 0), at(6, 11, 0)),
         sailing(at(6, 7, 30), at(6, 10, 0), ["LNG"]),
+        sailing(at(6, 8, 0), at(6, 9, 40)),
     ]);
 });
 
-// Transfers at Langdale take at least 45 minutes.
-const LNG_TRANSFER = "2,2,2,2700\n";
-
-test("sailing does not continue on a trip that departs within the minimum transfer time", () => {
-    const timetable = makeTimetable({
-        trips: TRIPS,
-        stopTimes: HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25,
-        transfers: LNG_TRANSFER,
-    });
-
-    expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([]);
-});
-
-test("sailing continues on a trip that departs after the minimum transfer time", () => {
-    const timetable = makeTimetable({
-        trips: TRIPS,
-        stopTimes: `${HSB_TO_LNG_BY_8_10}b,08:55:00,08:55:00,2,1\nb,10:30:00,10:30:00,3,2\n`,
-        transfers: LNG_TRANSFER,
-    });
-
-    expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 10, 30), ["LNG"])]);
-});
-
-test("sailing stays on its trip without waiting for the minimum transfer time", () => {
-    const timetable = makeTimetable({ stopTimes: THREE_STOPS, transfers: LNG_TRANSFER });
-
-    expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 10, 0), ["LNG"])]);
-});
-
-test("sailing does not continue from a stop that cannot be alighted at", () => {
+test("sailing continues from a stop that cannot be alighted at", () => {
+    // Those staying on the vessel do not get off at the stops on the way.
     const timetable = makeTimetable({
         trips: TRIPS,
         stopTimesColumns: PICKUP_COLUMNS,
         stopTimes: `a,07:30:00,07:30:00,1,1,0,0\na,08:10:00,08:10:00,2,2,0,1\n${LNG_TO_NAN_AT_8_25}`,
     });
 
-    expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([]);
+    expect(timetable.sailings("HSB", "LNG", DATE)).toEqual([]);
+    expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 10, 0), ["LNG"])]);
 });

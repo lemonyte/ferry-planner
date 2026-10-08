@@ -22,7 +22,6 @@ export interface FeedFiles {
     stopTimesColumns?: string;
     stops?: string;
     feedInfo?: string;
-    transfers?: string;
 }
 
 /**
@@ -38,7 +37,6 @@ export const makeArchive = ({
     stopTimesColumns = STOP_TIMES_COLUMNS,
     stops = STOPS,
     feedInfo,
-    transfers,
 }: FeedFiles = {}): Uint8Array => {
     const files: Record<string, string> = {
         "stops.txt": stops,
@@ -54,9 +52,6 @@ export const makeArchive = ({
     }
     if (feedInfo !== undefined) {
         files["feed_info.txt"] = `feed_publisher_name,feed_start_date,feed_end_date\n${feedInfo}\n`;
-    }
-    if (transfers !== undefined) {
-        files["transfers.txt"] = `from_stop_id,to_stop_id,transfer_type,min_transfer_time\n${transfers}`;
     }
     return zipSync(Object.fromEntries(Object.entries(files).map(([name, content]) => [name, strToU8(content)])));
 };
