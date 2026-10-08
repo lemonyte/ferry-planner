@@ -1,5 +1,5 @@
 // Local times are held in milliseconds as if they were UTC, which keeps arithmetic on them clear of time zones.
-// The Workers runtime itself always runs in UTC.
+// Nothing here goes by the time zone of the device, which can be anywhere.
 
 export const MS_PER_MINUTE = 60 * 1000;
 export const MS_PER_DAY = 24 * 60 * MS_PER_MINUTE;
@@ -38,12 +38,6 @@ const utcOffsetAt = (instant: number): string => {
 const offsetMs = (offset: string): number => {
     const [hours = 0, minutes = 0] = offset.slice(1).split(":").map(Number);
     return (offset.startsWith("-") ? -1 : 1) * (hours * 60 + minutes) * MS_PER_MINUTE;
-};
-
-/** Get the UTC offset in effect at a local time, such as `-07:00`. */
-export const utcOffset = (time: number): string => {
-    // The offset at the instant read as UTC is right except within hours of a clock change.
-    return utcOffsetAt(time - offsetMs(utcOffsetAt(time)));
 };
 
 /** Convert an instant, such as `Date.now()`, to the local time. */

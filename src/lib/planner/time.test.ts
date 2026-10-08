@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { formatLocal, parseLocal, startOfDay, toLocal, utcOffset } from "./time";
+import { formatLocal, parseLocal, startOfDay, toLocal } from "./time";
 
 test("date is parsed as the start of its day", () => {
     expect(parseLocal("2026-10-08")).toBe(Date.UTC(2026, 9, 8));
@@ -26,14 +26,6 @@ test("day starts at midnight", () => {
 });
 
 // British Columbia stopped changing its clocks in 2026, so the years before are used here.
-test("offset follows daylight saving time", () => {
-    expect(utcOffset(Date.UTC(2025, 6, 1, 12))).toBe("-07:00");
-    expect(utcOffset(Date.UTC(2025, 11, 1, 12))).toBe("-08:00");
-    // Clocks went back at 02:00 on the 2nd of November.
-    expect(utcOffset(Date.UTC(2025, 10, 2, 0, 30))).toBe("-07:00");
-    expect(utcOffset(Date.UTC(2025, 10, 2, 3, 30))).toBe("-08:00");
-});
-
 test("instant is converted to the time in Vancouver", () => {
     expect(toLocal(Date.UTC(2025, 6, 8, 3))).toBe(Date.UTC(2025, 6, 7, 20));
     expect(toLocal(Date.UTC(2025, 11, 8, 3))).toBe(Date.UTC(2025, 11, 7, 19));

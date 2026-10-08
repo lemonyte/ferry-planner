@@ -2,13 +2,13 @@ import { expect, test } from "vitest";
 import schedules from "#test/fixtures/schedules.json";
 import { makeTimetable } from "#test/fixtures.ts";
 import type { TerminalId } from "./data/locations";
-import { getSchedule, scheduleResponse } from "./schedule";
+import { getSchedule } from "./schedule";
 import { parseLocal } from "./time";
 
 const timetable = makeTimetable();
 
 test.each(schedules)(
-    "schedule for $request.origin to $request.destination on $request.date is the same as from the Python planner",
+    "schedule for $request.origin to $request.destination on $request.date is as expected",
     ({ request, response }) => {
         const schedule = getSchedule(
             timetable,
@@ -17,15 +17,15 @@ test.each(schedules)(
             parseLocal(request.date) ?? Number.NaN,
         );
 
-        expect(scheduleResponse(schedule)).toEqual(response);
+        expect(schedule).toEqual(response);
     },
 );
 
 test("schedule is for the day of the time it is asked for", () => {
     const schedule = getSchedule(timetable, "HSB", "NAN", parseLocal("2026-10-08T15:45:00") ?? Number.NaN);
 
-    expect(scheduleResponse(schedule)).toMatchObject({
-        date: "2026-10-08T15:45:00",
+    expect(schedule).toMatchObject({
+        date: Date.UTC(2026, 9, 8, 15, 45),
         sailings: expect.objectContaining({ length: 7 }),
         url: "https://www.bcferries.com/routes-fares/schedules/daily/HSB-NAN?&scheduleDate=10/08/2026",
     });
@@ -42,18 +42,16 @@ test("no sailings between terminals that are only joined by way of another, wher
 test("sailing that calls at terminals on its way is between the first and the last of them", () => {
     const schedule = getSchedule(timetable, "TSA", "PLH", parseLocal("2026-10-08") ?? Number.NaN);
 
-    expect(scheduleResponse(schedule).sailings).toEqual([
+    expect(schedule.sailings).toEqual([
         {
-            departure: "2026-10-08T10:25:00-07:00",
-            arrival: "2026-10-08T13:20:00-07:00",
-            duration: 175 * 60,
-            notes: ["Via Sturdies Bay Terminal, Village Bay Terminal, Otter Bay Terminal"],
+            departure: Date.UTC(2026, 9, 8, 10, 25),
+            arrival: Date.UTC(2026, 9, 8, 13, 20),
+            stops: ["PSB", "PVB", "POB"],
         },
         {
-            departure: "2026-10-08T19:30:00-07:00",
-            arrival: "2026-10-08T22:30:00-07:00",
-            duration: 180 * 60,
-            notes: ["Via Sturdies Bay Terminal, Village Bay Terminal, Otter Bay Terminal"],
+            departure: Date.UTC(2026, 9, 8, 19, 30),
+            arrival: Date.UTC(2026, 9, 8, 22, 30),
+            stops: ["PSB", "PVB", "POB"],
         },
     ]);
 });

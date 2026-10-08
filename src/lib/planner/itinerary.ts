@@ -1,4 +1,4 @@
-// What `/api/search` and `/api/itinerary` give, kept apart from the code so that the web app can use the types on their own.
+// What a search gives, kept apart from the code that makes it so that pages can use the types on their own.
 
 import type { LocationId } from "./data/locations";
 
@@ -17,7 +17,7 @@ export interface Step {
 }
 
 export interface Itinerary {
-    /** Identifies the itinerary among those of a search, to ask `/api/itinerary` for it. */
+    /** Identifies the itinerary among those of a search, to find it again by. */
     id: string;
     /** Identifies the route, which is the locations gone through, among those of a search. */
     route: string;
@@ -46,7 +46,7 @@ export interface Selection {
 /** What routes are the best by, and so which are shown. */
 export type Sort = "duration" | "departure" | "arrival";
 
-/** Itineraries worth taking for a journey, as given by `/api/search`. */
+/** Itineraries worth taking for a journey. */
 export interface SearchResult extends Selection {
     origin: LocationId;
     destination: LocationId;

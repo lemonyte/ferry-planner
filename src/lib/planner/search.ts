@@ -1,5 +1,5 @@
-import type { Itinerary, Selection, Sort, Step } from "./api";
 import type { LocationId } from "./data/locations";
+import type { Itinerary, Selection, Sort, Step } from "./itinerary";
 import type { RoutePlan } from "./route";
 
 /** Number of routes shown unless all are asked for. */
@@ -50,7 +50,7 @@ const worthTaking = (candidates: Candidate[]): Candidate[] => {
 };
 
 const toId = (plan: RoutePlan): string => {
-    return plan.hash.slice(0, 12);
+    return plan.hash;
 };
 
 const toRoute = (plan: RoutePlan): string => {

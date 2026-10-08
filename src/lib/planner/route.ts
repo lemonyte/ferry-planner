@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { carConnections } from "./data/car-connections";
 import { ferryConnections } from "./data/ferry-connections";
 import { cities, type Location, type LocationId, locations, type Terminal, type TerminalId } from "./data/locations";
@@ -63,6 +62,25 @@ export interface PlanOptions {
     /** Buffer time in minutes. */
     buffer: number;
 }
+
+/**
+ * Hash text to 11 letters and digits.
+ *
+ * Not one to keep secrets with, only to make a short ID that the same text always gets.
+ */
+const hashText = (text: string): string => {
+    let high = 0xdeadbeef;
+    let low = 0x41c6ce57;
+    for (let index = 0; index < text.length; index++) {
+        const code = text.charCodeAt(index);
+        high = Math.imul(high ^ code, 2654435761);
+        low = Math.imul(low ^ code, 1597334677);
+    }
+    high = Math.imul(high ^ (high >>> 16), 2246822507) ^ Math.imul(low ^ (low >>> 13), 3266489909);
+    low = Math.imul(low ^ (low >>> 16), 2246822507) ^ Math.imul(high ^ (high >>> 13), 3266489909);
+    // The 53 bits that a number holds exactly.
+    return ((low & 0x1fffff) * 2 ** 32 + (high >>> 0)).toString(36).padStart(11, "0");
+};
 
 /** Segments use local times in milliseconds until their route plan is complete. */
 type Segment = RoutePlanSegment<number>;
@@ -366,16 +384,16 @@ const makeRoutePlan = (planSegments: Segment[], now: number): RoutePlan => {
 
     let drivingDuration = 0;
     let drivingDistance = 0;
-    // Hashed the same way as by the Python planner before, so that links to route plans keep working.
-    const hash = createHash("sha1");
+    // What tells the route plan apart from the others between the same locations on the same day.
+    const parts: string[] = [];
     for (const segment of segments) {
         if (segment.connection.type === "CAR") {
             drivingDuration += segment.connection.duration;
             drivingDistance += segment.connection.distance;
         }
-        hash.update(segment.connection.destination.id);
+        parts.push(segment.connection.destination.id);
         for (const time of segment.times) {
-            hash.update(formatLocal(time.start));
+            parts.push(formatLocal(time.start));
         }
     }
     const waypoints = segments.slice(1).map((segment) => mapParameter(segment.connection.origin));
@@ -388,7 +406,7 @@ const makeRoutePlan = (planSegments: Segment[], now: number): RoutePlan => {
                 end: formatLocal(time.end),
             })),
         })),
-        hash: hash.digest("hex"),
+        hash: hashText(parts.join(" ")),
         duration: (arriveTime - departTime) / 1000,
         depart_time: formatLocal(departTime),
         arrive_time: formatLocal(arriveTime),

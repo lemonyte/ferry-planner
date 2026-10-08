@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { makeTimetable } from "#test/fixtures.ts";
-import type { Itinerary } from "./api";
 import type { LocationId } from "./data/locations";
+import type { Itinerary } from "./itinerary";
 import { type PlanOptions, type RoutePlan, routePlans } from "./route";
 import { findItinerary, selectItineraries } from "./search";
 
@@ -139,7 +139,7 @@ test("itinerary lists its steps with their kinds, and the terminals and schedule
     const [itinerary] = found.itineraries;
 
     expect(itinerary).toMatchObject({
-        id: "ce6c2a2222aa",
+        id: "19isw5r3buy",
         depart: "2026-10-08T06:20:50",
         arrive: "2026-10-08T13:34:24",
         duration: 26014,
@@ -174,14 +174,14 @@ test("itinerary is found by its ID among all there are, shown or not", () => {
         (itinerary) => itinerary.route !== SUNSHINE_COAST,
     );
 
-    expect(findItinerary(plans, "ce6c2a2222aa")).toEqual(shown[0]);
+    expect(findItinerary(plans, "19isw5r3buy")).toEqual(shown[0]);
     expect(findItinerary(plans, hidden?.id ?? "")).toEqual(hidden);
 });
 
 test("no itinerary is found by an ID that none has", () => {
     const plans = plansFor("vancouver", "van_anda");
 
-    expect(findItinerary(plans, "000000000000")).toBeUndefined();
+    expect(findItinerary(plans, "00000000000")).toBeUndefined();
     expect(findItinerary(plans, "")).toBeUndefined();
     // Only a whole ID finds an itinerary.
     expect(findItinerary(plans, "ce6c2a")).toBeUndefined();

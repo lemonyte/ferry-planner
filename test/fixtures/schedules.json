@@ -6,51 +6,44 @@
    "date": "2026-10-08"
   },
   "response": {
-   "date": "2026-10-08T00:00:00",
+   "date": 1791417600000,
    "origin": "HSB",
    "destination": "NAN",
    "sailings": [
     {
-     "departure": "2026-10-08T06:15:00-07:00",
-     "arrival": "2026-10-08T07:55:00-07:00",
-     "duration": 6000,
-     "notes": []
+     "departure": 1791440100000,
+     "arrival": 1791446100000,
+     "stops": []
     },
     {
-     "departure": "2026-10-08T08:35:00-07:00",
-     "arrival": "2026-10-08T10:15:00-07:00",
-     "duration": 6000,
-     "notes": []
+     "departure": 1791448500000,
+     "arrival": 1791454500000,
+     "stops": []
     },
     {
-     "departure": "2026-10-08T11:05:00-07:00",
-     "arrival": "2026-10-08T12:45:00-07:00",
-     "duration": 6000,
-     "notes": []
+     "departure": 1791457500000,
+     "arrival": 1791463500000,
+     "stops": []
     },
     {
-     "departure": "2026-10-08T13:25:00-07:00",
-     "arrival": "2026-10-08T15:05:00-07:00",
-     "duration": 6000,
-     "notes": []
+     "departure": 1791465900000,
+     "arrival": 1791471900000,
+     "stops": []
     },
     {
-     "departure": "2026-10-08T18:20:00-07:00",
-     "arrival": "2026-10-08T20:00:00-07:00",
-     "duration": 6000,
-     "notes": []
+     "departure": 1791483600000,
+     "arrival": 1791489600000,
+     "stops": []
     },
     {
-     "departure": "2026-10-08T20:30:00-07:00",
-     "arrival": "2026-10-08T22:10:00-07:00",
-     "duration": 6000,
-     "notes": []
+     "departure": 1791491400000,
+     "arrival": 1791497400000,
+     "stops": []
     },
     {
-     "departure": "2026-10-08T22:40:00-07:00",
-     "arrival": "2026-10-09T00:20:00-07:00",
-     "duration": 6000,
-     "notes": []
+     "departure": 1791499200000,
+     "arrival": 1791505200000,
+     "stops": []
     }
    ],
    "url": "https://www.bcferries.com/routes-fares/schedules/daily/HSB-NAN?&scheduleDate=10/08/2026",
@@ -64,16 +57,16 @@
    "date": "2026-10-08"
   },
   "response": {
-   "date": "2026-10-08T00:00:00",
+   "date": 1791417600000,
    "origin": "TSA",
    "destination": "PST",
    "sailings": [
     {
-     "departure": "2026-10-08T19:30:00-07:00",
-     "arrival": "2026-10-08T21:57:00-07:00",
-     "duration": 8820,
-     "notes": [
-      "Via Sturdies Bay Terminal, Village Bay Terminal"
+     "departure": 1791487800000,
+     "arrival": 1791496620000,
+     "stops": [
+      "PSB",
+      "PVB"
      ]
     }
    ],
@@ -88,7 +81,7 @@
    "date": "2026-10-08"
   },
   "response": {
-   "date": "2026-10-08T00:00:00",
+   "date": 1791417600000,
    "origin": "PPR",
    "destination": "PPH",
    "sailings": [],
@@ -105,7 +98,7 @@
    "date": "2027-06-01"
   },
   "response": {
-   "date": "2027-06-01T00:00:00",
+   "date": 1811808000000,
    "origin": "HSB",
    "destination": "NAN",
    "sailings": [],

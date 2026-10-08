@@ -1,7 +1,8 @@
 import { expect, test } from "vitest";
+import { digest } from "#test/digest.ts";
 import plans from "#test/fixtures/plans.json";
 import routes from "#test/fixtures/routes.json";
-import { digest, makeTimetable } from "#test/fixtures.ts";
+import { makeTimetable } from "#test/fixtures.ts";
 import type { LocationId } from "./data/locations";
 import { findRoutes, type PlanOptions, routePlans } from "./route";
 import { parseLocal } from "./time";
@@ -11,7 +12,7 @@ const DATE = Date.UTC(2026, 9, 8);
 const NOW = Date.UTC(2026, 9, 8, 13, 45, 10);
 const OPTIONS: PlanOptions = { date: DATE, showAll: false, assured: false, hostled: false, buffer: 15 };
 
-test.each(Object.entries(routes))("routes for %s are the same as from the Python planner", (id, expected) => {
+test.each(Object.entries(routes))("routes for %s are as expected", (id, expected) => {
     const [origin, destination] = id.split("-") as [LocationId, LocationId];
 
     const found = findRoutes(origin, destination);
@@ -23,7 +24,7 @@ test.each(Object.entries(routes))("routes for %s are the same as from the Python
     expect(digest(found)).toBe(expected.digest);
 });
 
-test.each(plans)("route plans for $request are the same as from the Python planner", (expected) => {
+test.each(plans)("route plans for $request are as expected", (expected) => {
     const { origin, destination, date, ...request } = expected.request as {
         origin: LocationId;
         destination: LocationId;
@@ -48,7 +49,8 @@ test.each(plans)("route plans for $request are the same as from the Python plann
         NOW,
     );
 
-    expect(found.map((plan) => plan.hash.slice(0, 12))).toEqual(expected.hashes);
+    expect(found.map((plan) => plan.hash)).toEqual(expected.ids);
+    expect(new Set(expected.ids).size).toBe(expected.count);
     if ("first" in expected) {
         expect(found.slice(0, 3)).toEqual(expected.first);
     }

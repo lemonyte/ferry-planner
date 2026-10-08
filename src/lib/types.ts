@@ -1,1 +1,1 @@
-export type { Itinerary, SearchResult, Step } from "./planner/api";
+export type { Itinerary, SearchResult, Step } from "./planner/itinerary";
