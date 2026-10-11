@@ -1,16 +1,18 @@
 import { unzipSync } from "fflate";
 
+import { MS_PER_DAY } from "./time.ts";
+
 /**
- * Stops further than this from every location are ignored.
+ * Maximum distance between a stop and a location for the stop to match it.
  *
- * Less than half the distance between the two terminals closest to each other, so no stop is near two of them.
+ * Less than half the distance between the two closest terminals, so no stop matches two terminals.
  */
 const MAX_STOP_DISTANCE_KM = 0.5;
 /**
- * Longest that a vessel stays at a terminal that it calls at on its way.
+ * Maximum time that a vessel stays at an intermediate terminal.
  *
- * The feed does not say which vessel makes a trip, so two trips of a route are taken to be one vessel calling
- * at a terminal when the second leaves from where the first arrives no later than this.
+ * The feed does not identify vessels, so two trips of a route are treated as one vessel if the second
+ * departs from the destination of the first within this time.
  */
 const MAX_CALL_SECONDS = 20 * 60;
 const KM_PER_DEGREE = 111.2;
@@ -18,13 +20,10 @@ const WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "satur
 const SERVICE_ADDED = "1";
 const NOT_AVAILABLE = "1";
 const SECONDS_PER_DAY = 24 * 60 * 60;
-const MS_PER_DAY = SECONDS_PER_DAY * 1000;
-/** Number of days to remember lookups for, more than a feed covers, so that asking for ever more does not fill memory. */
-const MAX_DAYS_REMEMBERED = 400;
 const FILES = ["stops.txt", "feed_info.txt", "trips.txt", "calendar.txt", "calendar_dates.txt", "stop_times.txt"];
 
 /**
- * Part of a trip between two locations that it calls at one after the other.
+ * Part of a trip between two consecutive locations.
  *
  * Times are in seconds since the start of the service day.
  */
@@ -34,25 +33,25 @@ export interface Leg {
     origin: string;
     destination: string;
     trip: string;
-    /** Route that the trip is of, which a vessel stays on. */
+    /** Route of the trip. A vessel stays on one route. */
     route: string;
     canBoard: boolean;
     canAlight: boolean;
-    /** Services that say when the trip runs, the first that says anything about a date deciding. */
+    /** Services that define when the trip runs. The first service with an entry for a date decides. */
     services: string[];
 }
 
-/** Sailings from a GTFS feed archive, as plain data that can be stored and read back. */
+/** Sailings from a GTFS feed archive, as JSON-serializable data. */
 export interface Feed {
-    /** Date range that the feed has schedules for, as `YYYYMMDD`, if it says so. */
+    /** Date range that the feed covers, as `YYYYMMDD`, if the feed gives one. */
     startDate?: string;
     endDate?: string;
     legs: Leg[];
     /** Weekdays from Monday and `YYYYMMDD` date range that each service runs on. */
     calendar: Record<string, { weekdays: boolean[]; startDate: string; endDate: string }>;
-    /** Whether a service is added to or removed from a date regardless of its calendar, by service then `YYYYMMDD`. */
+    /** Dates that a service is added to (`true`) or removed from (`false`), by service then `YYYYMMDD`. */
     calendarDates: Record<string, Record<string, boolean>>;
-    /** Locations that the feed has no sailings for. */
+    /** Locations with no sailings in the feed. */
     unserved: string[];
 }
 
@@ -60,7 +59,7 @@ export interface Feed {
 export interface Sailing {
     departure: number;
     arrival: number;
-    /** IDs of the locations that the sailing calls at on the way. */
+    /** IDs of the intermediate locations. */
     stops: string[];
 }
 
@@ -85,7 +84,7 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
     const archive = unzipSync(data, { filter: (file) => FILES.includes(file.name) });
     const stopLocations = new Map<string, string | undefined>();
     for (const row of readTable(archive, "stops.txt")) {
-        // Stops that are not boarded at, such as entrances, can have no coordinates.
+        // Stops that are not boarding points, such as entrances, can lack coordinates.
         if (row.stop_lat && row.stop_lon) {
             stopLocations.set(
                 required(row, "stop_id"),
@@ -118,7 +117,7 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
     const tripCalls = new Map<string, Call[]>();
     for (const row of readTable(archive, "stop_times.txt")) {
         const location = stopLocations.get(required(row, "stop_id"));
-        // Either time stands in for the other, and stops that are only passed can have neither.
+        // Each time defaults to the other. Stops that a trip only passes can have neither.
         const arrival = row.arrival_time || row.departure_time;
         const departure = row.departure_time || row.arrival_time;
         if (location && arrival && departure) {
@@ -154,9 +153,8 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
                     route,
                     canBoard: call.canBoard,
                     canAlight: nextCall.canAlight,
-                    // The BC Ferries feed lists the dates that a single trip is added to or removed from
-                    // under a service named after both the trip's service and the trip,
-                    // which takes priority over the trip's service.
+                    // The BC Ferries feed lists dates added to or removed from a single trip under a service
+                    // named `{service}{trip}`, which takes priority over the service of the trip.
                     services: [service + trip, service],
                 });
             }
@@ -175,24 +173,22 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
     };
 };
 
-/** Looks up sailings in a feed by the IDs of the locations nearest to the feed's stops. */
+/** Looks up sailings in a feed by location ID. */
 export class Timetable {
-    // Sailings that have been looked up, as the route planner asks for the same ones many times over.
-    private readonly found = new Map<string, readonly Sailing[]>();
-    // Legs that run on each service day that has been looked up, by origin.
+    // Cache of sailings by origin, destination, and date. The route planner repeats the same lookups many times.
+    private readonly found = new Map<string, Sailing[]>();
+    // Cache of the legs that run on each service day, by origin.
     private readonly running = new Map<number, Map<string, Leg[]>>();
 
     constructor(readonly feed: Feed) {}
 
-    /** Check if the feed has schedules for a date, given as the local time at the start of the day. */
+    /** Check if the feed covers a date, given as the local time at the start of the day. */
     covers(date: number): boolean {
         const day = formatDate(date);
-        return (
-            (!this.feed.startDate || this.feed.startDate <= day) && (!this.feed.endDate || day <= this.feed.endDate)
-        );
+        return (!this.feed.startDate || this.feed.startDate <= day) && (!this.feed.endDate || day <= this.feed.endDate);
     }
 
-    /** Get the sailings departing from a location on a date, given as the local time at the start of the day. */
+    /** Get the sailings between two locations on a date, given as the local time at the start of the day. */
     sailings(origin: string, destination: string, date: number): readonly Sailing[] {
         const key = `${origin}-${destination}-${date}`;
         let sailings = this.found.get(key);
@@ -205,7 +201,7 @@ export class Timetable {
 
     private findSailings(origin: string, destination: string, date: number): Sailing[] {
         const sailings = new Map<string, Sailing>();
-        // Sailings that depart past midnight are listed under the day before, which is their service day.
+        // Sailings that depart after midnight belong to the service day before.
         for (const daysBefore of [0, 1]) {
             const serviceDate = date - daysBefore * MS_PER_DAY;
             for (const [departure, arrival, stops] of findJourneys(this.legsFrom(serviceDate), origin, destination)) {
@@ -216,7 +212,7 @@ export class Timetable {
                         stops,
                     };
                     // The same sailing can be listed under more than one trip.
-                    sailings.set(`${sailing.departure} ${sailing.arrival} ${stops}`, sailing);
+                    sailings.set(`${sailing.departure} ${sailing.arrival} ${stops.join(",")}`, sailing);
                 }
             }
         }
@@ -225,30 +221,23 @@ export class Timetable {
         );
     }
 
+    /** Get the legs that run on a service day, by origin. */
     private legsFrom(serviceDate: number): Map<string, Leg[]> {
         let legsFrom = this.running.get(serviceDate);
         if (!legsFrom) {
-            legsFrom = new Map();
             const day = formatDate(serviceDate);
-            // Days are counted from Sunday, and the calendar's from Monday.
+            // `getUTCDay()` counts from Sunday, and the calendar from Monday.
             const weekday = (new Date(serviceDate).getUTCDay() + 6) % 7;
-            for (const leg of this.feed.legs) {
-                if (this.runsOn(leg.services, day, weekday)) {
-                    const legs = legsFrom.get(leg.origin) ?? [];
-                    legsFrom.set(leg.origin, legs);
-                    legs.push(leg);
-                }
-            }
-            if (this.running.size >= MAX_DAYS_REMEMBERED) {
-                this.running.clear();
-                this.found.clear();
-            }
+            legsFrom = Map.groupBy(
+                this.feed.legs.filter((leg) => this.runsOn(leg.services, day, weekday)),
+                (leg) => leg.origin,
+            );
             this.running.set(serviceDate, legsFrom);
         }
         return legsFrom;
     }
 
-    /** Check if the first of the services that says anything about a date runs on it. */
+    /** Check if a trip runs on a date. The first of its services with an entry for the date decides. */
     private runsOn(services: string[], day: string, weekday: number): boolean {
         for (const service of services) {
             const added = this.feed.calendarDates[service]?.[day];
@@ -303,7 +292,7 @@ const parseCsv = (text: string): string[][] => {
         } else if (character === "\n") {
             record.push(value);
             value = "";
-            // Lines without anything on them are not records.
+            // Skip empty lines.
             if (record.length > 1 || record[0] !== "") {
                 records.push(record);
             }
@@ -395,18 +384,17 @@ const compareStops = (a: string[], b: string[]): number => {
 };
 
 /**
- * Find the departure, arrival, and stops on the way of the sailings between two locations on a service day.
+ * Find the departure, arrival, and intermediate stops of the sailings between two locations on a service day.
  *
- * The BC Ferries feed lists each part of a sailing that calls at several terminals as a trip of its own,
- * so a sailing can be made of several trips. Trips that are not the same vessel carrying on are not joined up,
- * as getting from one vessel to another is not a sailing but two, with a wait at the terminal in between.
+ * The BC Ferries feed lists each part of a multi-stop sailing as a separate trip, so a sailing can span
+ * several trips. Trips on different vessels are not joined, because changing vessels makes two sailings.
  */
 const findJourneys = (
     legsFrom: Map<string, Leg[]>,
     origin: string,
     destination: string,
 ): [departure: number, arrival: number, stops: string[]][] => {
-    // Each departure and arrival, with the fewest stops on the way of those that there are several ways for.
+    // Journeys by departure and arrival, keeping the one with the fewest stops.
     const journeys = new Map<string, [number, number, string[]]>();
     for (const firstLeg of legsFrom.get(origin) ?? []) {
         const path = fastestPath(firstLeg, destination, legsFrom);
@@ -427,7 +415,7 @@ const findJourneys = (
     return [...journeys.values()];
 };
 
-/** Find the legs of one vessel that arrive at a destination the earliest after a first leg. */
+/** Find the legs of one vessel that reach a destination earliest after a first leg. */
 const fastestPath = (firstLeg: Leg, destination: string, legsFrom: Map<string, Leg[]>): Leg[] => {
     if (!firstLeg.canBoard) {
         return [];
@@ -440,7 +428,7 @@ const fastestPath = (firstLeg: Leg, destination: string, legsFrom: Map<string, L
             if (leg.canAlight && (!lastLeg || leg.arrival < lastLeg.arrival)) {
                 lastLeg = leg;
             }
-            // Returning to the origin only makes for a slower version of a later sailing.
+            // Returning to the origin only gives a slower version of a later sailing.
         } else if (leg.destination !== firstLeg.origin) {
             for (const nextLeg of legsFrom.get(leg.destination) ?? []) {
                 const wait = nextLeg.departure - leg.arrival;

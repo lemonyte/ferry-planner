@@ -1,51 +1,51 @@
-import { type Feed, parseFeed, Timetable } from "./gtfs";
-import { terminalCoordinates } from "./schedule";
+import { type Feed, parseFeed, Timetable } from "./gtfs.ts";
+import { terminalCoordinates } from "./schedule.ts";
 
-/** Where the BC Ferries feed is downloaded from, which is this site as browsers are not let read it from its own. */
+/** Same-origin proxy for the BC Ferries feed, which browsers cannot fetch cross-origin. */
 export const FEED_URL = "/feed.zip";
 const FEED_KEY = "ferry-planner:feed";
 const CHECKED_KEY = "ferry-planner:feed-checked";
-/** Time to leave between asking whether the feed has changed. */
+/** Minimum time between checks for a changed feed. */
 const CHECK_INTERVAL_MS = 60 * 60 * 1000;
-/** Time to wait before downloading the feed again after failing to. */
+/** Time to wait before retrying a failed download. */
 const FEED_RETRY_MS = 60 * 1000;
-/** Largest feed archive to read, many times the size of the feed. */
+/** Maximum size of a feed archive. */
 const MAX_FEED_BYTES = 20 * 1024 * 1024;
 
-/** Changed whenever the form of a stored feed is, so that one stored in another form is not taken for this one. */
+/** Increment when the `StoredFeed` format changes, so that feeds stored in the old format are discarded. */
 const FEED_VERSION = 2;
 
 interface StoredFeed {
     version: number;
-    /** Version of the feed as given by the server it was downloaded from, to ask for the feed only if it has changed. */
+    /** ETag of the feed, sent with later requests to download the feed only if it changed. */
     etag?: string;
-    /** Instant that the feed was downloaded at. */
+    /** Epoch milliseconds when the feed was downloaded. */
     fetchedAt: number;
     feed: Feed;
 }
 
-/** Where a feed is kept between visits, which is the local storage of a browser. */
+/** Storage for the feed between visits. `localStorage` in a browser. */
 export type FeedStorage = Pick<Storage, "getItem" | "setItem">;
 
 /**
- * Keeps the BC Ferries feed, downloading it when there is none and again when it has changed.
+ * Downloads the BC Ferries feed, and downloads it again when it changes.
  *
- * The feed is stored so that it is there the next time the page is opened, with or without a connection.
+ * The feed is stored so that it is available on the next visit, including offline.
  */
 export class FeedKeeper {
     timetable?: Timetable;
-    /** Instant that the feed in use was downloaded at. */
+    /** Epoch milliseconds when the feed in use was downloaded. */
     fetchedAt?: number;
     private etag?: string;
-    /** Instant before which the feed is not asked for again. */
+    /** Epoch milliseconds before which the feed is not requested again. */
     private checkAfter = 0;
-    /** Whether the last download failed, which is tried again sooner than a feed is checked for changes. */
+    /** Whether the last download failed. A failed download is retried sooner than the check interval. */
     private failed = false;
     private refreshing?: Promise<boolean>;
 
     constructor(private readonly storage?: FeedStorage) {
         const stored = this.read<StoredFeed>(FEED_KEY);
-        // Anything can be in storage, such as what an older version of the site left there.
+        // Storage can hold a feed in an older format.
         if (stored?.version === FEED_VERSION) {
             this.etag = stored.etag;
             this.fetchedAt = stored.fetchedAt;
@@ -55,23 +55,23 @@ export class FeedKeeper {
     }
 
     /**
-     * Download the feed if it has changed, and return whether it has.
+     * Download the feed if it has changed. Returns whether it changed.
      *
-     * Nothing is asked of the server within the hour of the last time, or within a minute of failing to,
-     * unless told to `retry` after a failure, as when a connection has come back.
+     * Skips the request within an hour of the last check, or within a minute of a failed download,
+     * unless `retry` is set after a failure, such as when the connection returns.
      */
     refresh(retry = false): Promise<boolean> {
         if (Date.now() < this.checkAfter && !(retry && this.failed)) {
             return Promise.resolve(false);
         }
-        // Whatever else asks in the meantime waits for the same download.
+        // Concurrent callers share one download.
         this.refreshing ??= this.download().finally(() => {
             this.refreshing = undefined;
         });
         return this.refreshing;
     }
 
-    /** Get the timetable of the feed, downloading the feed first when there is none yet. */
+    /** Get the timetable, downloading the feed first if there is none. */
     async getTimetable(): Promise<Timetable | undefined> {
         if (!this.timetable) {
             await this.refresh().catch((error: unknown) => {
@@ -98,7 +98,7 @@ export class FeedKeeper {
     private async fetchFeed(): Promise<boolean> {
         const response = await fetch(FEED_URL, { headers: this.etag ? { "If-None-Match": this.etag } : {} });
         const etag = response.headers.get("ETag") ?? undefined;
-        if (response.status === 304 || (etag && etag === this.etag)) {
+        if (response.status === 304) {
             await response.body?.cancel();
             return false;
         }
@@ -115,7 +115,7 @@ export class FeedKeeper {
         this.etag = etag;
         this.fetchedAt = Date.now();
         this.timetable = new Timetable(feed);
-        // The feed is still used for as long as the page is open if it cannot be stored.
+        // If storing fails, the feed is still used until the page closes.
         this.write(FEED_KEY, { version: FEED_VERSION, etag, fetchedAt: this.fetchedAt, feed } satisfies StoredFeed);
         return true;
     }
@@ -133,7 +133,7 @@ export class FeedKeeper {
         try {
             this.storage?.setItem(key, JSON.stringify(value));
         } catch (error) {
-            // Storage can be full, or not allowed at all, as in some private windows.
+            // Storage can be full or blocked, as in some private windows.
             console.warn(`failed to write ${key} to storage`, error);
         }
     }

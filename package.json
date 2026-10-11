@@ -2,38 +2,43 @@
     "name": "ferry-planner",
     "private": true,
     "type": "module",
+    "imports": {
+        "#lib/*": "./src/lib/*",
+        "#test/*": "./test/*"
+    },
     "scripts": {
         "dev": "vite dev",
         "build": "wrangler types && vite build",
         "preview": "wrangler dev --port 4173",
         "deploy": "bun run build && wrangler deploy",
         "prepare": "svelte-kit sync || echo ''",
-        "check": "wrangler types && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && tsc --noEmit -p src/service-worker && biome check",
-        "format": "biome check --write",
-        "test": "vitest run"
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && tsc --noEmit -p src/service-worker",
+        "test": "vitest run",
+        "lint": "oxlint",
+        "lint:fix": "oxlint --fix",
+        "fmt": "oxfmt",
+        "fmt:check": "oxfmt --check"
+    },
+    "dependencies": {
+        "fflate": "^0.8.3"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.5.15",
+        "@lucide/svelte": "^1.55.0",
         "@sveltejs/adapter-cloudflare": "^8.0.0",
         "@sveltejs/kit": "^3.0.0",
         "@sveltejs/vite-plugin-svelte": "^7.2.0",
         "@tailwindcss/vite": "^4.3.0",
         "@types/node": "^26.6.4",
+        "bits-ui": "^2.19.5",
+        "oxfmt": "^0.72.0",
+        "oxlint": "^1.87.0",
+        "oxlint-tsgolint": "^7.0.2004",
         "svelte": "^5.57.1",
         "svelte-check": "^4.6.0",
         "tailwindcss": "^4.3.0",
         "typescript": "^6.0.3",
         "vite": "^8.3.0",
         "vitest": "^4.1.8",
-        "wrangler": "^4.97.0"
-    },
-    "imports": {
-        "#lib/*": "./src/lib/*",
-        "#test/*": "./test/*"
-    },
-    "dependencies": {
-        "@lucide/svelte": "^1.52.0",
-        "bits-ui": "^2.19.5",
-        "fflate": "^0.8.3"
+        "wrangler": "^4.149.0"
     }
 }

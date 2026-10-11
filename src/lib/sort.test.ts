@@ -1,6 +1,8 @@
 import { expect, test } from "vitest";
-import { sortItineraries } from "./sort";
-import type { Itinerary } from "./types";
+
+import type { Itinerary } from "./planner/itinerary.ts";
+import type { Query } from "./query.ts";
+import { compareItineraries } from "./sort.ts";
 
 const trip = (id: string, depart: string, arrive: string): Itinerary => {
     const [start, end] = [`2026-10-09T${depart}:00`, `2026-10-09T${arrive}:00`];
@@ -23,26 +25,18 @@ const TRIPS = [
     trip("late and fast", "15:00", "17:00"),
 ];
 
-const order = (sort: Parameters<typeof sortItineraries>[1]): string[] => {
-    return sortItineraries(TRIPS, sort).map((itinerary) => itinerary.id);
+const order = (sort: Query["sort"]): string[] => {
+    return TRIPS.toSorted(compareItineraries[sort]).map((itinerary) => itinerary.id);
 };
 
-test("trips by duration have the shortest first, and the earlier of those as short as each other", () => {
+test("duration sort puts the shortest trip first, then the earlier departure", () => {
     expect(order("duration")).toEqual(["midday and fast", "late and fast", "morning", "early and slow"]);
 });
 
-test("trips by departure have the one that leaves earliest first", () => {
+test("departure sort puts the earliest departure first", () => {
     expect(order("departure")).toEqual(["early and slow", "morning", "midday and fast", "late and fast"]);
 });
 
-test("trips by arrival have the one that arrives earliest first, and the later to leave of those that arrive together", () => {
+test("arrival sort puts the earliest arrival first, then the later departure", () => {
     expect(order("arrival")).toEqual(["morning", "midday and fast", "early and slow", "late and fast"]);
-});
-
-test("trips are left in the order that they came in", () => {
-    const before = TRIPS.map((itinerary) => itinerary.id);
-
-    sortItineraries(TRIPS, "duration");
-
-    expect(TRIPS.map((itinerary) => itinerary.id)).toEqual(before);
 });

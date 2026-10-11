@@ -1,5 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { parseQuery, type Query, readQuery, toSearch } from "./query";
+
+import { parseQuery, type Query, readQuery, toSearch } from "./query.ts";
 
 const TODAY = "2026-10-08";
 const VAN_ANDA: Query = {
@@ -21,18 +22,18 @@ afterEach(() => {
 
 const parse = (search: string): Query => parseQuery(new URLSearchParams(search), TODAY);
 
-test("search with only places is for today with the usual options", () => {
+test("parseQuery uses the current date and default options if only places are given", () => {
     expect(parse("from=vancouver&to=van_anda")).toEqual({ ...VAN_ANDA, date: TODAY });
 });
 
-test("search without places has none", () => {
+test("parseQuery returns empty place IDs if no places are given", () => {
     expect(parse("")).toMatchObject({ from: "", to: "", date: TODAY });
 });
 
-test("search reads every option", () => {
+test("parseQuery reads every option", () => {
     expect(
         parse(
-            "from=vancouver&to=van_anda&date=2026-10-09&checkin=assured&early=30&long=1&routes=all&sort=arrival&group=route&underway=1",
+            "from=vancouver&to=van_anda&date=2026-10-09&checkin=assured&early=30&long=1&all=1&sort=arrival&group=route&underway=1",
         ),
     ).toEqual({
         ...VAN_ANDA,
@@ -47,16 +48,18 @@ test("search reads every option", () => {
 });
 
 test.each([
-    ["a date that is not one", "date=soon", { date: TODAY }],
-    ["a kind of check-in that there is not", "checkin=vip", { checkin: "reservation" }],
-    ["an early arrival that is not a number", "early=very", { early: 15 }],
-    ["an early arrival of less than nothing", "early=-5", { early: 15 }],
-    ["an order that there is not", "sort=price", { sort: "duration" }],
-])("search with %s falls back to the usual", (_, search, expected) => {
+    ["an invalid date", "date=soon", { date: TODAY }],
+    ["a date that does not exist", "date=2026-02-31", { date: TODAY }],
+    ["a date with a time", "date=2026-10-09T10:00", { date: TODAY }],
+    ["an unknown check-in type", "checkin=vip", { checkin: "reservation" }],
+    ["a non-numeric early arrival", "early=very", { early: 15 }],
+    ["a negative early arrival", "early=-5", { early: 15 }],
+    ["an unknown sort order", "sort=price", { sort: "duration" }],
+])("parseQuery uses the default for %s", (_, search, expected) => {
     expect(parse(search)).toMatchObject(expected);
 });
 
-test("search in a URL without a date is for the current day in British Columbia", () => {
+test("readQuery defaults the date to the current day in British Columbia", () => {
     // Late in the evening of the 8th in British Columbia.
     vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 9, 5));
 
@@ -64,14 +67,14 @@ test("search in a URL without a date is for the current day in British Columbia"
     expect(readQuery(new URL("https://site/?from=vancouver&to=van_anda&date=2026-10-12")).date).toBe("2026-10-12");
 });
 
-test("link to a search leaves out the options that are as usual", () => {
+test("toSearch omits options that are set to their defaults", () => {
     expect(toSearch(VAN_ANDA)).toBe("?from=vancouver&to=van_anda&date=2026-10-09");
     expect(toSearch({ ...VAN_ANDA, checkin: "hostled", early: 0, long: true, all: true, sort: "departure" })).toBe(
-        "?from=vancouver&to=van_anda&date=2026-10-09&checkin=hostled&early=0&long=1&routes=all&sort=departure",
+        "?from=vancouver&to=van_anda&date=2026-10-09&checkin=hostled&early=0&long=1&all=1&sort=departure",
     );
 });
 
-test("link to a search is read back as the same search", () => {
+test("toSearch output parses back to the same search", () => {
     const query: Query = {
         ...VAN_ANDA,
         checkin: "assured",

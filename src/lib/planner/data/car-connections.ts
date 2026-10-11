@@ -1,4 +1,4 @@
-import type { LocationId } from "./locations";
+import type { LocationId } from "./locations.ts";
 
 export interface CarConnection {
     /** Duration in seconds. */

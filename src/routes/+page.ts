@@ -1,8 +1,8 @@
+import type { SearchResult } from "#lib/planner/itinerary.ts";
 import { type Query, readQuery } from "#lib/query.ts";
 import { getPlanner, hasSchedules, SCHEDULES } from "#lib/schedules.svelte.ts";
-import type { SearchResult } from "#lib/types.ts";
 
-/** What came of a search: the trips found, or what to say in place of them. */
+/** Result of a search: the trips found, or an error message. */
 interface Outcome {
     result?: SearchResult;
     error?: string;
@@ -10,7 +10,7 @@ interface Outcome {
 
 interface Data {
     query: Query;
-    /** Still to come when the page is shown, for a search that has to wait for the schedules to be downloaded. */
+    /** A promise if the search has to wait for the schedules to download. */
     outcome: Outcome | Promise<Outcome>;
 }
 
@@ -37,6 +37,6 @@ export const load = async ({ url, depends }): Promise<Data> => {
     if (query.from === query.to) {
         return { query, outcome: { error: "Choose two different places." } };
     }
-    // The first search of a first visit is shown once the schedules are there, and the page without waiting for it.
+    // If the schedules still have to download, stream the result so that the page renders without waiting.
     return { query, outcome: hasSchedules() ? await search(query) : search(query) };
 };

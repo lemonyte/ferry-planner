@@ -1,13 +1,14 @@
-// Times are local to British Columbia and written as `YYYY-MM-DDTHH:MM:SS`.
-// They are formatted by hand, as the server and the browser can format the same time differently.
+// Times are local to British Columbia, written as `YYYY-MM-DDTHH:MM:SS`.
+// Formatting is manual so that it does not depend on the time zone or locale of the device.
+
+import { MS_PER_DAY, parseLocal } from "./planner/time.ts";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-/** Read a local time as if it were in UTC, to do arithmetic on it. */
+/** Parse a local date or time as if it were UTC, for arithmetic. */
 const toDate = (time: string): Date => {
-    return new Date(`${time.length > 10 ? time : `${time}T00:00:00`}Z`);
+    return new Date(parseLocal(time) ?? Number.NaN);
 };
 
 /** Format the time of day of a local time, such as `6:20 am`. */
@@ -26,7 +27,7 @@ export const formatDay = (time: string): string => {
 
 /** Format a duration in seconds, such as `7 h 14 min`. */
 export const formatDuration = (seconds: number): string => {
-    // Rounded, so that it agrees with the times it is shown beside, which leave their seconds out.
+    // Rounded to match the times shown beside it, which omit seconds.
     const minutes = Math.round(seconds / 60);
     const hours = Math.floor(minutes / 60);
     if (hours === 0) {
@@ -35,7 +36,7 @@ export const formatDuration = (seconds: number): string => {
     return minutes % 60 === 0 ? `${hours} h` : `${hours} h ${minutes % 60} min`;
 };
 
-/** Format a distance in kilometres, such as `144 km`. */
+/** Format a distance in kilometers, such as `144 km`. */
 export const formatDistance = (kilometres: number): string => {
     return `${Math.round(kilometres)} km`;
 };

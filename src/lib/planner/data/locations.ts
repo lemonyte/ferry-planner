@@ -1072,8 +1072,7 @@ const terminalData = {
         region: "Vancouver",
         land_group: "Mainland",
         long_id: "vancouver-tsawwassen",
-        info_url:
-            "https://www.bcferries.com/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
+        info_url: "https://www.bcferries.com/travel-boarding/terminal-directions-parking-food/vancouver-tsawwassen/TSA",
         address: "1 Ferry Causeway, Delta, V4M 4G6",
         coordinates: "49.006875,-123.130335",
         veh_close: 5,
@@ -1505,8 +1504,7 @@ const terminalData = {
         region: "Port Hardy",
         land_group: "Vancouver Island",
         long_id: "port-hardy-bear-cove",
-        info_url:
-            "https://www.bcferries.com/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
+        info_url: "https://www.bcferries.com/travel-boarding/terminal-directions-parking-food/port-hardy-bear-cove/PPH",
         address: "6800 Highway 19, Port Hardy, V0N 2P0",
         coordinates: "50.7255163,-127.4556276",
         veh_close: 20,

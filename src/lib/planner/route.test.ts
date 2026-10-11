@@ -1,120 +1,121 @@
 import { expect, test } from "vitest";
-import { digest } from "#test/digest.ts";
+
+import { makeTimetable } from "#test/fixtures.ts";
 import plans from "#test/fixtures/plans.json";
 import routes from "#test/fixtures/routes.json";
-import { makeTimetable } from "#test/fixtures.ts";
-import type { LocationId } from "./data/locations";
-import { findRoutes, type PlanOptions, routePlans } from "./route";
-import { parseLocal } from "./time";
+import { summarize } from "#test/summary.ts";
+
+import type { LocationId } from "./data/locations.ts";
+import { findRoutes, makeItineraries, type PlanOptions } from "./route.ts";
+import { parseLocal } from "./time.ts";
 
 const timetable = makeTimetable();
 const DATE = Date.UTC(2026, 9, 8);
 const NOW = Date.UTC(2026, 9, 8, 13, 45, 10);
-const OPTIONS: PlanOptions = { date: DATE, showAll: false, assured: false, hostled: false, buffer: 15 };
+const OPTIONS: PlanOptions = { date: DATE, checkin: "reservation", early: 15, long: false };
 
-test.each(Object.entries(routes))("routes for %s are as expected", (id, expected) => {
+test.each(Object.entries(routes))("findRoutes returns the expected routes for %s", (id, expected) => {
     const [origin, destination] = id.split("-") as [LocationId, LocationId];
 
-    const found = findRoutes(origin, destination);
+    const found = findRoutes(origin, destination).map((route) => route.join("-"));
 
     expect(found).toHaveLength(expected.count);
-    if ("routes" in expected) {
-        expect(found).toEqual(expected.routes);
+    if ("listed" in expected) {
+        expect(found).toEqual(expected.listed);
     }
-    expect(digest(found)).toBe(expected.digest);
 });
 
-test.each(plans)("route plans for $request are as expected", (expected) => {
-    const { origin, destination, date, ...request } = expected.request as {
+test.each(plans)("makeItineraries returns the expected itineraries for $request", (expected) => {
+    const { origin, destination, date, ...options } = expected.request as Partial<PlanOptions> & {
         origin: LocationId;
         destination: LocationId;
         date: string;
-        show_all?: boolean;
-        assured?: boolean;
-        hostled?: boolean;
-        buffer?: number;
     };
 
-    const found = routePlans(
+    const found = makeItineraries(
         origin,
         destination,
-        {
-            date: parseLocal(date) ?? Number.NaN,
-            showAll: request.show_all ?? false,
-            assured: request.assured ?? false,
-            hostled: request.hostled ?? false,
-            buffer: request.buffer ?? 15,
-        },
+        { ...OPTIONS, ...options, date: parseLocal(date) ?? Number.NaN },
         timetable,
         NOW,
     );
 
-    expect(found.map((plan) => plan.hash)).toEqual(expected.ids);
-    expect(new Set(expected.ids).size).toBe(expected.count);
+    expect(found).toHaveLength(expected.count);
+    if ("listed" in expected) {
+        expect(found.map(summarize)).toEqual(expected.listed);
+    }
     if ("first" in expected) {
         expect(found.slice(0, 3)).toEqual(expected.first);
     }
-    expect(digest(found)).toBe(expected.digest);
 });
 
-test("route plans are ordered by duration", () => {
-    const durations = routePlans("TSA", "PST", OPTIONS, timetable, NOW).map((plan) => plan.duration);
+test.each(plans)("makeItineraries gives each itinerary for $request a unique ID", ({ request }) => {
+    const {
+        origin,
+        destination,
+        date: _date,
+        ...options
+    } = request as Partial<PlanOptions> & {
+        origin: LocationId;
+        destination: LocationId;
+        date: string;
+    };
 
-    expect(durations).toEqual(durations.toSorted((a, b) => a - b));
+    const found = makeItineraries(origin, destination, { ...OPTIONS, ...options, date: DATE }, timetable, NOW);
+
+    expect(new Set(found.map((itinerary) => itinerary.id)).size).toBe(found.length);
 });
 
-test("drive without a sailing starts at the current time of day", () => {
-    expect(routePlans("hope", "TSA", OPTIONS, timetable, NOW)).toEqual([
+test("drive with no ferry starts at the current time of day", () => {
+    expect(makeItineraries("hope", "TSA", OPTIONS, timetable, NOW)).toEqual([
         expect.objectContaining({
-            depart_time: "2026-10-08T13:45:10",
-            arrive_time: "2026-10-08T15:35:08",
+            route: "hope-TSA",
+            depart: "2026-10-08T13:45:10",
+            arrive: "2026-10-08T15:35:08",
             duration: 6598,
-            driving_duration: 6598,
-            segments: [
+            steps: [
                 {
-                    connection: expect.objectContaining({ id: "hope-TSA", type: "CAR" }),
-                    times: [
-                        {
-                            start: "2026-10-08T13:45:10",
-                            end: "2026-10-08T13:45:10",
-                            description: "Depart from Hope",
-                            type: "TRAVEL",
-                        },
-                        expect.objectContaining({
-                            start: "2026-10-08T13:45:10",
-                            end: "2026-10-08T15:35:08",
-                            type: "TRAVEL",
-                        }),
-                        {
-                            start: "2026-10-08T15:35:08",
-                            end: "2026-10-08T15:35:08",
-                            description: "Arrive at Tsawwassen Terminal",
-                            type: "TRAVEL",
-                        },
-                    ],
+                    kind: "MARK",
+                    start: "2026-10-08T13:45:10",
+                    end: "2026-10-08T13:45:10",
+                    description: "Depart from Hope",
+                },
+                expect.objectContaining({ kind: "DRIVE", start: "2026-10-08T13:45:10", end: "2026-10-08T15:35:08" }),
+                {
+                    kind: "MARK",
+                    start: "2026-10-08T15:35:08",
+                    end: "2026-10-08T15:35:08",
+                    description: "Arrive at Tsawwassen Terminal",
                 },
             ],
         }),
     ]);
 });
 
-test("no route plans between a location and itself", () => {
-    expect(routePlans("TSA", "TSA", OPTIONS, timetable, NOW)).toEqual([]);
+test("drive with no ferry keeps its ID across search times", () => {
+    const [found] = makeItineraries("hope", "TSA", OPTIONS, timetable, NOW);
+    const [later] = makeItineraries("hope", "TSA", OPTIONS, timetable, NOW + 60 * 1000);
+
+    expect(found?.id).toBeDefined();
+    expect(later?.id).toBe(found?.id);
+    expect(later?.depart).not.toBe(found?.depart);
+});
+
+test("makeItineraries returns no itineraries from a location to itself", () => {
+    expect(makeItineraries("TSA", "TSA", OPTIONS, timetable, NOW)).toEqual([]);
 });
 
 const waitsFor = (options: Partial<PlanOptions>): string[] => {
-    // Prince Rupert has check-in times of its own for reservations and for hostled vehicles.
-    const plan = routePlans("PPR", "PSK", { ...OPTIONS, showAll: true, ...options }, timetable, DATE).find(
-        (plan) => plan.segments.length === 1,
+    // Prince Rupert has its own check-in times for reservations and hostled vehicles.
+    const itinerary = makeItineraries("PPR", "PSK", { ...OPTIONS, long: true, ...options }, timetable, DATE).find(
+        (itinerary) => itinerary.route === "PPR-PSK",
     );
-    return (plan?.segments ?? []).flatMap((segment) =>
-        segment.times.filter((time) => time.type === "WAIT").map((time) => time.description),
-    );
+    return (itinerary?.steps ?? []).filter((step) => step.kind === "WAIT").map((step) => step.description);
 };
 
-test("check-in closes for hostled vehicles when they are asked for, and for reservations otherwise", () => {
+test("check-in deadline is for hostled vehicles if selected, and for reservations by default", () => {
     expect(waitsFor({})).toEqual(["Arrive at Prince Rupert Terminal 15 minutes before booking check-in close"]);
-    expect(waitsFor({ hostled: true })).toEqual([
+    expect(waitsFor({ checkin: "hostled" })).toEqual([
         "Arrive at Prince Rupert Terminal 15 minutes before hostled vehicles check-in close",
     ]);
 });

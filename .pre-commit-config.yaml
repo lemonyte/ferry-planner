@@ -2,7 +2,7 @@ repos:
   - repo: builtin
     hooks:
       - id: check-added-large-files
-        # The car connections are a single file of about 700 KB.
+        # car-connections.ts is about 700 KB.
         args: [--maxkb=1024]
       - id: check-case-conflict
       - id: check-json

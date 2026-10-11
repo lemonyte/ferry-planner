@@ -1,5 +1,5 @@
-// Local times are held in milliseconds as if they were UTC, which keeps arithmetic on them clear of time zones.
-// Nothing here goes by the time zone of the device, which can be anywhere.
+// Local times are held in milliseconds as if they were UTC, so that arithmetic does not involve time zones.
+// This module does not depend on the time zone of the device.
 
 export const MS_PER_MINUTE = 60 * 1000;
 export const MS_PER_DAY = 24 * 60 * MS_PER_MINUTE;
@@ -12,7 +12,7 @@ export const formatLocal = (time: number): string => {
     return new Date(time).toISOString().slice(0, 19);
 };
 
-/** Parse a local date or date and time in ISO 8601 format, reading it as written whatever UTC offset it gives. */
+/** Parse a local date, or date and time, in ISO 8601 format. Ignores any UTC offset. */
 export const parseLocal = (value: string): number | undefined => {
     const match = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(value);
     if (!match) {
@@ -20,7 +20,7 @@ export const parseLocal = (value: string): number | undefined => {
     }
     const [year, month, day, hour = 0, minute = 0, second = 0] = match.slice(1).map((part) => Number(part ?? 0));
     const time = Date.UTC(year ?? 0, (month ?? 1) - 1, day, hour, minute, second);
-    // Dates that do not exist, such as the 31st of June, would otherwise roll over into the next month.
+    // Reject dates that do not exist, such as June 31, which `Date.UTC` rolls over into the next month.
     return formatLocal(time).startsWith(value.slice(0, 10)) ? time : undefined;
 };
 

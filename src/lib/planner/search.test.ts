@@ -1,21 +1,28 @@
 import { expect, test } from "vitest";
+
 import { makeTimetable } from "#test/fixtures.ts";
-import type { LocationId } from "./data/locations";
-import type { Itinerary } from "./itinerary";
-import { type PlanOptions, type RoutePlan, routePlans } from "./route";
-import { findItinerary, selectItineraries } from "./search";
+
+import type { LocationId } from "./data/locations.ts";
+import type { Itinerary, Selection } from "./itinerary.ts";
+import { makeItineraries, type PlanOptions } from "./route.ts";
+import { type SelectOptions, selectItineraries } from "./search.ts";
 
 const timetable = makeTimetable();
 const DATE = Date.UTC(2026, 9, 8);
-const OPTIONS: PlanOptions = { date: DATE, showAll: false, assured: false, hostled: false, buffer: 15 };
-// The evening before, when nothing has left yet.
+const OPTIONS: PlanOptions = { date: DATE, checkin: "reservation", early: 15, long: false };
+// The evening before, when no itinerary has departed.
 const BEFORE = "2026-10-07T20:00:00";
 
-const plansFor = (origin: LocationId, destination: LocationId): RoutePlan[] => {
-    return routePlans(origin, destination, OPTIONS, timetable, DATE);
+const plansFor = (origin: LocationId, destination: LocationId): Itinerary[] => {
+    return makeItineraries(origin, destination, OPTIONS, timetable, DATE);
 };
 
-/** Lay itineraries out as the locations of their route and their times, to compare them at a glance. */
+/** Select itineraries with the default options, unless overridden. */
+const pick = (itineraries: Itinerary[], now: string, options: Partial<SelectOptions> = {}): Selection => {
+    return selectItineraries(itineraries, now, { all: false, sort: "duration", underway: false, ...options });
+};
+
+/** Summarize itineraries as their route and times. */
 const summarize = (itineraries: Itinerary[]): string[] => {
     return itineraries.map(
         (itinerary) => `${itinerary.route} ${itinerary.depart.slice(11, 16)}>${itinerary.arrive.slice(11, 16)}`,
@@ -24,43 +31,46 @@ const summarize = (itineraries: Itinerary[]): string[] => {
 
 const SUNSHINE_COAST = "vancouver-HSB-LNG-ERL-SLT-PWR-TEX-van_anda";
 
-// The expected results below were worked out apart from this code, from the route plans of the deployed API.
+// The expected results below are planner output for the feed in `test/fixtures`, reviewed by hand.
 
-test("journey over several ferries shows the one route worth taking", () => {
-    const plans = plansFor("vancouver", "van_anda");
-
-    const found = selectItineraries(plans, BEFORE);
+test("selectItineraries returns the ten fastest itineraries across routes", () => {
+    const found = pick(plansFor("vancouver", "van_anda"), BEFORE);
 
     expect(summarize(found.itineraries)).toEqual([
-        `${SUNSHINE_COAST} 06:20>13:34`,
-        `${SUNSHINE_COAST} 08:40>16:49`,
-        `${SUNSHINE_COAST} 11:00>18:44`,
         `${SUNSHINE_COAST} 15:35>22:39`,
+        `${SUNSHINE_COAST} 06:20>13:34`,
+        `${SUNSHINE_COAST} 11:00>18:44`,
+        `${SUNSHINE_COAST} 08:40>16:49`,
+        "vancouver-HSB-NAN-CMX-PWR-TEX-van_anda 09:55>18:44",
+        "vancouver-TSA-DUK-CMX-PWR-TEX-van_anda 03:59>13:34",
+        "vancouver-TSA-DUK-CMX-PWR-TEX-van_anda 08:59>18:44",
+        "vancouver-HSB-NAN-CMX-PWR-TEX-van_anda 12:15>22:39",
+        "vancouver-TSA-SWB-CMX-PWR-TEX-van_anda 11:44>22:39",
+        "vancouver-TSA-SWB-BTW-MIL-CMX-PWR-TEX-van_anda 11:44>22:39",
     ]);
-    expect(found.moreRoutes).toBe(8);
+    expect(found.more).toBe(7);
     expect(found.departed).toBe(0);
 });
 
-test("journey over several ferries back shows the same route", () => {
-    const plans = plansFor("van_anda", "vancouver");
+test("selectItineraries returns the ten earliest departures if sorted by departure", () => {
+    const found = pick(plansFor("vancouver", "van_anda"), BEFORE, { sort: "departure" });
 
-    const found = selectItineraries(plans, BEFORE);
-
-    expect(summarize(found.itineraries)).toEqual(
-        ["07:10>14:19", "08:50>16:39", "11:15>18:59", "14:25>21:19", "16:20>23:34"].map(
-            (times) => `van_anda-TEX-PWR-SLT-ERL-LNG-HSB-vancouver ${times}`,
-        ),
-    );
+    expect(summarize(found.itineraries).slice(0, 4)).toEqual([
+        "vancouver-TSA-DUK-CMX-PWR-TEX-van_anda 03:59>13:34",
+        `${SUNSHINE_COAST} 06:20>13:34`,
+        "vancouver-TSA-SWB-BTW-MIL-CMX-PWR-TEX-van_anda 06:44>18:44",
+        "vancouver-TSA-SWB-CMX-PWR-TEX-van_anda 07:44>18:44",
+    ]);
+    expect(found.itineraries).toHaveLength(10);
+    expect(found.more).toBe(7);
 });
 
-test("journey by way of a terminal where the vessel is changed has a sailing to it and another from it", () => {
+test("journey that changes vessels at a terminal has one sailing to it and one from it", () => {
     // No vessel sails from Little River to Blubber Bay: one goes to Westview, and another from there.
-    const plans = plansFor("victoria", "van_anda");
+    const found = pick(plansFor("victoria", "van_anda"), BEFORE);
 
-    const found = selectItineraries(plans, BEFORE);
-
-    expect(summarize(found.itineraries)).toEqual(
-        ["02:32>09:29", "06:27>13:34", "11:47>18:44", "15:42>22:39"].map(
+    expect(summarize(found.itineraries).slice(0, 4)).toEqual(
+        ["02:32>09:29", "11:47>18:44", "15:42>22:39", "06:27>13:34"].map(
             (times) => `victoria-CMX-PWR-TEX-van_anda ${times}`,
         ),
     );
@@ -70,76 +80,45 @@ test("journey by way of a terminal where the vessel is changed has a sailing to 
     ]);
 });
 
-test("journey over one ferry shows the route that is fastest through the day and the one that runs latest", () => {
-    const plans = plansFor("vancouver", "victoria");
+test("departed itineraries are excluded and counted", () => {
+    const found = pick(plansFor("vancouver", "van_anda"), "2026-10-08T09:00:00", { sort: "departure" });
 
-    const found = selectItineraries(plans, BEFORE);
-
-    expect(summarize(found.itineraries)).toEqual([
-        ...[
-            ...["04:44>08:02", "05:44>09:02", "06:44>10:02", "07:44>11:02", "08:44>12:02", "09:44>13:02"],
-            ...["10:44>14:02", "11:44>15:02", "12:44>16:02", "13:44>17:02", "14:44>18:02", "15:44>19:02"],
-            ...["17:44>21:02", "18:44>22:02", "19:44>23:02"],
-        ].map((times) => `vancouver-TSA-SWB-victoria ${times}`),
-        "vancouver-HSB-NAN-victoria 21:30>01:50",
-    ]);
-    expect(found.moreRoutes).toBe(20);
-});
-
-test("journey between terminals shows the sailing that calls on the way and the faster ones over two sailings", () => {
-    const plans = plansFor("TSA", "PST");
-
-    const found = selectItineraries(plans, BEFORE);
-
-    expect(summarize(found.itineraries)).toEqual([
-        "TSA-SWB-PST 06:15>10:20",
-        "TSA-SWB-PST 12:15>16:25",
-        "TSA-PST 18:45>21:57",
-    ]);
-});
-
-test("itineraries that have already left are left out and counted", () => {
-    const plans = plansFor("vancouver", "van_anda");
-
-    const found = selectItineraries(plans, "2026-10-08T09:00:00");
-
-    expect(summarize(found.itineraries)).toEqual([`${SUNSHINE_COAST} 11:00>18:44`, `${SUNSHINE_COAST} 15:35>22:39`]);
+    expect(found.itineraries[0]?.depart).toBe("2026-10-08T09:09:30");
+    expect(found.itineraries).toHaveLength(10);
     expect(found.departed).toBe(17);
-    expect(found.moreRoutes).toBe(8);
+    expect(found.more).toBe(1);
 });
 
-test("no itineraries are left once every one has left", () => {
-    const found = selectItineraries(plansFor("vancouver", "van_anda"), "2026-10-08T16:00:00");
+test("no itineraries are returned after all have departed", () => {
+    const found = pick(plansFor("vancouver", "van_anda"), "2026-10-08T16:00:00");
 
-    expect(found).toMatchObject({ itineraries: [], moreRoutes: 0, departed: 34 });
+    expect(found).toMatchObject({ itineraries: [], more: 0, departed: 34 });
 });
 
-test("all routes are shown when asked for, each with its own best itineraries", () => {
+test("all returns every itinerary, starting with the default selection", () => {
     const plans = plansFor("vancouver", "van_anda");
-    const best = selectItineraries(plans, BEFORE);
+    const first = pick(plans, BEFORE);
 
-    const found = selectItineraries(plans, BEFORE, { all: true });
+    const found = pick(plans, BEFORE, { all: true });
 
-    expect(new Set(found.itineraries.map((itinerary) => itinerary.route)).size).toBe(9);
-    expect(found.moreRoutes).toBe(0);
-    expect(found.itineraries).toEqual(expect.arrayContaining(best.itineraries));
-    const departures = found.itineraries.map((itinerary) => itinerary.depart);
-    expect(departures).toEqual(departures.toSorted());
+    expect(found.itineraries).toHaveLength(17);
+    expect(found.more).toBe(0);
+    expect(found.itineraries.slice(0, 10)).toEqual(first.itineraries);
 });
 
-test("drive without a sailing is an itinerary", () => {
-    const found = selectItineraries(plansFor("hope", "TSA"), BEFORE);
+test("drive with no ferry is an itinerary", () => {
+    const found = pick(plansFor("hope", "TSA"), BEFORE);
 
     expect(found.itineraries).toEqual([expect.objectContaining({ duration: 6598, drivingDistance: 163.7894 })]);
     expect(found.itineraries[0]?.steps.map((step) => step.kind)).toEqual(["MARK", "DRIVE", "MARK"]);
 });
 
-test("itinerary lists its steps with their kinds, and the terminals and schedules of its sailings", () => {
-    const found = selectItineraries(plansFor("vancouver", "van_anda"), BEFORE);
-    const [itinerary] = found.itineraries;
+test("itinerary lists its steps with their kinds, and the terminals and schedule URLs of its sailings", () => {
+    const found = pick(plansFor("vancouver", "van_anda"), BEFORE);
+    const itinerary = found.itineraries.find((itinerary) => itinerary.depart === "2026-10-08T06:20:50");
 
     expect(itinerary).toMatchObject({
-        id: "19isw5r3buy",
+        id: expect.stringMatching(/^[0-9a-z]{11}$/),
         depart: "2026-10-08T06:20:50",
         arrive: "2026-10-08T13:34:24",
         duration: 26014,
@@ -147,8 +126,20 @@ test("itinerary lists its steps with their kinds, and the terminals and schedule
         mapUrl: expect.stringContaining("https://www.google.com/maps/dir/"),
     });
     expect(itinerary?.steps.map((step) => step.kind)).toEqual([
-        ...["MARK", "DRIVE", "WAIT", "FERRY", "DRIVE", "FREE", "WAIT", "FERRY"],
-        ...["DRIVE", "FREE", "WAIT", "FERRY", "DRIVE", "MARK"],
+        "MARK",
+        "DRIVE",
+        "WAIT",
+        "FERRY",
+        "DRIVE",
+        "FREE",
+        "WAIT",
+        "FERRY",
+        "DRIVE",
+        "FREE",
+        "WAIT",
+        "FERRY",
+        "DRIVE",
+        "MARK",
     ]);
     expect(itinerary?.steps[0]).toEqual({
         kind: "MARK",
@@ -167,164 +158,107 @@ test("itinerary lists its steps with their kinds, and the terminals and schedule
     });
 });
 
-test("itinerary is found by its ID among all there are, shown or not", () => {
-    const plans = plansFor("vancouver", "van_anda");
-    const shown = selectItineraries(plans, BEFORE).itineraries;
-    const hidden = selectItineraries(plans, BEFORE, { all: true }).itineraries.find(
-        (itinerary) => itinerary.route !== SUNSHINE_COAST,
-    );
-
-    expect(findItinerary(plans, "19isw5r3buy")).toEqual(shown[0]);
-    expect(findItinerary(plans, hidden?.id ?? "")).toEqual(hidden);
-});
-
-test("no itinerary is found by an ID that none has", () => {
-    const plans = plansFor("vancouver", "van_anda");
-
-    expect(findItinerary(plans, "00000000000")).toBeUndefined();
-    expect(findItinerary(plans, "")).toBeUndefined();
-    // Only a whole ID finds an itinerary.
-    expect(findItinerary(plans, "ce6c2a")).toBeUndefined();
-});
-
-// The rules one at a time, with route plans made up for them.
+// Each rule separately, with made-up itineraries.
 
 interface MadeUpPlan {
-    /** Locations gone through, with a `~` before those reached by ferry. */
+    /** Location IDs separated by spaces, with `~` before those reached by ferry. */
     route: string;
     depart: string;
     arrive: string;
-    driving?: number;
 }
 
-const makePlan = ({ route, depart, arrive, driving = 0 }: MadeUpPlan, index: number): RoutePlan => {
+const makePlan = ({ route, depart, arrive }: MadeUpPlan, index: number): Itinerary => {
     const stops = route.split(" ");
     const start = `2026-10-08T${depart}:00`;
     const end = `2026-10-08T${arrive}:00`;
     return {
-        hash: String(index).padStart(12, "0"),
-        depart_time: start,
-        arrive_time: end,
+        id: String(index).padStart(11, "0"),
+        route: stops.map((stop) => stop.replace("~", "")).join("-"),
+        depart: start,
+        arrive: end,
         duration: (Date.parse(`${end}Z`) - Date.parse(`${start}Z`)) / 1000,
-        driving_duration: 0,
-        driving_distance: driving,
-        map_url: "",
-        segments: stops.slice(1).map((stop, index) => ({
-            connection: {
-                id: "",
-                origin: { id: stops[index]?.replace("~", "") },
-                destination: { id: stop.replace("~", "") },
-                duration: 0,
-                distance: 0,
-                fuel: 0,
-                type: stop.startsWith("~") ? "FERRY" : "CAR",
-            },
-            times: [],
-        })),
-    } as unknown as RoutePlan;
+        drivingDistance: 0,
+        mapUrl: "",
+        steps: stops.filter((stop) => stop.startsWith("~")).map(() => ({ kind: "FERRY", start, end, description: "" })),
+    };
 };
 
 const select = (madeUp: MadeUpPlan[], all = false) => {
     const plans = madeUp.map(makePlan);
-    return summarize(selectItineraries(plans, BEFORE, { all }).itineraries);
+    return summarize(pick(plans, BEFORE, { all }).itineraries);
 };
 
-test("itinerary is left out when another leaves no earlier and arrives no later", () => {
+test("itinerary is excluded if another on its route departs no earlier and arrives no later", () => {
+    expect(
+        select([
+            { route: "A ~B", depart: "08:00", arrive: "10:00" },
+            { route: "A ~B", depart: "07:00", arrive: "10:00" },
+            { route: "A ~B", depart: "08:00", arrive: "11:00" },
+        ]),
+    ).toEqual(["A-B 08:00>10:00"]);
+});
+
+test("itinerary is kept if it departs later or arrives earlier than every other on its route", () => {
+    expect(
+        select([
+            { route: "A ~B", depart: "08:00", arrive: "10:00" },
+            { route: "A ~B", depart: "09:00", arrive: "12:00" },
+            { route: "A ~B", depart: "06:00", arrive: "09:00" },
+        ]),
+    ).toEqual(["A-B 08:00>10:00", "A-B 06:00>09:00", "A-B 09:00>12:00"]);
+});
+
+test("itinerary is kept if only itineraries on other routes are better", () => {
     expect(
         select([
             { route: "A ~B", depart: "08:00", arrive: "10:00" },
             { route: "A ~C ~B", depart: "07:00", arrive: "10:00" },
             { route: "A ~D ~B", depart: "08:00", arrive: "11:00" },
         ]),
-    ).toEqual(["A-B 08:00>10:00"]);
+    ).toEqual(["A-B 08:00>10:00", "A-C-B 07:00>10:00", "A-D-B 08:00>11:00"]);
 });
 
-test("itinerary is kept when it leaves later or arrives earlier than every other", () => {
+test("one of two itineraries on a route with the same times is kept", () => {
     expect(
         select([
             { route: "A ~B", depart: "08:00", arrive: "10:00" },
-            { route: "A ~C ~B", depart: "09:00", arrive: "12:00" },
-            { route: "A ~D ~B", depart: "06:00", arrive: "09:00" },
+            { route: "A ~B", depart: "08:00", arrive: "10:00" },
         ]),
-    ).toEqual(["A-D-B 06:00>09:00", "A-B 08:00>10:00", "A-C-B 09:00>12:00"]);
+    ).toEqual(["A-B 08:00>10:00"]);
 });
 
-test("itinerary is kept when the only ones better in time use more ferries", () => {
-    expect(
-        select([
-            { route: "A ~C ~B", depart: "08:00", arrive: "10:00" },
-            { route: "A ~B", depart: "07:00", arrive: "11:00" },
-        ]),
-    ).toEqual(["A-B 07:00>11:00", "A-C-B 08:00>10:00"]);
-});
-
-test("of itineraries with the same times and ferries, the one with the least driving is kept", () => {
-    expect(
-        select([
-            { route: "A C ~B", depart: "08:00", arrive: "10:00", driving: 50 },
-            { route: "A D ~B", depart: "08:00", arrive: "10:00", driving: 20 },
-            { route: "A E ~B", depart: "08:00", arrive: "10:00", driving: 30 },
-        ]),
-    ).toEqual(["A-D-B 08:00>10:00"]);
-});
-
-test("itineraries are in order of departure, whatever their route", () => {
-    expect(
-        select([
-            { route: "A ~C ~B", depart: "12:00", arrive: "15:00" },
-            { route: "A ~B", depart: "13:00", arrive: "17:00" },
-            { route: "A ~B", depart: "07:00", arrive: "09:00" },
-            { route: "A ~C ~B", depart: "08:00", arrive: "11:30" },
-        ]),
-    ).toEqual(["A-B 07:00>09:00", "A-C-B 08:00>11:30", "A-C-B 12:00>15:00", "A-B 13:00>17:00"]);
-});
-
-const FOUR_ROUTES: MadeUpPlan[] = [
-    { route: "A ~B", depart: "06:00", arrive: "07:00" },
-    { route: "A ~C ~B", depart: "07:00", arrive: "09:00" },
-    { route: "A ~D ~B", depart: "08:00", arrive: "11:00" },
-    { route: "A ~E ~B", depart: "09:00", arrive: "13:00" },
-    // Never worth taking, as the first route leaves at the same time and arrives earlier.
-    { route: "A ~F ~B", depart: "06:00", arrive: "12:00" },
-    { route: "A ~F ~B", depart: "05:00", arrive: "12:00" },
-];
-
-test("only the three routes with the fastest itineraries are shown unless all are asked for", () => {
-    const plans = FOUR_ROUTES.map(makePlan);
-
-    const found = selectItineraries(plans, BEFORE);
-
-    expect(summarize(found.itineraries)).toEqual(["A-B 06:00>07:00", "A-C-B 07:00>09:00", "A-D-B 08:00>11:00"]);
-    expect(found.moreRoutes).toBe(2);
-});
-
-test("route that is never worth taking shows its own best itineraries when all are asked for", () => {
-    expect(select(FOUR_ROUTES, true)).toEqual([
-        "A-B 06:00>07:00",
-        "A-F-B 06:00>12:00",
-        "A-C-B 07:00>09:00",
-        "A-D-B 08:00>11:00",
-        "A-E-B 09:00>13:00",
-    ]);
-});
-
-// All worth taking, as each leaves later and arrives later than the one before, but for the last, which is fastest.
-const FOUR_TIMES: MadeUpPlan[] = [
-    { route: "A ~C ~B", depart: "06:00", arrive: "09:00" },
-    { route: "A ~D ~B", depart: "07:00", arrive: "10:30" },
-    { route: "A ~E ~B", depart: "08:00", arrive: "12:30" },
-    { route: "A ~F ~B", depart: "12:00", arrive: "13:00" },
+const FOUR: MadeUpPlan[] = [
+    { route: "A ~C ~B", depart: "12:00", arrive: "15:00" },
+    { route: "A ~B", depart: "13:00", arrive: "17:00" },
+    { route: "A ~B", depart: "07:00", arrive: "09:00" },
+    { route: "A ~C ~B", depart: "08:00", arrive: "11:30" },
 ];
 
 test.each([
-    ["duration", ["A-C-B", "A-D-B", "A-F-B"]],
-    ["departure", ["A-C-B", "A-D-B", "A-E-B"]],
-    ["arrival", ["A-C-B", "A-D-B", "A-E-B"]],
-] as const)("routes shown are the three best by %s when that is what they are wanted in order of", (sort, routes) => {
-    const found = selectItineraries(FOUR_TIMES.map(makePlan), BEFORE, { sort });
+    ["duration", ["A-B 07:00>09:00", "A-C-B 12:00>15:00", "A-C-B 08:00>11:30", "A-B 13:00>17:00"]],
+    ["departure", ["A-B 07:00>09:00", "A-C-B 08:00>11:30", "A-C-B 12:00>15:00", "A-B 13:00>17:00"]],
+    ["arrival", ["A-B 07:00>09:00", "A-C-B 08:00>11:30", "A-C-B 12:00>15:00", "A-B 13:00>17:00"]],
+] as const)("itineraries are sorted by %s across routes", (sort, expected) => {
+    expect(summarize(pick(FOUR.map(makePlan), BEFORE, { sort }).itineraries)).toEqual(expected);
+});
 
-    expect(found.itineraries.map((itinerary) => itinerary.route)).toEqual(routes);
-    expect(found.moreRoutes).toBe(1);
+/** Twelve 30-minute itineraries that depart an hour apart from 06:00, each on its own route. */
+const TWELVE: MadeUpPlan[] = Array.from({ length: 12 }, (_, index) => {
+    const hour = String(6 + index).padStart(2, "0");
+    return { route: `A ~${index} ~B`, depart: `${hour}:00`, arrive: `${hour}:30` };
+});
+
+test("only the first ten itineraries are returned unless all is set, and the rest are counted", () => {
+    const found = pick(TWELVE.map(makePlan).toReversed(), BEFORE, { sort: "departure" });
+
+    expect(found.itineraries.map((itinerary) => itinerary.depart.slice(11, 16))).toEqual(
+        ["06", "07", "08", "09", "10", "11", "12", "13", "14", "15"].map((hour) => `${hour}:00`),
+    );
+    expect(found.more).toBe(2);
+    expect(pick(TWELVE.map(makePlan), BEFORE, { all: true })).toMatchObject({
+        itineraries: { length: 12 },
+        more: 0,
+    });
 });
 
 const THROUGH_THE_DAY: MadeUpPlan[] = [
@@ -333,15 +267,15 @@ const THROUGH_THE_DAY: MadeUpPlan[] = [
     { route: "A ~B", depart: "12:00", arrive: "14:00" },
 ];
 
-test("itineraries that have left count those still under way", () => {
-    const found = selectItineraries(THROUGH_THE_DAY.map(makePlan), "2026-10-08T10:00:00");
+test("departed count includes itineraries that are under way", () => {
+    const found = pick(THROUGH_THE_DAY.map(makePlan), "2026-10-08T10:00:00");
 
     expect(summarize(found.itineraries)).toEqual(["A-B 12:00>14:00"]);
     expect(found).toMatchObject({ departed: 2, underway: 1 });
 });
 
-test("itineraries still under way are shown when asked for, and those that have arrived are not", () => {
-    const found = selectItineraries(THROUGH_THE_DAY.map(makePlan), "2026-10-08T10:00:00", { underway: true });
+test("underway includes itineraries that are under way and excludes those that have arrived", () => {
+    const found = pick(THROUGH_THE_DAY.map(makePlan), "2026-10-08T10:00:00", { underway: true });
 
     expect(summarize(found.itineraries)).toEqual(["A-B 09:00>11:00", "A-B 12:00>14:00"]);
     expect(found).toMatchObject({ departed: 1, underway: 0 });

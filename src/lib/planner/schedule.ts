@@ -1,24 +1,17 @@
-import { ferryConnections } from "./data/ferry-connections";
-import { type TerminalId, terminals } from "./data/locations";
-import type { Sailing, Timetable } from "./gtfs";
-import { formatLocal, startOfDay } from "./time";
+import { ferryConnections } from "./data/ferry-connections.ts";
+import { type TerminalId, terminals } from "./data/locations.ts";
+import type { Sailing, Timetable } from "./gtfs.ts";
+import { formatLocal, startOfDay } from "./time.ts";
 
 const SCHEDULE_BASE_URL = "https://www.bcferries.com/routes-fares/schedules/daily/";
-const NO_SAILINGS_NOTE = "No sailings found";
-const SCHEDULE_NOT_POSTED_NOTE = "Seasonal schedules have not been posted for these dates";
 
 export interface Schedule {
-    /** Local time that the schedule was asked for. */
-    date: number;
-    origin: TerminalId;
-    destination: TerminalId;
     sailings: readonly Sailing[];
+    /** URL of the schedule on the BC Ferries website. */
     url: string;
-    /** Notes or comments posted about this schedule. */
-    notes: string[];
 }
 
-/** Get the `[latitude, longitude]` of the terminals that have ferry connections, to match the stops of a feed to. */
+/** Get the `[latitude, longitude]` of each terminal with a ferry connection, to match feed stops to. */
 export const terminalCoordinates = (): Record<string, [number, number]> => {
     const ids = new Set(
         Object.entries(ferryConnections).flatMap(([origin, destinations]) => [origin, ...Object.keys(destinations)]),
@@ -41,15 +34,11 @@ export const getSchedule = (
     date: number,
 ): Schedule => {
     const day = startOfDay(date);
-    // The feed can list sailings for dates it does not cover, but those are not reliable.
+    // The feed can list sailings for dates outside its date range, but they are not reliable.
     const sailings = timetable.covers(day) ? timetable.sailings(origin, destination, day) : [];
     const [year, month, dayOfMonth] = formatLocal(day).slice(0, 10).split("-");
     return {
-        date,
-        origin,
-        destination,
         sailings,
         url: `${SCHEDULE_BASE_URL}${origin}-${destination}?&scheduleDate=${month}/${dayOfMonth}/${year}`,
-        notes: sailings.length > 0 ? [] : [timetable.covers(day) ? NO_SAILINGS_NOTE : SCHEDULE_NOT_POSTED_NOTE],
     };
 };

@@ -14,7 +14,7 @@ The app is served by a [Cloudflare Worker](https://developers.cloudflare.com/wor
 
 ## Development
 
-You need [Bun](https://bun.sh).
+You need [Bun](https://bun.sh), and [prek](https://prek.j178.dev) to run the checks before each commit (`prek install`).
 
 ```bash
 bun install

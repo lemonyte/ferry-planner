@@ -1,53 +1,55 @@
-// Browsers are not let read the BC Ferries feed from the server that it is on, so they get it from here.
-// The feed is passed on as it is, for the browser to read.
+// Proxy for the BC Ferries GTFS feed, which browsers cannot fetch cross-origin.
+// The feed is passed through unmodified.
 
 import { waitUntil } from "cloudflare:workers";
-import type { RequestHandler } from "./$types";
 
 const GTFS_URL = "https://data.trilliumtransit.com/gtfs/bcferries-bc-ca/bcferries-bc-ca.zip";
-/** Time to keep the feed for before asking its server for it again. */
+/** Time to cache the feed before requesting it from its server again. */
 const CACHE_SECONDS = 60 * 60;
+/** Timeout for requests to the server of the feed. */
+const TIMEOUT_MS = 20 * 1000;
 
-/** Get the cache of Cloudflare, which there is none of when developing. */
-const getCache = (): Cache | undefined => {
-    // Browsers have a cache by the same name, which is the one that the types know.
-    return (globalThis as { caches?: { default?: Cache } }).caches?.default;
-};
-
-/** Read a version without the mark of being only alike, which is not told apart here. */
+/** Strip the weak validator prefix from an ETag, so that weak and strong ETags compare as equal. */
 const bareEtag = (etag: string | null): string | undefined => {
     return etag?.replace(/^W\//, "");
 };
 
-export const GET: RequestHandler = async ({ request }) => {
-    const cache = getCache();
-    let feed = await cache?.match(GTFS_URL);
+/** Download the feed. Returns `undefined` if its server is unreachable or returns an error. */
+const download = async (): Promise<Response | undefined> => {
+    const response = await fetch(GTFS_URL, { signal: AbortSignal.timeout(TIMEOUT_MS) }).catch((error: unknown) => {
+        console.error(JSON.stringify({ message: "failed to reach the server of the GTFS feed", error: String(error) }));
+    });
+    if (!response?.ok) {
+        await response?.body?.cancel();
+        return undefined;
+    }
+    const headers = new Headers({
+        "Content-Type": "application/zip",
+        "Cache-Control": `public, max-age=${CACHE_SECONDS}`,
+    });
+    const etag = response.headers.get("ETag");
+    if (etag) {
+        headers.set("ETag", etag);
+    }
+    return new Response(response.body, { headers });
+};
+
+export const GET = async ({ request }) => {
+    // The DOM `CacheStorage` type shadows the Workers type, which has `default`.
+    const cache = (caches as CacheStorage & { default: Cache }).default;
+    let feed = await cache.match(GTFS_URL);
     if (!feed) {
-        const response = await fetch(GTFS_URL).catch((error: unknown) => {
-            console.error(
-                JSON.stringify({ message: "failed to reach the server of the GTFS feed", error: String(error) }),
-            );
-        });
-        if (!response?.ok) {
-            await response?.body?.cancel();
+        feed = await download();
+        if (!feed) {
             return new Response("The schedules are not available.", { status: 502 });
         }
-        feed = new Response(response.body, {
-            headers: {
-                ETag: response.headers.get("ETag") ?? "",
-                "Content-Type": "application/zip",
-                "Cache-Control": `public, max-age=${CACHE_SECONDS}`,
-            },
-        });
-        if (cache) {
-            waitUntil(cache.put(GTFS_URL, feed.clone()));
-        }
+        waitUntil(cache.put(GTFS_URL, feed.clone()));
     }
     const etag = feed.headers.get("ETag");
-    // The browser asks every time, and is only sent the feed when it has changed.
+    // The browser revalidates on every request and receives the feed only if it changed.
     const headers = { "Cache-Control": "no-cache", ...(etag ? { ETag: etag } : {}) };
     if (etag && bareEtag(request.headers.get("If-None-Match")) === bareEtag(etag)) {
-        // Not waited for, as the copy that is being kept may still be read.
+        // Not awaited, because the clone being cached may still be read.
         void feed.body?.cancel();
         return new Response(null, { status: 304, headers });
     }

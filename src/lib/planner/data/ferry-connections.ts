@@ -1,4 +1,4 @@
-import type { TerminalId } from "./locations";
+import type { TerminalId } from "./locations.ts";
 
 export interface FerryConnection {
     bookable: boolean;

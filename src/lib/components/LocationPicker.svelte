@@ -1,25 +1,29 @@
 <script lang="ts">
-import { Combobox } from "bits-ui";
-import { CITIES, filterPlaces, placeName, TERMINALS } from "#lib/locations.ts";
+    import { Combobox } from "bits-ui";
+    import { flushSync } from "svelte";
 
-interface Props {
-    /** Name that the ID of the place picked is submitted under. */
-    name: string;
-    label: string;
-    /** ID of the place picked. */
-    value: string;
-}
+    import { filterPlaces, placeName } from "#lib/locations.ts";
+    import { cities, terminals } from "#lib/planner/data/locations.ts";
 
-let { name, label, value = $bindable() }: Props = $props();
-const id = $props.id();
+    interface Props {
+        /** Form field name for the ID of the selected place. */
+        name: string;
+        label: string;
+        /** ID of the selected place. */
+        value: string;
+    }
 
-let typed = $state("");
-const groups = $derived(
-    [
-        { heading: "Cities and towns", places: filterPlaces(CITIES, typed) },
-        { heading: "Ferry terminals", places: filterPlaces(TERMINALS, typed) },
-    ].filter((group) => group.places.length > 0),
-);
+    let { name, label, value = $bindable() }: Props = $props();
+    const id = $props.id();
+
+    let typed = $state("");
+    let list = $state<HTMLElement | null>(null);
+    const groups = $derived(
+        [
+            { heading: "Cities and towns", places: filterPlaces(cities, typed) },
+            { heading: "Ferry terminals", places: filterPlaces(terminals, typed) },
+        ].filter((group) => group.places.length > 0),
+    );
 </script>
 
 <Combobox.Root
@@ -35,18 +39,19 @@ const groups = $derived(
     }}
 >
     <div>
-        <label for={id} class="sr-only text-sm font-medium text-slate-700 sm:not-sr-only sm:mb-1 sm:block"
-            >{label}</label
-        >
+        <label for={id} class="field-label">{label}</label>
         <Combobox.Input
             {id}
-            class="h-12 w-full rounded-lg border border-slate-300 bg-white pr-16 pl-3 text-base placeholder:text-slate-400 sm:pr-3"
+            class="field pr-16 placeholder:text-slate-400 sm:pr-3"
             placeholder="{label}: city or terminal"
             defaultValue={placeName(value)}
             autocomplete="off"
             enterkeyhint="search"
             oninput={(event) => {
                 typed = event.currentTarget.value;
+                // bits-ui highlights the first item in view, so scroll the filtered list to the top first.
+                flushSync();
+                list?.scrollTo({ top: 0 });
             }}
             onfocus={(event) => event.currentTarget.select()}
         />
@@ -56,7 +61,7 @@ const groups = $derived(
             class="z-10 max-h-[min(var(--bits-combobox-content-available-height),22rem)] w-(--bits-combobox-anchor-width) overflow-y-auto rounded-lg border border-slate-300 bg-white py-1 shadow-lg"
             sideOffset={4}
         >
-            <Combobox.Viewport>
+            <Combobox.Viewport bind:ref={list}>
                 {#each groups as group (group.heading)}
                     <Combobox.Group>
                         <Combobox.GroupHeading class="px-3 pt-2 pb-1 text-xs font-semibold text-slate-500 uppercase">

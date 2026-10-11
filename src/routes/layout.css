@@ -1,12 +1,85 @@
 @import "tailwindcss";
 
-/* The page behind the options does not scroll while they are open. */
+@utility card {
+    @apply rounded-xl border border-slate-200 bg-white;
+}
+
+/* On a phone, a card of trips spans the screen width so that the bars are as wide as possible. */
+@utility card-bleed {
+    @apply -mx-4 border-y border-slate-200 bg-white sm:mx-0 sm:rounded-xl sm:border-x;
+}
+
+@utility alert {
+    @apply rounded-xl border border-amber-300 bg-amber-50 p-4;
+}
+
+/* Base for buttons and for links styled as buttons. Combine with `btn-primary` or `btn-secondary`. */
+@utility btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4;
+}
+
+@utility btn-primary {
+    @apply bg-sky-700 font-semibold text-white hover:bg-sky-800;
+}
+
+@utility btn-secondary {
+    @apply border border-slate-300 bg-white font-medium hover:bg-slate-100;
+}
+
+/* Round icon-only button. */
+@utility btn-icon {
+    @apply flex size-11 items-center justify-center rounded-full hover:bg-slate-100;
+}
+
+/* Button label that is visually hidden if the button is too narrow for both its icon and the label.
+   The button must be a container. */
+@utility label-if-fits {
+    @apply sr-only @[5rem]:not-sr-only;
+}
+
+/* Sort or group option. Highlighted if `aria-current` or `aria-checked` is `true`. */
+@utility choice {
+    @apply flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-medium text-slate-700;
+
+    &:hover {
+        @apply bg-slate-100;
+    }
+
+    &[aria-current="true"],
+    &[aria-checked="true"] {
+        @apply bg-sky-700 text-white;
+    }
+}
+
+@utility field {
+    @apply h-12 w-full rounded-lg border border-slate-300 bg-white px-3 text-base;
+}
+
+/* On a phone, field labels are visually hidden. */
+@utility field-label {
+    @apply sr-only text-sm font-medium text-slate-700 sm:not-sr-only sm:mb-1 sm:block;
+}
+
+@utility link {
+    @apply inline-flex min-h-8 items-center text-sky-800 underline;
+}
+
+@utility badge {
+    @apply rounded-full px-2 py-0.5 text-xs font-semibold;
+}
+
+/* Page title and date, side by side if both fit. */
+@utility title-row {
+    @apply flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1;
+}
+
+/* Prevent the page from scrolling behind the open options dialog. */
 html:has(dialog[open]) {
     overflow: hidden;
 }
 
-/* Safari on iOS makes a date as wide as it likes and puts it in the middle, unless told how it is to look.
-   The date is then a line at the top of its field, which the padding of the field brings to the middle. */
+/* Safari on iOS centers a date value and sizes it to its content unless styled.
+   This left-aligns the value, and the padding of the field centers it vertically. */
 input[type="date"]::-webkit-date-and-time-value {
     min-height: 1.5em;
     margin: 0;

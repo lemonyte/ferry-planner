@@ -1,72 +1,59 @@
-import { carConnections } from "./data/car-connections";
-import { ferryConnections } from "./data/ferry-connections";
-import { cities, type Location, type LocationId, locations, type Terminal, type TerminalId } from "./data/locations";
-import type { Timetable } from "./gtfs";
-import { getSchedule } from "./schedule";
-import { formatLocal, MS_PER_DAY, MS_PER_MINUTE, startOfDay } from "./time";
+import type { Query } from "#lib/query.ts";
 
-/** Longest drive in seconds that is shown unless all route plans are asked for. */
+import { carConnections } from "./data/car-connections.ts";
+import { ferryConnections } from "./data/ferry-connections.ts";
+import {
+    cities,
+    type Location,
+    type LocationId,
+    locations,
+    type Terminal,
+    type TerminalId,
+    terminals,
+} from "./data/locations.ts";
+import type { Timetable } from "./gtfs.ts";
+import type { Itinerary, Step } from "./itinerary.ts";
+import { getSchedule } from "./schedule.ts";
+import { formatLocal, MS_PER_DAY, MS_PER_MINUTE, startOfDay } from "./time.ts";
+
+/** Maximum drive in seconds, unless `long` is set. */
 const DRIVING_DURATION_LIMIT = 6 * 60 * 60;
 const MAP_URL = "https://www.google.com/maps/dir/?api=1";
 
-type ConnectionType = "FERRY" | "CAR";
-
-export interface Connection {
-    id: string;
-    origin: Location;
-    destination: Location;
-    /** Duration in seconds, or -1 for ferry connections, whose sailings each have their own. */
-    duration: number;
-    /** Distance in kilometers. */
-    distance: number;
-    /** Fuel usage in litres. For ferry connections, only that of boarding and unboarding. */
-    fuel: number;
-    type: ConnectionType;
-}
-
-export interface TimeInterval<Time = string> {
-    start: Time;
-    end: Time;
-    description: string;
-    /** `FREE` is extra time between segments, and `WAIT` is waiting at a terminal. */
-    type: "FREE" | "WAIT" | "TRAVEL";
-}
-
-export interface RoutePlanSegment<Time = string> {
-    connection: Connection;
-    times: TimeInterval<Time>[];
-    schedule_url?: string;
-}
-
-export interface RoutePlan {
-    segments: RoutePlanSegment[];
-    hash: string;
-    /** Total duration in seconds. */
-    duration: number;
-    depart_time: string;
-    arrive_time: string;
-    /** Total driving duration in seconds. */
-    driving_duration: number;
-    /** Total driving distance in kilometers. */
-    driving_distance: number;
-    /** Google Maps URL of the route. */
-    map_url: string;
-}
+type Connection =
+    | {
+          type: "CAR";
+          origin: Location;
+          destination: Location;
+          /** Duration in seconds. */
+          duration: number;
+          /** Distance in kilometers. */
+          distance: number;
+      }
+    | { type: "FERRY"; origin: Terminal; destination: Terminal; bookable: boolean };
 
 export interface PlanOptions {
     /** Local time on the day to travel on. */
     date: number;
-    showAll: boolean;
-    assured: boolean;
-    hostled: boolean;
-    /** Buffer time in minutes. */
-    buffer: number;
+    checkin: Query["checkin"];
+    /** Minutes to arrive at a terminal before its check-in closes. */
+    early: number;
+    /** Whether to include long drives, overnight journeys, and sailings later than the first available. */
+    long: boolean;
+}
+
+/** A step with local times in milliseconds, used until its itinerary is complete. */
+type TimedStep = Omit<Step, "start" | "end"> & { start: number; end: number };
+
+interface Segment {
+    connection: Connection;
+    steps: TimedStep[];
 }
 
 /**
- * Hash text to 11 letters and digits.
+ * Hash text to 11 base-36 characters.
  *
- * Not one to keep secrets with, only to make a short ID that the same text always gets.
+ * Not cryptographic. Used only to derive a short, stable ID.
  */
 const hashText = (text: string): string => {
     let high = 0xdeadbeef;
@@ -78,62 +65,55 @@ const hashText = (text: string): string => {
     }
     high = Math.imul(high ^ (high >>> 16), 2246822507) ^ Math.imul(low ^ (low >>> 13), 3266489909);
     low = Math.imul(low ^ (low >>> 16), 2246822507) ^ Math.imul(high ^ (high >>> 13), 3266489909);
-    // The 53 bits that a number holds exactly.
+    // 53 bits, the most that a number holds exactly.
     return ((low & 0x1fffff) * 2 ** 32 + (high >>> 0)).toString(36).padStart(11, "0");
 };
 
-/** Segments use local times in milliseconds until their route plan is complete. */
-type Segment = RoutePlanSegment<number>;
-
-const connections = new Map<string, Connection | undefined>();
-const connectionsFrom = new Map<LocationId, [LocationId, ConnectionType][]>();
-
 const getConnection = (origin: LocationId, destination: LocationId): Connection | undefined => {
-    const id = `${origin}-${destination}`;
-    if (!connections.has(id)) {
-        const car = carConnections[origin]?.[destination];
-        const isFerry = ferryConnections[origin as TerminalId]?.[destination as TerminalId] !== undefined;
-        const ends = { id, origin: locations[origin], destination: locations[destination] };
-        connections.set(
-            id,
-            car
-                ? { ...ends, ...car, type: "CAR" }
-                : isFerry
-                  ? { ...ends, duration: -1, distance: 0.2, fuel: 0.2, type: "FERRY" }
-                  : undefined,
-        );
+    const car = carConnections[origin]?.[destination];
+    if (car) {
+        return {
+            type: "CAR",
+            origin: locations[origin],
+            destination: locations[destination],
+            duration: car.duration,
+            distance: car.distance,
+        };
     }
-    return connections.get(id);
+    const ferry = ferryConnections[origin as TerminalId]?.[destination as TerminalId];
+    return (
+        ferry && {
+            type: "FERRY",
+            origin: terminals[origin as TerminalId],
+            destination: terminals[destination as TerminalId],
+            bookable: ferry.bookable,
+        }
+    );
 };
 
-/** Get the destinations and types of the connections from a location, those by car first. */
-const getConnectionsFrom = (origin: LocationId): [LocationId, ConnectionType][] => {
-    let found = connectionsFrom.get(origin);
-    if (!found) {
-        found = [
-            ...Object.keys(carConnections[origin] ?? {}).map((destination): [LocationId, ConnectionType] => [
-                destination as LocationId,
-                "CAR",
-            ]),
-            ...Object.keys(ferryConnections[origin as TerminalId] ?? {}).map(
-                (destination): [LocationId, ConnectionType] => [destination as LocationId, "FERRY"],
-            ),
-        ];
-        connectionsFrom.set(origin, found);
-    }
-    return found;
+/** Get the destination and type of each connection from a location, car connections first. */
+const getConnectionsFrom = (origin: LocationId): [LocationId, Connection["type"]][] => {
+    return [
+        ...Object.keys(carConnections[origin] ?? {}).map((destination): [LocationId, Connection["type"]] => [
+            destination as LocationId,
+            "CAR",
+        ]),
+        ...Object.keys(ferryConnections[origin as TerminalId] ?? {}).map(
+            (destination): [LocationId, Connection["type"]] => [destination as LocationId, "FERRY"],
+        ),
+    ];
 };
 
-/** Find the routes between two locations, each as the locations it goes through. */
+/** Find the routes between two locations, each as a list of location IDs. */
 export const findRoutes = (origin: LocationId, destination: LocationId): LocationId[][] => {
     const routes: LocationId[][] = [];
     const route: LocationId[] = [];
     const deadEnds = new Set<string>();
-    // Land groups left by ferry so far on the route, which are not returned to.
+    // Land groups already left by ferry on this route. A route does not return to them.
     const lands: string[] = [];
     const endsInCity = destination in cities;
 
-    const follow = (point: LocationId, lastType?: ConnectionType): boolean => {
+    const follow = (point: LocationId, lastType?: Connection["type"]): boolean => {
         route.push(point);
         if (point === destination) {
             routes.push([...route]);
@@ -175,19 +155,19 @@ export const findRoutes = (origin: LocationId, destination: LocationId): Locatio
     return routes;
 };
 
-/** Find the ways to travel between two locations on a day, the shortest first. */
-export const routePlans = (
+/** Find the ways to travel between two locations on a day. */
+export const makeItineraries = (
     origin: LocationId,
     destination: LocationId,
     options: PlanOptions,
     timetable: Timetable,
     /** Current local time. */
     now: number,
-): RoutePlan[] => {
-    const plans: RoutePlan[] = [];
+): Itinerary[] => {
+    const itineraries: Itinerary[] = [];
     for (const route of findRoutes(origin, destination)) {
-        addSegment({
-            plans,
+        addItineraries({
+            itineraries,
             route,
             index: 1,
             segments: [],
@@ -197,133 +177,129 @@ export const routePlans = (
             now,
         });
     }
-    return plans.sort((a, b) => a.duration - b.duration);
+    return itineraries;
 };
 
 interface PlanState {
-    plans: RoutePlan[];
+    itineraries: Itinerary[];
     route: LocationId[];
     /** Index in the route of the destination of the next segment. */
     index: number;
-    segments: Segment[];
+    /** Segments of the route so far. */
+    segments: readonly Segment[];
     startTime: number;
     options: PlanOptions;
     timetable: Timetable;
     now: number;
 }
 
-/** Add route plans for the rest of a route, and return whether there were any. */
-const addSegment = (state: PlanState): boolean => {
-    const { plans, route, index, segments, startTime, options } = state;
+/** Add itineraries for the rest of a route. Returns whether any were added. */
+const addItineraries = (state: PlanState): boolean => {
+    const { route, index, segments, startTime, options } = state;
     const [origin, destination] = [route[index - 1], route[index]];
-    try {
-        if (!origin || !destination) {
-            if (segments.length > 0) {
-                plans.push(makeRoutePlan(segments, state.now));
-            }
-            return segments.length > 0;
+    if (!origin || !destination) {
+        // A route from a location to itself has no segments.
+        if (segments.length > 0) {
+            state.itineraries.push(makeItinerary(segments, state.now));
         }
-        const connection = getConnection(origin, destination);
-        if (connection?.type === "FERRY") {
-            return addFerrySegments(state, connection);
-        }
-        // Skip long drives.
-        if (!connection || (!options.showAll && connection.duration > DRIVING_DURATION_LIMIT)) {
-            return false;
-        }
-        const arriveTime = startTime + connection.duration * 1000;
-        segments.push({
-            connection,
-            times: [
-                {
-                    type: "TRAVEL",
-                    start: startTime,
-                    end: arriveTime,
-                    description: `Drive ${Math.round(connection.distance)} km to ${connection.destination.name}`,
-                },
-            ],
-        });
-        return addSegment({ ...state, index: index + 1, startTime: arriveTime });
-    } finally {
-        segments.length = Math.min(segments.length, index - 1);
+        return segments.length > 0;
     }
+    const connection = getConnection(origin, destination);
+    if (connection?.type === "FERRY") {
+        return addSailings(state, connection);
+    }
+    // Skip long drives.
+    if (!connection || (!options.long && connection.duration > DRIVING_DURATION_LIMIT)) {
+        return false;
+    }
+    const arriveTime = startTime + connection.duration * 1000;
+    const drive: TimedStep = {
+        // A zero-duration drive, between two places at the same location, is a point in time.
+        kind: connection.duration > 0 ? "DRIVE" : "MARK",
+        start: startTime,
+        end: arriveTime,
+        description: `Drive ${Math.round(connection.distance)} km to ${connection.destination.name}`,
+    };
+    return addItineraries({
+        ...state,
+        index: index + 1,
+        segments: [...segments, { connection, steps: [drive] }],
+        startTime: arriveTime,
+    });
 };
 
-/** Add route plans for the rest of a route for each sailing that can be caught, and return whether there were any. */
-const addFerrySegments = (state: PlanState, connection: Connection): boolean => {
+/** Get the name of the check-in deadline for a sailing, and its minutes before departure. */
+const getDeadline = (
+    origin: Terminal,
+    bookable: boolean,
+    checkin: Query["checkin"],
+): [name: string, minutes: number] => {
+    if (checkin === "hostled" && origin.hostled_close) {
+        return ["hostled vehicles check-in close", origin.hostled_close];
+    }
+    if (checkin === "assured" && origin.assured_close) {
+        return ["assured loading check-in close", origin.assured_close];
+    }
+    if (origin.res_close && bookable) {
+        return ["booking check-in close", origin.res_close];
+    }
+    if (origin.veh_close) {
+        return ["vehicles check-in close", origin.veh_close];
+    }
+    if (origin.foot_close) {
+        return ["foot passengers check-in close", origin.foot_close];
+    }
+    return ["departure", 0];
+};
+
+/** Add itineraries for the rest of a route, for each sailing that can be caught. Returns whether any were added. */
+const addSailings = (state: PlanState, connection: Connection & { type: "FERRY" }): boolean => {
     const { index, segments, startTime, options } = state;
-    const origin = connection.origin as Terminal;
-    const firstTime = segments[0]?.times[0]?.start ?? startTime;
+    const { origin, destination } = connection;
     const day = startOfDay(startTime);
-    const schedule = getSchedule(
-        state.timetable,
-        origin.id as TerminalId,
-        connection.destination.id as TerminalId,
-        day,
-    );
-    const bookable = ferryConnections[origin.id as TerminalId]?.[connection.destination.id as TerminalId]?.bookable;
+    // Skip routes that continue on another day.
+    if (day !== startOfDay(segments[0]?.steps[0]?.start ?? startTime)) {
+        return false;
+    }
+    const schedule = getSchedule(state.timetable, origin.id as TerminalId, destination.id as TerminalId, day);
+    const [deadlineName, deadlineMinutes] = getDeadline(origin, connection.bookable, options.checkin);
     let found = false;
     for (const sailing of schedule.sailings) {
-        const departTime = sailing.departure;
-        // Only the time of day of the arrival is used, so sailings appear to take less than a day.
-        let arriveTime = day + (sailing.arrival % MS_PER_DAY);
-        if (arriveTime < departTime) {
-            arriveTime += MS_PER_DAY;
-        }
         // Skip routes that take more than one day.
-        if ((!options.showAll && arriveTime - startTime > MS_PER_DAY) || day !== startOfDay(firstTime)) {
+        if (!options.long && sailing.arrival - startTime > MS_PER_DAY) {
             break;
         }
-        if (departTime < startTime) {
-            continue;
-        }
-        let deadlineName = "departure";
-        let waitMinutes = 0;
-        if (options.hostled && origin.hostled_close) {
-            deadlineName = "hostled vehicles check-in close";
-            waitMinutes = origin.hostled_close;
-        } else if (options.assured && origin.assured_close) {
-            deadlineName = "assured loading check-in close";
-            waitMinutes = origin.assured_close;
-        } else if (origin.res_close && bookable) {
-            deadlineName = "booking check-in close";
-            waitMinutes = origin.res_close;
-        } else if (origin.veh_close) {
-            deadlineName = "vehicles check-in close";
-            waitMinutes = origin.veh_close;
-        } else if (origin.foot_close) {
-            deadlineName = "foot passengers check-in close";
-            waitMinutes = origin.foot_close;
-        }
-        const deadlineTime = departTime - (waitMinutes + options.buffer) * MS_PER_MINUTE;
+        const deadlineTime = sailing.departure - (deadlineMinutes + options.early) * MS_PER_MINUTE;
         if (deadlineTime < startTime) {
             continue;
         }
-        const times: Segment["times"] = [
+        const steps: TimedStep[] = [
             {
-                type: "TRAVEL",
-                start: departTime,
-                end: arriveTime,
-                description: `Ferry sailing from ${origin.name} to ${connection.destination.name}`,
+                kind: "FERRY",
+                start: sailing.departure,
+                end: sailing.arrival,
+                description: `Ferry sailing from ${origin.name} to ${destination.name}`,
+                scheduleUrl: schedule.url,
+                from: origin.id as TerminalId,
+                to: destination.id as TerminalId,
             },
         ];
-        if (deadlineTime < departTime) {
-            const buffer = options.buffer > 0 ? `${options.buffer} minutes ` : "";
-            times.unshift({
-                type: "WAIT",
+        if (deadlineTime < sailing.departure) {
+            const early = options.early > 0 ? `${options.early} minutes ` : "";
+            steps.unshift({
+                kind: "WAIT",
                 start: deadlineTime,
-                end: departTime,
-                description: `Arrive at ${origin.name} ${buffer}before ${deadlineName}`,
+                end: sailing.departure,
+                description: `Arrive at ${origin.name} ${early}before ${deadlineName}`,
             });
         }
-        segments.push({ connection, times, schedule_url: schedule.url });
-        if (!addSegment({ ...state, index: index + 1, startTime: arriveTime })) {
+        const rest = { ...state, index: index + 1, segments: [...segments, { connection, steps }] };
+        if (!addItineraries({ ...rest, startTime: sailing.arrival })) {
             break;
         }
-        segments.length = index - 1;
         found = true;
-        // After the first sailing of a route, only the first sailing that can be caught is taken.
-        if (!options.showAll && segments.some((segment) => segment.connection.type === "FERRY")) {
+        // After the first ferry of a route, take only the first sailing that can be caught.
+        if (!options.long && segments.some((segment) => segment.connection.type === "FERRY")) {
             break;
         }
     }
@@ -336,85 +312,81 @@ const mapParameter = (location: Location): string => {
         : `${location.name},${location.province},${location.country}`;
 };
 
-const makeRoutePlan = (planSegments: Segment[], now: number): RoutePlan => {
-    const segments = planSegments.map((segment) => ({
+const makeItinerary = (routeSegments: readonly Segment[], now: number): Itinerary => {
+    const segments = routeSegments.map((segment) => ({
         ...segment,
-        times: segment.times.map((time) => ({ ...time })),
+        steps: segment.steps.map((step) => ({ ...step })),
     }));
     const first = segments[0];
     const last = segments.at(-1);
     if (!first || !last) {
-        throw new Error("route plan must have at least one segment");
+        throw new Error("itinerary must have at least one segment");
     }
     if (first.connection.type === "CAR") {
         const next = segments[1];
-        // A drive at the start can be put off to arrive just in time for the ferry,
-        // and a drive that is all there is starts at the current time of day.
+        // Delay a leading drive to arrive just in time for the ferry.
+        // A drive with no ferry starts at the current time of day.
         const shift = next
-            ? (next.times[0]?.start ?? 0) - (first.times.at(-1)?.end ?? 0)
+            ? (next.steps[0]?.start ?? 0) - (first.steps.at(-1)?.end ?? 0)
             : now - startOfDay(now) - (now % 1000);
-        for (const time of first.times) {
-            time.start += shift;
-            time.end += shift;
+        for (const step of first.steps) {
+            step.start += shift;
+            step.end += shift;
         }
     }
     for (const [index, segment] of segments.entries()) {
-        const freeStart = segment.times.at(-1)?.end;
-        const freeEnd = segments[index + 1]?.times[0]?.start;
+        const freeStart = segment.steps.at(-1)?.end;
+        const freeEnd = segments[index + 1]?.steps[0]?.start;
         if (freeStart !== undefined && freeEnd !== undefined && freeEnd > freeStart) {
-            segment.times.push({ type: "FREE", start: freeStart, end: freeEnd, description: "Free time" });
+            segment.steps.push({ kind: "FREE", start: freeStart, end: freeEnd, description: "Free time" });
         }
     }
-    const departTime = first.times[0]?.start ?? 0;
+    const departTime = first.steps[0]?.start ?? 0;
     if (first.connection.type !== "FERRY") {
-        first.times.unshift({
-            type: "TRAVEL",
+        first.steps.unshift({
+            kind: "MARK",
             start: departTime,
             end: departTime,
             description: `Depart from ${first.connection.origin.name}`,
         });
     }
-    const arriveTime = last.times.at(-1)?.end ?? 0;
-    last.times.push({
-        type: "TRAVEL",
+    const arriveTime = last.steps.at(-1)?.end ?? 0;
+    last.steps.push({
+        kind: "MARK",
         start: arriveTime,
         end: arriveTime,
         description: `Arrive at ${last.connection.destination.name}`,
     });
 
-    let drivingDuration = 0;
     let drivingDistance = 0;
-    // What tells the route plan apart from the others between the same locations on the same day.
+    // The ID is derived from the route and its sailings only. It excludes the search time, at which a drive
+    // with no ferry starts, so that the same itinerary keeps its ID in later searches.
     const parts: string[] = [];
-    for (const segment of segments) {
-        if (segment.connection.type === "CAR") {
-            drivingDuration += segment.connection.duration;
-            drivingDistance += segment.connection.distance;
+    for (const { connection, steps } of segments) {
+        if (connection.type === "CAR") {
+            drivingDistance += connection.distance;
         }
-        parts.push(segment.connection.destination.id);
-        for (const time of segment.times) {
-            parts.push(formatLocal(time.start));
+        parts.push(connection.destination.id);
+        for (const step of steps) {
+            if (step.kind === "FERRY") {
+                parts.push(formatLocal(step.start), formatLocal(step.end));
+            }
         }
     }
     const waypoints = segments.slice(1).map((segment) => mapParameter(segment.connection.origin));
     return {
-        segments: segments.map((segment) => ({
-            ...segment,
-            times: segment.times.map((time) => ({
-                ...time,
-                start: formatLocal(time.start),
-                end: formatLocal(time.end),
-            })),
-        })),
-        hash: hashText(parts.join(" ")),
+        id: hashText(parts.join(" ")),
+        route: [first.connection.origin.id, ...segments.map((segment) => segment.connection.destination.id)].join("-"),
+        depart: formatLocal(departTime),
+        arrive: formatLocal(arriveTime),
         duration: (arriveTime - departTime) / 1000,
-        depart_time: formatLocal(departTime),
-        arrive_time: formatLocal(arriveTime),
-        driving_duration: drivingDuration,
-        driving_distance: drivingDistance,
-        map_url:
+        drivingDistance,
+        mapUrl:
             `${MAP_URL}&origin=${encodeURIComponent(mapParameter(first.connection.origin))}` +
             `&destination=${encodeURIComponent(mapParameter(last.connection.destination))}` +
             `&waypoints=${encodeURIComponent(waypoints.join("|"))}`,
+        steps: segments.flatMap((segment) =>
+            segment.steps.map((step) => ({ ...step, start: formatLocal(step.start), end: formatLocal(step.end) })),
+        ),
     };
 };

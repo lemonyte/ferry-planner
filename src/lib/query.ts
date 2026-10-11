@@ -1,16 +1,16 @@
-// A search is kept in the query of the URL, so that it can be linked to.
+// A search is stored in the URL query string, so that it can be linked to.
+
+import { formatLocal, parseLocal, toLocal } from "./planner/time.ts";
 
 export const CHECKINS = ["reservation", "assured", "hostled"] as const;
-/** Minutes to arrive at a terminal before its check-in closes, unless asked otherwise. */
+/** Default minutes to arrive at a terminal before its check-in closes. */
 export const DEFAULT_EARLY = 15;
 export const MAX_EARLY = 120;
-/** What trips can be put in order of, the first unless asked otherwise. */
+/** Sort orders for trips. The first is the default. */
 export const SORTS = ["duration", "departure", "arrival"] as const;
 
-const DAY_FORMAT = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Vancouver" });
-
 export interface Query {
-    /** ID of the place to leave from, or nothing when none has been picked. */
+    /** ID of the origin place, or an empty string if none is selected. */
     from: string;
     to: string;
     /** Day of the journey, as `YYYY-MM-DD`. */
@@ -18,19 +18,19 @@ export interface Query {
     checkin: (typeof CHECKINS)[number];
     /** Minutes to arrive at a terminal before its check-in closes. */
     early: number;
-    /** Whether to include long drives and journeys that go on overnight. */
+    /** Whether to include long drives and overnight journeys. */
     long: boolean;
-    /** Whether to show every route there is. */
+    /** Whether to show every trip instead of only the first few. */
     all: boolean;
-    /** What the trips are in order of. */
+    /** Sort order of the trips. */
     sort: (typeof SORTS)[number];
-    /** Whether the trips of a route are shown together. */
+    /** Whether to group trips by route. */
     group: boolean;
-    /** Whether to show the trips that have left but not arrived yet. */
+    /** Whether to show trips that have departed but not arrived. */
     underway: boolean;
 }
 
-/** Read a search from the query of a URL, with the usual in place of anything missing or wrong. */
+/** Parse a search from URL query parameters, using defaults for missing or invalid values. */
 export const parseQuery = (params: URLSearchParams, today: string): Query => {
     const date = params.get("date") ?? "";
     const checkin = CHECKINS.find((checkin) => checkin === params.get("checkin"));
@@ -38,23 +38,24 @@ export const parseQuery = (params: URLSearchParams, today: string): Query => {
     return {
         from: params.get("from") ?? "",
         to: params.get("to") ?? "",
-        date: /^\d{4}-\d{2}-\d{2}$/.test(date) && !Number.isNaN(Date.parse(date)) ? date : today,
+        // Reject dates that do not exist, such as June 31.
+        date: /^\d{4}-\d{2}-\d{2}$/.test(date) && parseLocal(date) !== undefined ? date : today,
         checkin: checkin ?? "reservation",
         early: Number.isInteger(early) && early >= 0 && early <= MAX_EARLY ? early : DEFAULT_EARLY,
         long: params.get("long") === "1",
-        all: params.get("routes") === "all",
+        all: params.get("all") === "1",
         sort: SORTS.find((sort) => sort === params.get("sort")) ?? "duration",
         group: params.get("group") === "route",
         underway: params.get("underway") === "1",
     };
 };
 
-/** Read the search in a URL, for the current day in British Columbia unless it says another. */
+/** Read the search from a URL. The date defaults to the current day in British Columbia. */
 export const readQuery = (url: URL): Query => {
-    return parseQuery(url.searchParams, DAY_FORMAT.format(Date.now()));
+    return parseQuery(url.searchParams, formatLocal(toLocal(Date.now())).slice(0, 10));
 };
 
-/** Write a search as the query of a link to it, leaving out what is as usual. */
+/** Serialize a search as a URL query string, omitting defaults. */
 export const toSearch = (query: Query): string => {
     const params = new URLSearchParams({ from: query.from, to: query.to, date: query.date });
     if (query.checkin !== "reservation") {
@@ -67,7 +68,7 @@ export const toSearch = (query: Query): string => {
         params.set("long", "1");
     }
     if (query.all) {
-        params.set("routes", "all");
+        params.set("all", "1");
     }
     if (query.sort !== "duration") {
         params.set("sort", query.sort);

@@ -1,22 +1,24 @@
-// Writes the results of the planner that the tests compare it against, from the feed in `test/fixtures`.
+// Writes the planner results that the tests compare against, using the feed in `test/fixtures`.
 //
-// Run with `bun test/export-fixtures.ts` after a change that is meant to change the results,
-// and look over what has changed in them before keeping it.
+// Run with `bun test/export-fixtures.ts` after a change that intentionally changes the results,
+// and review the diff before committing.
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
+
 import type { LocationId, TerminalId } from "#lib/planner/data/locations.ts";
-import { parseFeed, Timetable } from "#lib/planner/gtfs.ts";
-import { findRoutes, routePlans } from "#lib/planner/route.ts";
-import { getSchedule, terminalCoordinates } from "#lib/planner/schedule.ts";
+import { findRoutes, makeItineraries, type PlanOptions } from "#lib/planner/route.ts";
+import { getSchedule } from "#lib/planner/schedule.ts";
 import { parseLocal } from "#lib/planner/time.ts";
-import { digest } from "./digest.ts";
+
+import { makeTimetable } from "./fixtures.ts";
+import { summarize } from "./summary.ts";
 
 const FIXTURES = new URL("./fixtures/", import.meta.url);
 const DATE = "2026-10-08";
-/** Current local time that the route plans are made at, the same as in the tests. */
+/** Current local time for the itineraries, the same as in the tests. */
 const NOW = Date.UTC(2026, 9, 8, 13, 45, 10);
-/** Longest list of routes kept whole, as longer ones are only kept as a digest. */
-const MAX_ROUTES = 25;
+/** Longest list stored in full. Longer lists are stored as a count only. */
+const MAX_LISTED = 200;
 const ROUTES: [LocationId, LocationId][] = [
     ["TSA", "PST"],
     ["LNG", "PVB"],
@@ -34,26 +36,22 @@ const ROUTES: [LocationId, LocationId][] = [
     ["sandspit_village", "houston"],
 ];
 
-interface PlanRequest {
+interface PlanRequest extends Partial<Omit<PlanOptions, "date">> {
     origin: LocationId;
     destination: LocationId;
-    show_all?: boolean;
-    assured?: boolean;
-    hostled?: boolean;
-    buffer?: number;
 }
 
 const PLANS: PlanRequest[] = [
     { origin: "HSB", destination: "NAN" },
     { origin: "TSA", destination: "PST" },
-    { origin: "TSA", destination: "PLH", show_all: true },
+    { origin: "TSA", destination: "PLH", long: true },
     { origin: "LNG", destination: "PVB" },
-    { origin: "CMX", destination: "TEX", show_all: true },
+    { origin: "CMX", destination: "TEX", long: true },
     { origin: "vancouver", destination: "victoria" },
-    { origin: "vancouver", destination: "victoria", assured: true, buffer: 30 },
-    { origin: "vancouver", destination: "victoria", hostled: true, buffer: 0 },
-    { origin: "nanaimo", destination: "gibsons", show_all: true },
-    { origin: "tlell", destination: "west_vancouver", show_all: true },
+    { origin: "vancouver", destination: "victoria", checkin: "assured", early: 30 },
+    { origin: "vancouver", destination: "victoria", checkin: "hostled", early: 0 },
+    { origin: "nanaimo", destination: "gibsons", long: true },
+    { origin: "tlell", destination: "west_vancouver", long: true },
     { origin: "port_hardy", destination: "tsawwassen" },
 ];
 const SCHEDULES: { origin: TerminalId; destination: TerminalId; date: string }[] = [
@@ -71,38 +69,32 @@ const toTime = (date: string): number => {
     return time;
 };
 
-const timetable = new Timetable(parseFeed(readFileSync(new URL("feed.zip", FIXTURES)), terminalCoordinates()));
+const timetable = makeTimetable();
+
+/** Store the count of a list, and the list itself if it is short enough to review. */
+const list = (items: string[]): { count: number; listed?: string[] } => {
+    return { count: items.length, ...(items.length <= MAX_LISTED ? { listed: items } : {}) };
+};
 
 const routes = Object.fromEntries(
-    ROUTES.map(([origin, destination]) => {
-        const found = findRoutes(origin, destination);
-        return [
-            `${origin}-${destination}`,
-            { count: found.length, digest: digest(found), ...(found.length <= MAX_ROUTES ? { routes: found } : {}) },
-        ];
-    }),
+    ROUTES.map(([origin, destination]) => [
+        `${origin}-${destination}`,
+        list(findRoutes(origin, destination).map((route) => route.join("-"))),
+    ]),
 );
 
-const plans = PLANS.map((request, index) => {
-    const found = routePlans(
-        request.origin,
-        request.destination,
-        {
-            date: toTime(DATE),
-            showAll: request.show_all ?? false,
-            assured: request.assured ?? false,
-            hostled: request.hostled ?? false,
-            buffer: request.buffer ?? 15,
-        },
+const plans = PLANS.map(({ origin, destination, ...options }, index) => {
+    const found = makeItineraries(
+        origin,
+        destination,
+        { date: toTime(DATE), checkin: "reservation", early: 15, long: false, ...options },
         timetable,
         NOW,
     );
     return {
-        request: { date: DATE, ...request },
-        count: found.length,
-        digest: digest(found),
-        ids: found.map((plan) => plan.hash),
-        // A few whole plans show the shape of the others.
+        request: { origin, destination, date: DATE, ...options },
+        ...list(found.map(summarize)),
+        // A few full itineraries show the structure of the rest.
         ...(index === 0 ? { first: found.slice(0, 3) } : {}),
     };
 });

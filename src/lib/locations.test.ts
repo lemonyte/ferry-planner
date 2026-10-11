@@ -1,39 +1,45 @@
 import { expect, test } from "vitest";
-import { CITIES, filterPlaces, placeName, shortName, TERMINALS } from "./locations";
 
-test("places are every city and terminal, in order of name", () => {
-    expect(CITIES).toHaveLength(123);
-    expect(TERMINALS).toHaveLength(50);
-    expect(CITIES.map((place) => place.name)).toEqual(CITIES.map((place) => place.name).toSorted());
+import { filterPlaces, placeName, shortName } from "./locations.ts";
+import { cities, terminals } from "./planner/data/locations.ts";
+
+test("filterPlaces returns every place sorted by name for empty text", () => {
+    const names = filterPlaces(cities, " ").map((place) => place.name);
+
+    expect(names).toHaveLength(123);
+    expect(names).toEqual(names.toSorted());
+    expect(filterPlaces(terminals, "")).toHaveLength(50);
 });
 
-test("place is named by its ID", () => {
+test("placeName returns the ID of an unknown place", () => {
+    expect(placeName("atlantis")).toBe("atlantis");
+    // An inherited `Object` property.
+    expect(placeName("constructor")).toBe("constructor");
+});
+
+test("placeName returns the name of a place", () => {
     expect(placeName("van_anda")).toBe("Van Anda");
     expect(placeName("HSB")).toBe("Horseshoe Bay Terminal");
 });
 
-test("terminal is named in short without the word", () => {
+test("shortName omits the Terminal suffix", () => {
     expect(shortName("HSB")).toBe("Horseshoe Bay");
     expect(shortName("NBN")).toBe("New Brighton Dock");
     expect(shortName("vancouver")).toBe("Vancouver");
 });
 
-test("places are found by part of their name, whatever its case", () => {
-    expect(filterPlaces(CITIES, "van and").map((place) => place.id)).toEqual(["van_anda"]);
+test("filterPlaces matches part of a name, ignoring case", () => {
+    expect(filterPlaces(cities, "van and").map((place) => place.id)).toEqual(["van_anda"]);
 });
 
-test("places are found by their region", () => {
-    expect(filterPlaces(CITIES, "texada").map((place) => place.id)).toContain("van_anda");
+test("filterPlaces matches the region", () => {
+    expect(filterPlaces(cities, "texada").map((place) => place.id)).toContain("van_anda");
 });
 
-test("places whose name starts with what was typed come first, and those only in a region with it last", () => {
-    const found = filterPlaces(CITIES, "van").map((place) => place.name);
+test("filterPlaces sorts name prefix matches first and region matches last", () => {
+    const found = filterPlaces(cities, "van").map((place) => place.name);
 
     expect(found.slice(0, 5)).toEqual(["Van Anda", "Vancouver", "Vanderhoof", "North Vancouver", "West Vancouver"]);
-    // In the region of Vancouver Island.
+    // Matches the Vancouver Island region.
     expect(found.indexOf("Alert Bay")).toBeGreaterThan(4);
-});
-
-test("every place is found when nothing is typed", () => {
-    expect(filterPlaces(TERMINALS, " ")).toEqual(TERMINALS);
 });

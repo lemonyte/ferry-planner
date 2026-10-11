@@ -1,14 +1,16 @@
 import { expect, test } from "vitest";
-import schedules from "#test/fixtures/schedules.json";
+
 import { makeTimetable } from "#test/fixtures.ts";
-import type { TerminalId } from "./data/locations";
-import { getSchedule } from "./schedule";
-import { parseLocal } from "./time";
+import schedules from "#test/fixtures/schedules.json";
+
+import type { TerminalId } from "./data/locations.ts";
+import { getSchedule } from "./schedule.ts";
+import { parseLocal } from "./time.ts";
 
 const timetable = makeTimetable();
 
 test.each(schedules)(
-    "schedule for $request.origin to $request.destination on $request.date is as expected",
+    "getSchedule returns the expected schedule for $request.origin to $request.destination on $request.date",
     ({ request, response }) => {
         const schedule = getSchedule(
             timetable,
@@ -21,25 +23,24 @@ test.each(schedules)(
     },
 );
 
-test("schedule is for the day of the time it is asked for", () => {
+test("getSchedule uses the day of the given time", () => {
     const schedule = getSchedule(timetable, "HSB", "NAN", parseLocal("2026-10-08T15:45:00") ?? Number.NaN);
 
     expect(schedule).toMatchObject({
-        date: Date.UTC(2026, 9, 8, 15, 45),
         sailings: expect.objectContaining({ length: 7 }),
         url: "https://www.bcferries.com/routes-fares/schedules/daily/HSB-NAN?&scheduleDate=10/08/2026",
     });
 });
 
-test("no sailings between terminals that are only joined by way of another, where the vessel is changed", () => {
+test("getSchedule returns no sailings between terminals that are connected only by changing vessels", () => {
     const date = parseLocal("2026-10-08") ?? Number.NaN;
 
-    expect(getSchedule(timetable, "CMX", "TEX", date)).toMatchObject({ sailings: [], notes: ["No sailings found"] });
+    expect(getSchedule(timetable, "CMX", "TEX", date)).toMatchObject({ sailings: [] });
     expect(getSchedule(timetable, "CMX", "PWR", date).sailings).toHaveLength(4);
     expect(getSchedule(timetable, "PWR", "TEX", date).sailings).toHaveLength(8);
 });
 
-test("sailing that calls at terminals on its way is between the first and the last of them", () => {
+test("multi-stop sailing runs from its first terminal to its last", () => {
     const schedule = getSchedule(timetable, "TSA", "PLH", parseLocal("2026-10-08") ?? Number.NaN);
 
     expect(schedule.sailings).toEqual([

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+
 import {
     EVERY_DAY,
     type FeedFiles,
@@ -8,7 +9,8 @@ import {
     STOP_TIMES_COLUMNS,
     STOPS,
 } from "#test/feeds.ts";
-import { parseFeed, type Sailing, Timetable } from "./gtfs";
+
+import { parseFeed, type Sailing, Timetable } from "./gtfs.ts";
 
 // Tuesday.
 const DATE = Date.UTC(2026, 9, 6);
@@ -31,23 +33,10 @@ test("sailing between two locations on a day the service runs", () => {
     expect(timetable.sailings("HSB", "LNG", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 8, 10))]);
 });
 
-test("sailings are only worked out once for the same locations and date", () => {
+test("sailings are cached by locations and date", () => {
     const timetable = makeTimetable({ stopTimes: HSB_TO_LNG });
 
     expect(timetable.sailings("HSB", "LNG", DATE)).toBe(timetable.sailings("HSB", "LNG", DATE));
-});
-
-test("sailings looked up are forgotten once many more days have been looked up", () => {
-    const timetable = makeTimetable({ calendar: "daily,1,1,1,1,1,1,1,20000101,20991231", stopTimes: HSB_TO_LNG });
-    const sailings = timetable.sailings("HSB", "LNG", DATE);
-
-    // More days than a feed covers, as someone could ask for to use up memory.
-    for (let day = 1; day <= 1000; day++) {
-        timetable.sailings("HSB", "LNG", DATE + day * 24 * 60 * 60 * 1000);
-    }
-
-    expect(timetable.sailings("HSB", "LNG", DATE)).not.toBe(sailings);
-    expect(timetable.sailings("HSB", "LNG", DATE)).toEqual(sailings);
 });
 
 test("no sailings on a weekday the service does not run", () => {
@@ -127,7 +116,7 @@ test("same sailing on two services is returned once", () => {
 
 const THREE_STOPS = "t,07:30:00,07:30:00,1,1\nt,08:10:00,08:25:00,2,2\nt,10:00:00,10:00:00,3,3\n";
 
-test("sailing with a stop on the way runs between every pair of its stops", () => {
+test("multi-stop sailing runs between every pair of its stops", () => {
     const timetable = makeTimetable({ stopTimes: THREE_STOPS });
 
     expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 10, 0), ["LNG"])]);
@@ -189,13 +178,13 @@ test("stop without coordinates is ignored", () => {
     expect(timetable.sailings("HSB", "LNG", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 8, 10))]);
 });
 
-test("stop without times is passed through", () => {
+test("stop without times is not a call", () => {
     const timetable = makeTimetable({ stopTimes: "t,07:30:00,07:30:00,1,1\nt,,,2,2\nt,10:00:00,10:00:00,3,3\n" });
 
     expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 10, 0))]);
 });
 
-test("stop with only one time arrives and departs at it", () => {
+test("stop with only one time uses it for both arrival and departure", () => {
     const timetable = makeTimetable({ stopTimes: "t,,07:30:00,1,1\nt,08:10:00,,2,2\nt,10:00:00,,3,3\n" });
 
     expect(timetable.sailings("HSB", "LNG", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 8, 10))]);
@@ -230,7 +219,7 @@ test("feed with a row that is missing a number is rejected", () => {
     expect(() => parseFeed(archive, LOCATIONS)).toThrow();
 });
 
-test("feed with a quoted value is read without its quotes", () => {
+test("quoted CSV value is parsed without its quotes", () => {
     const trip = '"t ""express"", 1"';
     const archive = makeArchive({ trips: `r,daily,${trip}\n`, stopTimes: HSB_TO_LNG.replaceAll("t,", `${trip},`) });
 
@@ -276,8 +265,8 @@ test("feed without a date range covers every date", () => {
     expect(makeTimetable({ stopTimes: HSB_TO_LNG, feedInfo: "Publisher,," }).covers(DATE)).toBe(true);
 });
 
-// The BC Ferries feed lists the dates that a single trip is added to or removed from
-// under a service named after both the trip's service and the trip.
+// The BC Ferries feed lists dates added to or removed from a single trip under a service
+// named `{service}{trip}`.
 const EXCEPTION_ONLY = "daily,0,0,0,0,0,0,0,20000101,20500101";
 const EARLY_AND_LATE = {
     trips: "r,daily,early\nr,daily,late\n",
@@ -300,13 +289,13 @@ test("sailing does not run on a date removed for its trip only", () => {
     expect(timetable.sailings("HSB", "LNG", DATE)).toEqual([sailing(at(6, 17, 0), at(6, 17, 40))]);
 });
 
-// The BC Ferries feed lists each part of a sailing that calls at several terminals as a trip of its own.
+// The BC Ferries feed lists each part of a multi-stop sailing as a separate trip.
 // A vessel that calls at a terminal on its way leaves again within minutes, on the same route.
 const TRIPS = "r,daily,a\nr,daily,b\nr,daily,c\n";
 const HSB_TO_LNG_BY_8_10 = "a,07:30:00,07:30:00,1,1\na,08:10:00,08:10:00,2,2\n";
 const LNG_TO_NAN_AT_8_25 = "b,08:25:00,08:25:00,2,1\nb,10:00:00,10:00:00,3,2\n";
 
-test("sailing continues on the trip that leaves shortly after from where it arrives", () => {
+test("sailing continues on a trip that departs from its destination shortly after it arrives", () => {
     const timetable = makeTimetable({ trips: TRIPS, stopTimes: HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25 });
 
     expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([sailing(at(6, 7, 30), at(6, 10, 0), ["LNG"])]);
@@ -330,7 +319,7 @@ test("sailing does not continue on a trip that departs before it arrives", () =>
     expect(timetable.sailings("HSB", "NAN", DATE)).toEqual([]);
 });
 
-test("sailing does not continue on a trip that leaves long enough after to be another vessel", () => {
+test("sailing does not continue on a trip that departs after the maximum call time", () => {
     const timetable = makeTimetable({
         trips: TRIPS,
         stopTimes: `${HSB_TO_LNG_BY_8_10}b,08:35:00,08:35:00,2,1\nb,10:10:00,10:10:00,3,2\n`,
@@ -340,7 +329,7 @@ test("sailing does not continue on a trip that leaves long enough after to be an
 });
 
 test("sailing does not continue on a trip of another route", () => {
-    // Getting from one route to another means leaving the vessel, however soon the other leaves.
+    // Changing routes means changing vessels, however short the wait.
     const timetable = makeTimetable({
         trips: "r,daily,a\nother,daily,b\n",
         stopTimes: HSB_TO_LNG_BY_8_10 + LNG_TO_NAN_AT_8_25,
@@ -362,7 +351,7 @@ test("sailing continues past midnight", () => {
     expect(timetable.sailings("LNG", "NAN", Date.UTC(2026, 9, 7))).toEqual([sailing(at(7, 0, 30), at(7, 1, 30))]);
 });
 
-test("sailing that calls on the way is listed along with a faster one that does not", () => {
+test("multi-stop sailing is listed along with a faster direct sailing", () => {
     const timetable = makeTimetable({
         trips: TRIPS,
         stopTimes: `${HSB_TO_LNG_BY_8_10}${LNG_TO_NAN_AT_8_25}c,08:00:00,08:00:00,1,1\nc,09:40:00,09:40:00,3,2\n`,
@@ -375,7 +364,7 @@ test("sailing that calls on the way is listed along with a faster one that does 
 });
 
 test("sailing continues from a stop that cannot be alighted at", () => {
-    // Those staying on the vessel do not get off at the stops on the way.
+    // Passengers who stay on board do not alight at intermediate stops.
     const timetable = makeTimetable({
         trips: TRIPS,
         stopTimesColumns: PICKUP_COLUMNS,

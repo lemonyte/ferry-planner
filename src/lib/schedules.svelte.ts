@@ -1,25 +1,24 @@
-// The schedules are a feed that the browser downloads and keeps, and that all the searches of a visit are made with.
-
-import { FeedKeeper } from "#lib/planner/feed.ts";
-import { toLocal } from "#lib/planner/time.ts";
-import type { Query } from "#lib/query.ts";
-import type { Itinerary, SearchResult } from "#lib/types.ts";
 import { browser } from "$app/env";
 import { invalidate } from "$app/navigation";
 
-/** What the pages made from the schedules depend on, to be made again when the schedules have changed. */
+import { FeedKeeper } from "#lib/planner/feed.ts";
+import type { Itinerary, SearchResult } from "#lib/planner/itinerary.ts";
+import { toLocal } from "#lib/planner/time.ts";
+import type { Query } from "#lib/query.ts";
+
+/** Dependency key for `load` functions that use the schedules. Invalidated when the schedules change. */
 export const SCHEDULES = "schedules:current";
 
 export interface Planner {
-    /** Find the trips worth taking for a search, or nothing if it is not between two places that are known. */
+    /** Find the trips to show for a search, or `undefined` if its places or date are not valid. */
     search: (query: Query) => SearchResult | undefined;
-    /** Find the trip of a search with an ID. */
+    /** Find a trip of a search by ID. */
     itinerary: (query: Query, id: string) => Itinerary | undefined;
 }
 
-/** What there is to say about the schedules, once the page is in a browser. */
+/** State of the schedules, for display. */
 export const schedules = $state<{
-    /** Instant that the schedules in use were downloaded at, if there are any. */
+    /** Epoch milliseconds when the schedules in use were downloaded, if any. */
     fetchedAt?: number;
     online: boolean;
 }>({ online: true });
@@ -28,32 +27,35 @@ const getStorage = (): Storage | undefined => {
     try {
         return localStorage;
     } catch {
-        // Even asking for the storage fails where it is not allowed.
+        // Accessing `localStorage` throws if storage is blocked.
         return undefined;
     }
 };
 
 let keeper: FeedKeeper | undefined;
+/** Whether a `load` function ran without schedules and must rerun when they arrive. */
+let missed = false;
 
 const getKeeper = (): FeedKeeper => {
-    // There is nothing stored where a page is made ahead of time.
+    // Prerendering has no storage.
     keeper ??= new FeedKeeper(browser ? getStorage() : undefined);
     return keeper;
 };
 
-/** Check if there are schedules already, so that a search does not have to wait for them. */
+/** Check if the schedules are loaded, so that a search does not have to wait for a download. */
 export const hasSchedules = (): boolean => {
     return getKeeper().timetable !== undefined;
 };
 
 /**
- * Get what searches are made with, or nothing if there are no schedules and none can be downloaded.
+ * Get the planner, or `undefined` if there are no schedules and they cannot be downloaded.
  *
- * The planner and the connections that it goes by are only loaded when first asked for.
+ * The planner and its connection data are loaded on first use.
  */
 export const getPlanner = async (): Promise<Planner | undefined> => {
     const [timetable, planner] = await Promise.all([getKeeper().getTimetable(), import("#lib/planner/plan.ts")]);
     schedules.fetchedAt = getKeeper().fetchedAt;
+    missed ||= timetable === undefined;
     return (
         timetable && {
             search: (query) => planner.search(query, timetable, toLocal(Date.now())),
@@ -68,20 +70,21 @@ const refresh = async (retry = false): Promise<void> => {
     try {
         const changed = await keeper.refresh(retry);
         schedules.fetchedAt = keeper.fetchedAt;
-        // What is shown was made with the schedules that these replace.
-        if (changed && replaces) {
+        // The page was rendered with the previous schedules, or without any.
+        if (changed && (replaces || missed)) {
+            missed = false;
             await invalidate(SCHEDULES);
         }
     } catch (error) {
-        // The schedules there already are stay in use.
+        // The existing schedules stay in use.
         console.error("failed to refresh the schedules", error);
     }
 };
 
 /**
- * Keep the schedules up to date for as long as the page is open, and return a function that stops doing so.
+ * Keep the schedules up to date while the page is open. Returns a function that stops the updates.
  *
- * They are checked when the page is opened or come back to, and when a connection comes back.
+ * Checks when the page opens, becomes visible, or comes back online.
  */
 export const watchSchedules = (): (() => void) => {
     const stop = new AbortController();

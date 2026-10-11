@@ -1,18 +1,19 @@
 <script lang="ts">
-import "./layout.css";
-import { onMount } from "svelte";
-import { formatDay } from "#lib/format.ts";
-import { formatLocal, toLocal } from "#lib/planner/time.ts";
-import { schedules, watchSchedules } from "#lib/schedules.svelte.ts";
+    import "./layout.css";
+    import { onMount } from "svelte";
 
-let { children } = $props();
+    import { formatDay } from "#lib/format.ts";
+    import { formatLocal, toLocal } from "#lib/planner/time.ts";
+    import { schedules, watchSchedules } from "#lib/schedules.svelte.ts";
 
-// Day in British Columbia that the schedules in use were downloaded on.
-const downloaded = $derived(
-    schedules.fetchedAt === undefined ? undefined : formatDay(formatLocal(toLocal(schedules.fetchedAt))),
-);
+    let { children } = $props();
 
-onMount(watchSchedules);
+    // Day in British Columbia when the schedules in use were downloaded.
+    const downloaded = $derived(
+        schedules.fetchedAt === undefined ? undefined : formatDay(formatLocal(toLocal(schedules.fetchedAt))),
+    );
+
+    onMount(watchSchedules);
 </script>
 
 <div class="flex min-h-dvh flex-col bg-slate-50 text-slate-900 print:bg-white">

@@ -27,7 +27,7 @@ export interface FeedFiles {
 /**
  * Build a GTFS feed archive, by default with a single trip `t` that runs every day on service `daily`.
  *
- * Files given as `null` are left out of the archive.
+ * Files given as `null` are omitted from the archive.
  */
 export const makeArchive = ({
     calendar = EVERY_DAY,

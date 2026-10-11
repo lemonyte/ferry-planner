@@ -1,25 +1,23 @@
-// What a search gives, kept apart from the code that makes it so that pages can use the types on their own.
-
-import type { LocationId } from "./data/locations";
+import type { LocationId } from "./data/locations.ts";
 
 export interface Step {
-    /** `MARK` is a moment, such as the departure, and `FREE` is extra time between two other steps. */
+    /** `MARK` is a point in time, such as the departure. `FREE` is spare time between two other steps. */
     kind: "DRIVE" | "WAIT" | "FERRY" | "FREE" | "MARK";
     start: string;
     end: string;
     description: string;
-    /** URL of the schedule that a sailing is from. */
+    /** BC Ferries schedule URL of a sailing. */
     scheduleUrl?: string;
-    /** Terminal that a sailing leaves from. */
+    /** Departure terminal of a sailing. */
     from?: LocationId;
-    /** Terminal that a sailing arrives at. */
+    /** Arrival terminal of a sailing. */
     to?: LocationId;
 }
 
 export interface Itinerary {
-    /** Identifies the itinerary among those of a search, to find it again by. */
+    /** Unique among the itineraries of a search. */
     id: string;
-    /** Identifies the route, which is the locations gone through, among those of a search. */
+    /** IDs of the locations on the route, joined by `-`. */
     route: string;
     depart: string;
     arrive: string;
@@ -33,27 +31,19 @@ export interface Itinerary {
 }
 
 export interface Selection {
-    /** Itineraries worth taking, by departure. */
+    /** Itineraries shown, in the requested sort order. */
     itineraries: Itinerary[];
-    /** Number of routes whose itineraries are not shown. */
-    moreRoutes: number;
-    /** Number of itineraries left out because they have already left, or arrived when those under way are shown. */
+    /** Number of itineraries not shown. */
+    more: number;
+    /** Number of itineraries excluded because they have departed, or arrived if `underway` is set. */
     departed: number;
-    /** Number of those left out that have not arrived yet. */
+    /** Number of excluded itineraries that have not arrived yet. */
     underway: number;
 }
 
-/** What routes are the best by, and so which are shown. */
-export type Sort = "duration" | "departure" | "arrival";
-
-/** Itineraries worth taking for a journey. */
 export interface SearchResult extends Selection {
-    origin: LocationId;
-    destination: LocationId;
-    /** Day of the journey, as `YYYY-MM-DD`. */
-    date: string;
-    /** Whether the feed has schedules for the day. */
+    /** Whether the feed covers the day. */
     covered: boolean;
-    /** Time of the search, which tells the itineraries that have already left. */
+    /** Local time of the search, used to tell which itineraries have departed. */
     now: string;
 }

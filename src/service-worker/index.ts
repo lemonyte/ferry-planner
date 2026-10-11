@@ -1,36 +1,34 @@
-// Keeps the site itself in the browser, so that it opens without a connection.
-// The schedules are not kept here: the pages keep those themselves, and ask for them past this.
+// Caches the site so that it opens offline.
+// The schedules are not cached here. The pages store them and request them from the network.
 
 import { dev, version } from "$app/env";
-import { assets, immutable, prerendered, routes } from "$app/manifest";
+import { assets, immutable, prerendered } from "$app/manifest";
 import { self } from "$app/service-worker";
 
-/** Named after the version of the site, so that the files of one version are never served to another. */
+/** Includes the site version, so that the files of one version are never served to another. */
 const CACHE = `site-${version}`;
-/** The page that every page without a file of its own is, which finds what to show from its URL. */
+/** App shell, served for every page without its own file. It renders the page from the URL. */
 const SHELL = "/";
 
 const toPath = (path: string): string => {
     return new URL(path, self.registration.scope).pathname;
 };
 
-// Nothing is kept while developing, when the files change all the time.
+// Skip caching in development, where files change constantly.
 const FILES = dev ? [] : [SHELL, ...[...immutable, ...assets, ...prerendered].map(({ path }) => toPath(path))];
 const KEPT = new Set(FILES);
-/** What the server answers itself, which is not a page even when a browser is sent to it. */
-const ENDPOINTS = new Set(routes.filter((route) => route.endpoint && !route.page).map((route) => route.id as string));
 
 self.addEventListener("install", (event) => {
     event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FILES)));
 });
 
-// A new version waits until no page of the one before is open, which could still ask for the files of its own.
+// A new version waits until no page of the previous version is open, because such a page can still request its files.
 self.addEventListener("activate", (event) => {
     event.waitUntil(
         (async () => {
             const names = await caches.keys();
             await Promise.all(names.filter((name) => name !== CACHE).map((name) => caches.delete(name)));
-            // The page that this was first installed by is served from here on as well.
+            // Also control the page that first installed this service worker.
             await self.clients.claim();
         })(),
     );
@@ -49,8 +47,8 @@ self.addEventListener("fetch", (event) => {
     }
     if (KEPT.has(url.pathname)) {
         event.respondWith(respond(request, url.pathname));
-    } else if (request.mode === "navigate" && !ENDPOINTS.has(url.pathname)) {
+    } else if (request.mode === "navigate") {
         event.respondWith(respond(request, SHELL));
     }
-    // Anything else, such as the schedules, is left to the network.
+    // Other requests, such as the schedules, go to the network.
 });

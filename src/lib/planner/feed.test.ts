@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, expect, type MockInstance, test, vi } from "vitest";
+
 import { type FeedFiles, makeArchive } from "#test/feeds.ts";
-import { FEED_URL, FeedKeeper } from "./feed";
+
+import { FEED_URL, FeedKeeper } from "./feed.ts";
 
 const BOTH_WAYS: FeedFiles = {
     trips: "r,daily,t\nr,daily,u\n",
@@ -14,7 +16,7 @@ const HOUR = 60 * MINUTE;
 type Body = Uint8Array | string;
 type Content = Body | number | { body: Body; etag: string };
 
-/** Keeps what is stored in it the way the storage of a browser does, for as long as it is around. */
+/** In-memory stand-in for `localStorage`. */
 class MemoryStorage {
     readonly items = new Map<string, string>();
 
@@ -39,16 +41,16 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-/** Copy an archive into what a response can be made of. */
+/** Copy an archive into a valid `Response` body. */
 const toBody = (body?: Body): string | Uint8Array<ArrayBuffer> | undefined => {
     return typeof body === "object" ? new Uint8Array(body) : body;
 };
 
-/** Answer each download of the feed with the next of the given archives or statuses, repeating the last. */
+/** Mock `fetch` to return the given archives or statuses in order, repeating the last. */
 const serve = (...contents: Content[]) => {
     return vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
         const content = contents.length > 1 ? contents.shift() : contents[0];
-        // Lets whatever else asked for the feed at once do so during the download.
+        // Lets concurrent callers request the feed during the download.
         await new Promise((resolve) => setTimeout(resolve, 1));
         if (typeof content === "number") {
             return new Response(null, { status: content });
@@ -63,7 +65,7 @@ const sailings = async (keeper: FeedKeeper, origin: string, destination: string)
     return (await keeper.getTimetable())?.sailings(origin, destination, DAY).length;
 };
 
-test("feed is downloaded once for all that ask for it", async () => {
+test("concurrent callers share one feed download", async () => {
     const fetch = serve(makeArchive());
     const keeper = new FeedKeeper(new MemoryStorage());
 
@@ -75,7 +77,7 @@ test("feed is downloaded once for all that ask for it", async () => {
     expect(fetch).toHaveBeenCalledWith(FEED_URL, { headers: {} });
 });
 
-test("feed is kept for the next time the page is opened", async () => {
+test("feed is stored for the next visit", async () => {
     const fetch = serve(makeArchive());
     const storage = new MemoryStorage();
     await new FeedKeeper(storage).getTimetable();
@@ -88,10 +90,10 @@ test("feed is kept for the next time the page is opened", async () => {
 });
 
 test.each([
-    ["in the form of an older version", (stored: string) => JSON.stringify({ ...JSON.parse(stored), version: 1 })],
-    ["that cannot be read", () => "{"],
-    ["that is not a feed", () => "null"],
-])("feed stored %s is downloaded again", async (_, change) => {
+    ["in an older format", (stored: string) => JSON.stringify({ ...JSON.parse(stored), version: 1 })],
+    ["that is not valid JSON", () => "{"],
+    ["that is null", () => "null"],
+])("stored feed %s is downloaded again", async (_, change) => {
     const fetch = serve({ body: makeArchive(), etag: '"first"' });
     const storage = new MemoryStorage();
     await new FeedKeeper(storage).getTimetable();
@@ -112,13 +114,13 @@ test.each([
     ["is not a GTFS archive", "<html>Waiting room</html>"],
     // The stop sequences are missing.
     ["is malformed", makeArchive({ stopTimes: "t,07:30:00,07:30:00,1\nt,08:10:00,08:10:00,2\n" })],
-])("no timetable when the feed %s", async (_, content) => {
+])("getTimetable returns undefined if the feed %s", async (_, content) => {
     serve(content);
 
     expect(await new FeedKeeper(new MemoryStorage()).getTimetable()).toBeUndefined();
 });
 
-test("no timetable when the feed is too large to be one", async () => {
+test("getTimetable returns undefined if the feed exceeds the size limit", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
         new Response(toBody(makeArchive()), { headers: { "Content-Length": String(21 * 1024 * 1024) } }),
     );
@@ -126,7 +128,7 @@ test("no timetable when the feed is too large to be one", async () => {
     expect(await new FeedKeeper(new MemoryStorage()).getTimetable()).toBeUndefined();
 });
 
-test("failed download is not repeated for all that ask for the feed", async () => {
+test("concurrent callers share one failed download", async () => {
     const fetch = serve(503);
     const keeper = new FeedKeeper(new MemoryStorage());
 
@@ -137,7 +139,7 @@ test("failed download is not repeated for all that ask for the feed", async () =
     expect(fetch).toHaveBeenCalledTimes(1);
 });
 
-test("feed is downloaded again a minute after a failed download", async () => {
+test("failed download is retried after one minute", async () => {
     serve(503, makeArchive());
     const keeper = new FeedKeeper(new MemoryStorage());
     expect(await keeper.getTimetable()).toBeUndefined();
@@ -147,7 +149,7 @@ test("feed is downloaded again a minute after a failed download", async () => {
     expect(await sailings(keeper, "HSB", "LNG")).toBe(1);
 });
 
-test("feed is downloaded again right after a failed download when told to try again", async () => {
+test("failed download is retried immediately if retry is set", async () => {
     serve(503, makeArchive());
     const keeper = new FeedKeeper(new MemoryStorage());
     expect(await keeper.getTimetable()).toBeUndefined();
@@ -157,7 +159,7 @@ test("feed is downloaded again right after a failed download when told to try ag
     expect(keeper.timetable).toBeDefined();
 });
 
-test("refresh replaces the feed with a changed one", async () => {
+test("refresh replaces the feed if it changed", async () => {
     serve(makeArchive(), makeArchive(BOTH_WAYS));
     const storage = new MemoryStorage();
     const keeper = new FeedKeeper(storage);
@@ -171,7 +173,7 @@ test("refresh replaces the feed with a changed one", async () => {
     expect(new FeedKeeper(storage).timetable?.sailings("LNG", "HSB", DAY)).toHaveLength(1);
 });
 
-test("refresh does not ask for the feed again within the hour, even when the page is opened again", async () => {
+test("refresh does not request the feed again within an hour, including after a reload", async () => {
     const fetch = serve(makeArchive());
     const storage = new MemoryStorage();
     const keeper = new FeedKeeper(storage);
@@ -185,7 +187,7 @@ test("refresh does not ask for the feed again within the hour, even when the pag
     expect(fetch).toHaveBeenCalledTimes(1);
 });
 
-test("refresh asks for the feed only if it has changed", async () => {
+test("refresh sends the ETag to download the feed only if it changed", async () => {
     const fetch = serve({ body: makeArchive(), etag: '"first"' }, 304);
     const keeper = new FeedKeeper(new MemoryStorage());
     expect(await keeper.refresh()).toBe(true);
@@ -196,24 +198,13 @@ test("refresh asks for the feed only if it has changed", async () => {
     expect(fetch).toHaveBeenLastCalledWith(FEED_URL, { headers: { "If-None-Match": '"first"' } });
     expect(keeper.timetable).toBeDefined();
     expect(keeper.fetchedAt).toBe(NOON);
-    // The feed was found to be the same, so it is not asked for again for another hour.
+    // The feed was unchanged, so the next check is an hour later.
     now.mockReturnValue(NOON + 2 * HOUR - 1000);
     expect(await keeper.refresh()).toBe(false);
     expect(fetch).toHaveBeenCalledTimes(2);
 });
 
-test("refresh keeps the feed when the server sends the same one again", async () => {
-    // The second is not a feed, so reading it would fail.
-    serve({ body: makeArchive(), etag: '"first"' }, { body: "unchanged", etag: '"first"' });
-    const keeper = new FeedKeeper(new MemoryStorage());
-    await keeper.refresh();
-
-    now.mockReturnValue(NOON + HOUR);
-
-    expect(await keeper.refresh()).toBe(false);
-});
-
-test("refresh remembers what it last downloaded when the page is opened again", async () => {
+test("refresh sends the stored ETag after a reload", async () => {
     const fetch = serve({ body: makeArchive(), etag: '"first"' });
     const storage = new MemoryStorage();
     await new FeedKeeper(storage).refresh();
@@ -227,7 +218,7 @@ test("refresh remembers what it last downloaded when the page is opened again", 
 test.each([
     ["cannot be downloaded", 503, "status 503"],
     ["is not a GTFS archive", "<html>Waiting room</html>", "invalid zip data"],
-])("refresh fails and the previous feed is used when the feed %s", async (_, content, message) => {
+])("refresh rejects and keeps the previous feed if the feed %s", async (_, content, message) => {
     serve(makeArchive(), content);
     const keeper = new FeedKeeper(new MemoryStorage());
     await keeper.refresh();
@@ -248,15 +239,15 @@ test.each([
         }),
     ],
     [
-        "cannot be read from where it is stored",
+        "cannot be read from storage",
         Object.assign(new MemoryStorage(), {
             getItem: () => {
                 throw new DOMException("The operation is insecure.", "SecurityError");
             },
         }),
     ],
-    ["has nowhere to be stored", undefined],
-])("feed is used for as long as the page is open when it %s", async (_, storage) => {
+    ["has no storage", undefined],
+])("feed is used until the page closes if it %s", async (_, storage) => {
     serve(makeArchive());
     const keeper = new FeedKeeper(storage);
 
