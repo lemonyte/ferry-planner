@@ -7,15 +7,18 @@ import { self } from "$app/service-worker";
 
 /** Includes the site version, so that the files of one version are never served to another. */
 const CACHE = `site-${version}`;
-/** App shell, served for every page without its own file. It renders the page from the URL. */
-const SHELL = "/";
+/** App shell, served for every page without its own file. It renders the page from the URL. Prerendered by `src/routes/shell/`. */
+const SHELL = "/shell";
 
 const toPath = (path: string): string => {
     return new URL(path, self.registration.scope).pathname;
 };
 
 // Skip caching in development, where files change constantly.
-const FILES = dev ? [] : [SHELL, ...[...immutable, ...assets, ...prerendered].map(({ path }) => toPath(path))];
+// The share image is shown only in link previews, never by the site.
+const FILES = dev
+    ? []
+    : [...immutable, ...assets, ...prerendered].map(({ path }) => toPath(path)).filter((path) => path !== "/og.png");
 const KEPT = new Set(FILES);
 
 self.addEventListener("install", (event) => {

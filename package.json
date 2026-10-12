@@ -23,6 +23,7 @@
         "fflate": "^0.8.3"
     },
     "devDependencies": {
+        "@fontsource/fira-sans-condensed": "^5.3.0",
         "@lucide/svelte": "^1.55.0",
         "@sveltejs/adapter-cloudflare": "^8.0.0",
         "@sveltejs/kit": "^3.0.0",

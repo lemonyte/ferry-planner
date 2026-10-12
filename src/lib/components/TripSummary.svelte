@@ -74,12 +74,12 @@
 </script>
 
 <p class="flex flex-wrap items-center gap-x-2 gap-y-1 whitespace-nowrap">
-    <span class="text-lg leading-tight font-semibold">{formatDuration(itinerary.duration)}</span>
+    <span class="font-display text-xl leading-tight font-semibold">{formatDuration(itinerary.duration)}</span>
     {#if left}
         <span class="badge bg-amber-100 text-amber-900 print:hidden">Already left</span>
     {/if}
     {#if fastest}
-        <span class="badge bg-sky-100 text-sky-900 print:hidden">Fastest</span>
+        <span class="badge bg-sea-100 text-sea-900 print:hidden">Fastest</span>
     {/if}
 </p>
 <div class="max-w-full min-w-44" style:width="{(itinerary.duration / longest) * 100}%">
@@ -89,7 +89,7 @@
         <time datetime={itinerary.arrive}>
             {formatTime(itinerary.arrive)}
             {#if laterDays > 0}
-                <sup class="font-normal text-slate-600">+{laterDays}</sup>
+                <sup class="font-normal text-stone-600">+{laterDays}</sup>
             {/if}
         </time>
     </p>
@@ -126,7 +126,7 @@
         </div>
         {#if tip}
             <div
-                class="pointer-events-none absolute bottom-full z-10 mb-1.5 w-max max-w-[min(22rem,100vw-1rem)] rounded-lg bg-slate-900 px-3 py-2 text-xs text-white shadow-lg"
+                class="pointer-events-none absolute bottom-full z-10 mb-1.5 w-max max-w-[min(22rem,100vw-1rem)] rounded-lg bg-stone-900 px-3 py-2 text-xs text-white shadow-lg"
                 style:left="{Math.max(tip.min, Math.min(tip.center - tipWidth / 2, tip.max - tipWidth))}px"
                 bind:offsetWidth={tipWidth}
             >
@@ -142,7 +142,7 @@
     </div>
 </div>
 {#if itinerary.drivingDistance > 0}
-    <p class="mt-2 text-sm text-slate-600">
+    <p class="mt-2 text-sm text-stone-600">
         {formatDistance(itinerary.drivingDistance)} driving
     </p>
 {/if}

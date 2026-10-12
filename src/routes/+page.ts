@@ -1,6 +1,12 @@
+import { building } from "$app/env";
+
 import type { SearchResult } from "#lib/planner/itinerary.ts";
-import { type Query, readQuery } from "#lib/query.ts";
+import { parseQuery, type Query, readQuery } from "#lib/query.ts";
 import { getPlanner, hasSchedules, SCHEDULES } from "#lib/schedules.svelte.ts";
+
+// Prerendered as the home page without a search. The same HTML is served for a search, which the browser then renders.
+export const prerender = true;
+export const ssr = true;
 
 /** Result of a search: the trips found, or an error message. */
 interface Outcome {
@@ -30,7 +36,8 @@ const search = async (query: Query): Promise<Outcome> => {
 
 export const load = async ({ url, depends }): Promise<Data> => {
     depends(SCHEDULES);
-    const query = readQuery(url);
+    // A prerendered page has no query string or current day.
+    const query = building ? parseQuery(new URLSearchParams(), "") : readQuery(url);
     if (!query.from || !query.to) {
         return { query, outcome: {} };
     }

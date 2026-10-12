@@ -75,7 +75,7 @@
         <LocationPicker name="from" label="From" bind:value={from} />
         <button
             type="button"
-            class="btn-icon absolute top-1/2 right-3 z-1 -translate-y-1/2 border border-slate-300 bg-white text-slate-700 sm:static sm:mb-0.5 sm:translate-y-0"
+            class="btn-icon absolute top-1/2 right-3 z-1 -translate-y-1/2 border border-stone-300 bg-white text-stone-700 sm:static sm:mb-0.5 sm:translate-y-0"
             aria-label="Swap from and to"
             onclick={() => ([from, to] = [to, from])}
         >
@@ -123,17 +123,17 @@
     </div>
     <dialog
         bind:this={options}
-        class="m-auto w-[calc(100%-2rem)] max-w-md rounded-xl bg-white text-slate-900 shadow-xl backdrop:bg-slate-900/50"
+        class="m-auto w-[calc(100%-2rem)] max-w-md rounded-xl bg-white text-stone-900 shadow-xl backdrop:bg-stone-900/50"
         aria-labelledby="{id}-options"
         closedby="any"
         onclose={applyOptions}
     >
         <div class="space-y-4 p-4">
             <div class="flex items-center justify-between">
-                <h2 id="{id}-options" class="text-lg font-bold">Options</h2>
+                <h2 id="{id}-options" class="heading text-xl">Options</h2>
                 <button
                     type="button"
-                    class="btn-icon -m-2 text-slate-600"
+                    class="btn-icon -m-2 text-stone-600"
                     aria-label="Close"
                     onclick={() => options.close()}
                 >
@@ -141,7 +141,7 @@
                 </button>
             </div>
             <fieldset>
-                <legend class="mb-1 text-sm font-medium text-slate-700">Check-in</legend>
+                <legend class="mb-1 text-sm font-medium text-stone-700">Check-in</legend>
                 {#each CHECKINS as kind (kind)}
                     <label class="flex min-h-11 items-center gap-3">
                         <input type="radio" class="size-5" name="checkin" value={kind} bind:group={checkin} />

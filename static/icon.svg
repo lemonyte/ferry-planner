@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
     <title>Ferry Planner</title>
-    <rect width="512" height="512" rx="96" fill="#0369a1" />
+    <rect width="512" height="512" rx="96" fill="#005c70" />
     <!-- The ship of Lucide (https://lucide.dev, ISC license). -->
     <g
-        transform="translate(112 112) scale(12)"
+        transform="translate(64 64) scale(16)"
         fill="none"
         stroke="#fff"
         stroke-width="2"

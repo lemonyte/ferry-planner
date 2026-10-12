@@ -8,6 +8,8 @@ export default defineConfig({
         tailwindcss(),
         sveltekit({
             adapter: adapter(),
+            // The service worker serves the prerendered app shell at any path, so its links cannot be relative.
+            paths: { relative: false },
         }),
     ],
     test: {

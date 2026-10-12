@@ -7,17 +7,20 @@
     import Printer from "@lucide/svelte/icons/printer";
     import Share from "@lucide/svelte/icons/share-2";
 
+    import Head from "#lib/components/Head.svelte";
     import TripSummary from "#lib/components/TripSummary.svelte";
     import { formatDay, formatDuration, formatTime, secondsBetween } from "#lib/format.ts";
     import { placeName } from "#lib/locations.ts";
     import { toSearch } from "#lib/query.ts";
-    import { STEP_KINDS } from "#lib/steps.ts";
+    import { SITE_NAME } from "#lib/site.ts";
+    import { sailingNames, STEP_KINDS } from "#lib/steps.ts";
 
     let { data } = $props();
 
     const { query, itinerary } = $derived(data);
 
     const journey = $derived(`${placeName(query.from)} to ${placeName(query.to)}`);
+    const sailings = $derived(sailingNames(itinerary));
 
     // Going back to the trip list that this trip was opened from keeps its state and scroll position.
     let pickedFromTrips = $state(false);
@@ -50,13 +53,15 @@
     };
 </script>
 
-<svelte:head>
-    <title>{journey} · {formatTime(itinerary.depart)}, {formatDay(itinerary.depart)} · Ferry Planner</title>
-    <meta name="description" content="A trip by BC Ferries, step by step." />
-</svelte:head>
+<Head
+    title="{journey} · {formatTime(itinerary.depart)}, {formatDay(itinerary.depart)} · {SITE_NAME}"
+    description="Leave at {formatTime(itinerary.depart)} and arrive at {formatTime(itinerary.arrive)} on {formatDay(
+        itinerary.depart,
+    )}, {formatDuration(itinerary.duration)} in all{sailings.length > 0 ? `, by ${sailings.join(' and ')}` : ''}."
+/>
 
 <a
-    class="-ml-1 inline-flex min-h-11 items-center gap-1.5 font-medium text-sky-800 hover:text-sky-950 print:hidden"
+    class="-ml-1 inline-flex min-h-11 items-center gap-1.5 font-medium text-sea-800 hover:text-sea-950 print:hidden"
     href={resolve("/") + toSearch(query)}
     onclick={(event) => {
         if (pickedFromTrips) {
@@ -70,8 +75,8 @@
 </a>
 
 <div class="title-row mt-2">
-    <h1 class="text-xl font-bold">{journey}</h1>
-    <p class="text-slate-600">{formatDay(itinerary.depart)}</p>
+    <h1 class="heading text-2xl">{journey}</h1>
+    <p class="text-stone-600">{formatDay(itinerary.depart)}</p>
 </div>
 
 <div class="mt-4 grid max-w-md grid-cols-3 gap-2 print:hidden">
@@ -95,24 +100,19 @@
 
 <div class="card-bleed mt-3 p-4 print:border-0 print:p-0">
     <TripSummary {itinerary} />
-    <ol class="mt-5 space-y-3 border-l-2 border-slate-200 pl-4">
+    <ol class="mt-5 space-y-3 border-l-2 border-stone-200 pl-4">
         {#each itinerary.steps as step}
             {@const seconds = secondsBetween(step.start, step.end)}
             <li class="relative">
-                <span
-                    class={[
-                        "absolute top-2 left-[-1.4rem] size-2.5 rounded-full ring-2 ring-white",
-                        step.kind === "MARK" ? "bg-slate-900" : STEP_KINDS[step.kind].dot,
-                    ]}
-                ></span>
+                <span class={["step-dot", step.kind === "MARK" ? "bg-stone-900" : STEP_KINDS[step.kind].dot]}></span>
                 <div class="flex flex-wrap items-baseline gap-x-2">
-                    <time class="w-18 shrink-0 text-sm text-slate-600 tabular-nums" datetime={step.start}
+                    <time class="w-18 shrink-0 text-sm text-stone-600 tabular-nums" datetime={step.start}
                         >{formatTime(step.start)}</time
                     >
                     <span class={["min-w-0 flex-1 basis-48", step.kind === "MARK" && "font-semibold"]}>
                         {step.description}
                         {#if seconds > 0}
-                            <span class="text-sm whitespace-nowrap text-slate-500">· {formatDuration(seconds)}</span>
+                            <span class="text-sm whitespace-nowrap text-stone-500">· {formatDuration(seconds)}</span>
                         {/if}
                     </span>
                 </div>

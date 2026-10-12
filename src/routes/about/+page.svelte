@@ -1,10 +1,16 @@
-<svelte:head>
-    <title>About · Ferry Planner</title>
-    <meta name="description" content="What Ferry Planner does and where its schedules come from." />
-</svelte:head>
+<script lang="ts">
+    import Head from "#lib/components/Head.svelte";
+    import { SITE_NAME } from "#lib/site.ts";
+</script>
+
+<Head
+    title="About · {SITE_NAME}"
+    description="What {SITE_NAME} does, how it plans a trip by BC Ferries, and where its schedules come from."
+    canonical="/about"
+/>
 
 <article class="space-y-4 leading-relaxed">
-    <h1 class="text-2xl font-bold">About</h1>
+    <h1 class="heading text-3xl">About</h1>
     <p>
         Ferry Planner finds ways to travel between places in British Columbia that need a
         <a class="underline" href="https://www.bcferries.com">BC Ferries</a>

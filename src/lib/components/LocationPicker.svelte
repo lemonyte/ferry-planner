@@ -42,7 +42,7 @@
         <label for={id} class="field-label">{label}</label>
         <Combobox.Input
             {id}
-            class="field pr-16 placeholder:text-slate-400 sm:pr-3"
+            class="field pr-16 placeholder:text-stone-400 sm:pr-3"
             placeholder="{label}: city or terminal"
             defaultValue={placeName(value)}
             autocomplete="off"
@@ -58,28 +58,28 @@
     </div>
     <Combobox.Portal>
         <Combobox.Content
-            class="z-10 max-h-[min(var(--bits-combobox-content-available-height),22rem)] w-(--bits-combobox-anchor-width) overflow-y-auto rounded-lg border border-slate-300 bg-white py-1 shadow-lg"
+            class="z-10 max-h-[min(var(--bits-combobox-content-available-height),22rem)] w-(--bits-combobox-anchor-width) overflow-y-auto rounded-lg border border-stone-300 bg-white py-1 shadow-lg"
             sideOffset={4}
         >
             <Combobox.Viewport bind:ref={list}>
                 {#each groups as group (group.heading)}
                     <Combobox.Group>
-                        <Combobox.GroupHeading class="px-3 pt-2 pb-1 text-xs font-semibold text-slate-500 uppercase">
+                        <Combobox.GroupHeading class="px-3 pt-2 pb-1 text-xs font-semibold text-stone-500 uppercase">
                             {group.heading}
                         </Combobox.GroupHeading>
                         {#each group.places as place (place.id)}
                             <Combobox.Item
-                                class="flex min-h-11 cursor-pointer items-baseline justify-between gap-3 px-3 py-2 data-highlighted:bg-sky-100"
+                                class="flex min-h-11 cursor-pointer items-baseline justify-between gap-3 px-3 py-2 data-highlighted:bg-sea-100"
                                 value={place.id}
                                 label={place.name}
                             >
                                 <span>{place.name}</span>
-                                <span class="shrink-0 text-right text-xs text-slate-500">{place.region}</span>
+                                <span class="shrink-0 text-right text-xs text-stone-500">{place.region}</span>
                             </Combobox.Item>
                         {/each}
                     </Combobox.Group>
                 {:else}
-                    <p class="px-3 py-3 text-sm text-slate-600">No place by that name.</p>
+                    <p class="px-3 py-3 text-sm text-stone-600">No place by that name.</p>
                 {/each}
             </Combobox.Viewport>
         </Combobox.Content>

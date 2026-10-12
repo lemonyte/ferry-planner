@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { resolve } from "$app/paths";
+    import Heart from "@lucide/svelte/icons/heart";
     import Layers from "@lucide/svelte/icons/layers";
 
     import { addDays, formatDay, formatDistance } from "#lib/format.ts";
@@ -8,8 +9,9 @@
     import type { Itinerary, SearchResult } from "#lib/planner/itinerary.ts";
     import { type Query, SORTS, toSearch } from "#lib/query.ts";
     import { compareItineraries } from "#lib/sort.ts";
-    import { STEP_KINDS, sailingNames } from "#lib/steps.ts";
+    import { sailingNames } from "#lib/steps.ts";
 
+    import Legend from "./Legend.svelte";
     import TripSummary from "./TripSummary.svelte";
 
     interface Props {
@@ -48,7 +50,7 @@
 
 {#snippet trip(itinerary: Itinerary)}
     <a
-        class="block p-4 hover:bg-slate-50 focus-visible:bg-slate-50"
+        class="block p-4 hover:bg-stone-50 focus-visible:bg-stone-50"
         href={resolve("/trip/[id]", { id: itinerary.id }) + toSearch(query)}
     >
         <TripSummary {itinerary} {longest} fastest={itinerary === fastest} left={itinerary.depart < result.now} />
@@ -56,8 +58,8 @@
 {/snippet}
 
 <div class="title-row mt-6">
-    <h1 class="text-xl font-bold">{journey}</h1>
-    <p class="text-slate-600">{formatDay(query.date)}</p>
+    <h1 class="heading text-2xl">{journey}</h1>
+    <p class="text-stone-600">{formatDay(query.date)}</p>
 </div>
 
 {#if result.itineraries.length === 0}
@@ -80,36 +82,27 @@
     </div>
 {:else}
     {#if !result.covered}
-        <p class="mt-3 text-sm text-slate-600">
+        <p class="mt-3 text-sm text-stone-600">
             BC Ferries has not posted its schedules for this date yet, so only trips without a ferry are shown.
         </p>
     {:else if query.underway}
-        <p class="mt-3 text-sm text-slate-600">
+        <p class="mt-3 text-sm text-stone-600">
             Trips that have left but not arrived yet are shown.
             <a class="link font-medium" href={linkTo({ underway: false })} {...STAY}>Hide them</a>
         </p>
     {:else if result.departed > 0}
-        <p class="mt-3 text-sm text-slate-600">
+        <p class="mt-3 text-sm text-stone-600">
             Trips that have already left today are not shown.
             {#if result.underway > 0}
                 <a class="link font-medium" href={linkTo({ underway: true })} {...STAY}>Show those still under way</a>
             {/if}
         </p>
     {/if}
-    <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600" aria-label="Colours of the bars">
-        {#each Object.values(STEP_KINDS) as kind (kind.label)}
-            <li class="flex items-center gap-1.5">
-                <span class={["flex size-5 items-center justify-center rounded", kind.bar]}>
-                    <kind.icon class="size-3.5" />
-                </span>
-                {kind.label}
-            </li>
-        {/each}
-    </ul>
+    <div class="mt-3"><Legend /></div>
     <div class="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 sm:justify-start print:hidden">
         <nav class="flex flex-wrap items-center justify-end gap-2" aria-label="Sort by">
-            <span class="text-sm whitespace-nowrap text-slate-600" aria-hidden="true">Sort by</span>
-            <div class="flex rounded-lg border border-slate-300 bg-white p-0.5">
+            <span class="text-sm whitespace-nowrap text-stone-600" aria-hidden="true">Sort by</span>
+            <div class="flex rounded-lg border border-stone-300 bg-white p-0.5">
                 {#each SORTS as sort (sort)}
                     <a class="choice" href={linkTo({ sort })} aria-current={sort === query.sort} {...STAY}>
                         {SORT_LABELS[sort]}
@@ -119,7 +112,7 @@
         </nav>
         <button
             type="button"
-            class="choice border border-slate-300 bg-white aria-checked:border-sky-700"
+            class="choice border border-stone-300 bg-white aria-checked:border-sea-700"
             role="switch"
             aria-checked={query.group}
             onclick={() => void goto(linkTo({ group: !query.group }), { replace: true, reset: false })}
@@ -135,14 +128,14 @@
                 {@const sailings = first ? sailingNames(first) : []}
                 <section class="card-bleed">
                     <header class="px-4 pt-4 pb-3">
-                        <h2 class="text-lg leading-snug font-semibold">
+                        <h2 class="font-display text-xl leading-snug font-semibold">
                             {#each sailings as sailing}
                                 <span class="block">{sailing}</span>
                             {:else}
                                 No ferry
                             {/each}
                         </h2>
-                        <p class="mt-1 text-sm text-slate-600">
+                        <p class="mt-1 text-sm text-stone-600">
                             {trips.length}
                             {trips.length === 1 ? "trip" : "trips"}
                             {#if first && first.drivingDistance > 0}
@@ -150,19 +143,19 @@
                             {/if}
                         </p>
                     </header>
-                    <ol class="divide-y divide-slate-200 border-t border-slate-200">
+                    <ol class="divide-y divide-stone-200 border-t border-stone-200">
                         {#each trips.slice(0, TRIPS_PER_ROUTE_GROUP) as itinerary (itinerary.id)}
                             <li>{@render trip(itinerary)}</li>
                         {/each}
                     </ol>
                     {#if trips.length > TRIPS_PER_ROUTE_GROUP}
-                        <details class="border-t border-slate-200">
+                        <details class="border-t border-stone-200">
                             <summary
-                                class="flex min-h-11 cursor-pointer items-center px-4 text-sm font-medium text-sky-800"
+                                class="flex min-h-11 cursor-pointer items-center px-4 text-sm font-medium text-sea-800"
                             >
                                 Show {trips.length - TRIPS_PER_ROUTE_GROUP} more
                             </summary>
-                            <ol class="divide-y divide-slate-200 border-t border-slate-200">
+                            <ol class="divide-y divide-stone-200 border-t border-stone-200">
                                 {#each trips.slice(TRIPS_PER_ROUTE_GROUP) as itinerary (itinerary.id)}
                                     <li>{@render trip(itinerary)}</li>
                                 {/each}
@@ -173,7 +166,7 @@
             {/each}
         </div>
     {:else}
-        <ol class="card-bleed mt-3 divide-y divide-slate-200">
+        <ol class="card-bleed mt-3 divide-y divide-stone-200">
             {#each itineraries as itinerary (itinerary.id)}
                 <li>{@render trip(itinerary)}</li>
             {/each}
@@ -181,11 +174,18 @@
     {/if}
     {#if result.more > 0}
         <a
-            class="btn btn-secondary mt-4 flex text-sky-800 print:hidden"
+            class="btn btn-secondary mt-4 flex text-sea-800 print:hidden"
             href={linkTo({ all: true })}
             data-sveltekit-reset="false"
         >
             Show {result.more} more {result.more === 1 ? "trip" : "trips"}
         </a>
     {/if}
+    <p class="mt-6 flex flex-wrap items-center justify-center gap-x-1.5 text-sm text-stone-600 print:hidden">
+        <Heart class="size-4 text-amber-500" />
+        Found this helpful?
+        <a class="link font-medium" href="https://github.com/sponsors/lemonyte" target="_blank" rel="noopener">
+            Support Ferry Planner
+        </a>
+    </p>
 {/if}
