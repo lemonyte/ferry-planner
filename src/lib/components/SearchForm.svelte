@@ -53,6 +53,14 @@
         }
     };
 
+    /** Swap the places, and search again if trips are shown. */
+    const swap = () => {
+        [from, to] = [to, from];
+        if (query.from && query.to && from && to) {
+            search();
+        }
+    };
+
     const resetOptions = () => {
         checkin = "reservation";
         early = DEFAULT_EARLY;
@@ -77,7 +85,7 @@
             type="button"
             class="btn-icon absolute top-1/2 right-3 z-1 -translate-y-1/2 border border-stone-300 bg-white text-stone-700 sm:static sm:mb-0.5 sm:translate-y-0"
             aria-label="Swap from and to"
-            onclick={() => ([from, to] = [to, from])}
+            onclick={swap}
         >
             <ArrowLeftRight class="size-5 rotate-90 sm:rotate-0" />
         </button>
