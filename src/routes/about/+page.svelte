@@ -1,6 +1,7 @@
 <script lang="ts">
     import Head from "#lib/components/Head.svelte";
-    import { SITE_NAME } from "#lib/site.ts";
+    import Notices from "#lib/components/Notices.svelte";
+    import { CONTACT_EMAIL, SITE_NAME } from "#lib/site.ts";
 </script>
 
 <Head
@@ -26,6 +27,10 @@
         changes when you open or come back to the site, so trips can be found without an Internet connection once the
         site has been opened with one. Driving times are estimates.
     </p>
+    <h2 class="heading text-2xl">Contact</h2>
+    <p>
+        Want to get in touch? Email us at <a class="link" href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>.
+    </p>
     <h2 class="heading text-2xl">Disclaimer</h2>
     <p>
         Ferry Planner is not affiliated with BC Ferries. Ferry Planner provides information on a best-effort basis and
@@ -35,3 +40,5 @@
         limited to, missed sailings and lost funds.
     </p>
 </article>
+
+<Notices />
