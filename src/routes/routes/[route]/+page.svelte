@@ -44,7 +44,7 @@
 
 <article>
     <h1 class="heading text-3xl">{journey} by ferry</h1>
-    <p class="mt-3 leading-relaxed">
+    <p class="mt-3">
         Getting from {journey} takes {choice}. {SITE_NAME} works out when to leave, which sailing you can catch, and when
         you arrive.
     </p>
@@ -52,7 +52,7 @@
 
     {#each ways as way, index}
         <section class="card-bleed mt-6 p-4">
-            <h2 class="font-display text-xl leading-snug font-semibold">
+            <h2 class="font-display text-xl font-semibold">
                 {#each sailings[index] as sailing}
                     <span class="block">{sailing.replace(" to ", " → ")}</span>
                 {/each}
@@ -88,7 +88,7 @@
         </section>
     {/each}
 
-    <p class="mt-4 text-sm leading-relaxed text-stone-600">
+    <p class="mt-4 text-sm text-stone-600">
         Driving times are estimates. Sailing times change with the day and the season, so look up the day you are
         travelling. Other ways to make this trip, such as through other terminals, are listed with the trips.
     </p>

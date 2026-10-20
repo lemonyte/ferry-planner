@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "@fontsource/fira-sans-condensed/latin-600.css";
-@import "@fontsource/fira-sans-condensed/latin-700.css";
 
 @theme {
     /* Used for the name of the site, headings, and trip durations. */
@@ -51,7 +50,7 @@ body {
 
 /* Page and section headings. */
 @utility heading {
-    @apply font-display font-bold;
+    @apply font-display font-semibold;
 }
 
 @utility card {

@@ -1,7 +1,6 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { resolve } from "$app/paths";
-    import Heart from "@lucide/svelte/icons/heart";
     import Layers from "@lucide/svelte/icons/layers";
 
     import { addDays, formatDay, formatDistance } from "#lib/format.ts";
@@ -12,6 +11,7 @@
     import { sailingNames } from "#lib/steps.ts";
 
     import Legend from "./Legend.svelte";
+    import Notices from "./Notices.svelte";
     import TripSummary from "./TripSummary.svelte";
 
     interface Props {
@@ -128,7 +128,7 @@
                 {@const sailings = first ? sailingNames(first) : []}
                 <section class="card-bleed">
                     <header class="px-4 pt-4 pb-3">
-                        <h2 class="font-display text-xl leading-snug font-semibold">
+                        <h2 class="font-display text-xl leading-tight font-semibold">
                             {#each sailings as sailing}
                                 <span class="block">{sailing}</span>
                             {:else}
@@ -149,11 +149,16 @@
                         {/each}
                     </ol>
                     {#if trips.length > TRIPS_PER_ROUTE_GROUP}
-                        <details class="border-t border-stone-200">
+                        <details class="group border-t border-stone-200">
                             <summary
-                                class="flex min-h-11 cursor-pointer items-center px-4 text-sm font-medium text-sea-800"
+                                class="flex min-h-11 select-none items-center px-4 text-sm font-medium text-sea-800"
                             >
-                                Show {trips.length - TRIPS_PER_ROUTE_GROUP} more
+                                <span>
+                                    <span class="group-open:hidden">Show</span><span class="hidden group-open:inline"
+                                        >Hide</span
+                                    >
+                                    {trips.length - TRIPS_PER_ROUTE_GROUP} more
+                                </span>
                             </summary>
                             <ol class="divide-y divide-stone-200 border-t border-stone-200">
                                 {#each trips.slice(TRIPS_PER_ROUTE_GROUP) as itinerary (itinerary.id)}
@@ -181,11 +186,5 @@
             Show {result.more} more {result.more === 1 ? "trip" : "trips"}
         </a>
     {/if}
-    <p class="mt-6 flex flex-wrap items-center justify-center gap-x-1.5 text-sm text-stone-600 print:hidden">
-        <Heart class="size-4 text-amber-500" />
-        Found this helpful?
-        <a class="link font-medium" href="https://github.com/sponsors/lemonyte" target="_blank" rel="noopener">
-            Support Ferry Planner
-        </a>
-    </p>
+    <Notices />
 {/if}

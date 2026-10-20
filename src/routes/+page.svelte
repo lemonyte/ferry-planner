@@ -69,7 +69,7 @@
     <div class="intro">
         <section class="mt-8">
             <h2 class="heading text-xl">Every trip, door to door</h2>
-            <p class="mt-1 leading-relaxed text-stone-700">
+            <p class="mt-1 text-stone-700">
                 Each trip counts the drive to the terminal, the wait at check-in, and every sailing, so you know when to
                 leave and when you arrive.
             </p>

@@ -8,6 +8,7 @@
     import Share from "@lucide/svelte/icons/share-2";
 
     import Head from "#lib/components/Head.svelte";
+    import Notices from "#lib/components/Notices.svelte";
     import TripSummary from "#lib/components/TripSummary.svelte";
     import { formatDay, formatDuration, formatTime, secondsBetween } from "#lib/format.ts";
     import { placeName } from "#lib/locations.ts";
@@ -125,3 +126,5 @@
         {/each}
     </ol>
 </div>
+
+<Notices />
