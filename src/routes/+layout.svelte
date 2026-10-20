@@ -36,7 +36,9 @@
         {@render children()}
     </main>
     <footer class="border-t border-stone-200 bg-white pb-[env(safe-area-inset-bottom)] print:hidden">
-        <div class="safe-x mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-4 text-sm text-stone-600">
+        <div
+            class="safe-x mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-4 text-sm text-stone-600"
+        >
             {#if checked || !schedules.online}
                 <p class="w-full pt-2" role="status">
                     {#if !schedules.online}
