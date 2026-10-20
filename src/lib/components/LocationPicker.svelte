@@ -16,6 +16,7 @@
     let { name, label, value = $bindable() }: Props = $props();
     const id = $props.id();
 
+    let open = $state(false);
     let typed = $state("");
     let list = $state<HTMLElement | null>(null);
     const groups = $derived(
@@ -30,6 +31,7 @@
     type="single"
     {name}
     bind:value
+    bind:open
     required
     inputValue={placeName(value)}
     onOpenChangeComplete={(open) => {
@@ -54,6 +56,8 @@
                 list?.scrollTo({ top: 0 });
             }}
             onfocus={(event) => event.currentTarget.select()}
+            // bits-ui opens the list only when a key is pressed.
+            onclick={() => (open = true)}
         />
     </div>
     <Combobox.Portal>
