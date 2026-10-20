@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 
+import { POPULAR_ROUTES } from "#lib/popular.ts";
 import { makeTimetable } from "#test/fixtures.ts";
 import plans from "#test/fixtures/plans.json";
 import routes from "#test/fixtures/routes.json";
@@ -99,6 +100,43 @@ test("drive with no ferry keeps its ID across search times", () => {
     expect(found?.id).toBeDefined();
     expect(later?.id).toBe(found?.id);
     expect(later?.depart).not.toBe(found?.depart);
+});
+
+test("findRoutes finds a route through a link that is a dead end on another route", () => {
+    // Earls Cove to Langdale leads nowhere on routes that already pass Horseshoe Bay or Tsawwassen.
+    expect(findRoutes("SLT", "SWB").map((route) => route.join("-"))).toContain("SLT-ERL-LNG-HSB-TSA-SWB");
+});
+
+test.each(POPULAR_ROUTES)("findRoutes finds each way of the popular route from $from to $to", ({ from, to, ways }) => {
+    const found = findRoutes(from, to).map((route) => route.join("-"));
+
+    for (const way of ways) {
+        // A sailing that departs from the terminal where the one before it arrived lists the terminal once.
+        const stops = [from, ...way.flat(), to].filter((stop, index, all) => stop !== all[index - 1]);
+        expect(found).toContain(stops.join("-"));
+    }
+});
+
+const summarizeRoute = (origin: LocationId, destination: LocationId, options: Partial<PlanOptions>): string[] => {
+    const date = options.date ?? DATE;
+    return makeItineraries(origin, destination, { ...OPTIONS, ...options }, timetable, date - 24 * 60 * 60 * 1000)
+        .filter((itinerary) => itinerary.route === `${origin}-TSA-${destination}`)
+        .map(summarize);
+};
+
+test("makeItineraries continues overnight only if long is set", () => {
+    const date = Date.UTC(2026, 9, 18);
+    const overnight = "2026-10-18T22:00:00 > 2026-10-19T10:50:00 DUK-TSA-PSB [22:45 09:55]";
+
+    expect(summarizeRoute("DUK", "PSB", { date })).not.toContain(overnight);
+    expect(summarizeRoute("DUK", "PSB", { date, long: true })).toContain(overnight);
+});
+
+test("makeItineraries tries a later sailing if an earlier one with more stops arrives too late to connect", () => {
+    // The 15:15 from Swartz Bay stops at three islands and arrives after check-in for the 19:30 closes.
+    expect(summarizeRoute("SWB", "PSB", { date: Date.UTC(2026, 9, 21) })).toContain(
+        "2026-10-21T16:15:00 > 2026-10-21T20:25:00 SWB-TSA-PSB [17:00 19:30]",
+    );
 });
 
 test("makeItineraries returns no itineraries from a location to itself", () => {

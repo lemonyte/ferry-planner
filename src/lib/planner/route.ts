@@ -18,6 +18,10 @@ import { formatLocal, MS_PER_DAY, MS_PER_MINUTE, startOfDay } from "./time.ts";
 
 /** Maximum drive in seconds, unless `long` is set. */
 const DRIVING_DURATION_LIMIT = 6 * 60 * 60;
+/** Maximum sailings in a route. Bounds the route search, which grows exponentially with the number of sailings. */
+// shortcut: trips that need more than 3 sailings are not found. With 4, listing the routes of one search takes
+// up to 300 ms on a desktop. Raise it if the route search gets faster.
+const MAX_SAILINGS = 3;
 const MAP_URL = "https://www.google.com/maps/dir/?api=1";
 
 type Connection =
@@ -108,27 +112,25 @@ const getConnectionsFrom = (origin: LocationId): [LocationId, Connection["type"]
 export const findRoutes = (origin: LocationId, destination: LocationId): LocationId[][] => {
     const routes: LocationId[][] = [];
     const route: LocationId[] = [];
-    const deadEnds = new Set<string>();
     // Land groups already left by ferry on this route. A route does not return to them.
     const lands: string[] = [];
     const endsInCity = destination in cities;
+    let sailings = 0;
 
-    const follow = (point: LocationId, lastType?: Connection["type"]): boolean => {
+    const follow = (point: LocationId, lastType?: Connection["type"]): void => {
         route.push(point);
         if (point === destination) {
             routes.push([...route]);
             route.pop();
-            return true;
+            return;
         }
         if (endsInCity && getConnection(point, destination)) {
             routes.push([...route, destination]);
             route.pop();
-            return true;
+            return;
         }
-        let found = false;
         for (const [next, type] of getConnectionsFrom(point)) {
-            const id = `${point}-${next}`;
-            if (route.includes(next) || deadEnds.has(id)) {
+            if (route.includes(next)) {
                 continue;
             }
             // Drive only the shortest way between terminals.
@@ -136,19 +138,17 @@ export const findRoutes = (origin: LocationId, destination: LocationId): Locatio
                 continue;
             }
             const landGroup = locations[next].land_group;
-            if (type === "FERRY" && landGroup && lands.includes(landGroup)) {
+            if (type === "FERRY" && (sailings === MAX_SAILINGS || (landGroup && lands.includes(landGroup)))) {
                 continue;
             }
-            lands.push((type === "FERRY" && locations[point].land_group) || "");
-            if (follow(next, type)) {
-                found = true;
-            } else {
-                deadEnds.add(id);
-            }
+            const ferry = type === "FERRY";
+            lands.push((ferry && locations[point].land_group) || "");
+            sailings += Number(ferry);
+            follow(next, type);
+            sailings -= Number(ferry);
             lands.pop();
         }
         route.pop();
-        return found;
     };
 
     follow(origin);
@@ -257,8 +257,8 @@ const addSailings = (state: PlanState, connection: Connection & { type: "FERRY" 
     const { index, segments, startTime, options } = state;
     const { origin, destination } = connection;
     const day = startOfDay(startTime);
-    // Skip routes that continue on another day.
-    if (day !== startOfDay(segments[0]?.steps[0]?.start ?? startTime)) {
+    // Skip routes that continue on another day, unless overnight journeys are included.
+    if (!options.long && day !== startOfDay(segments[0]?.steps[0]?.start ?? startTime)) {
         return false;
     }
     const schedule = getSchedule(state.timetable, origin.id as TerminalId, destination.id as TerminalId, day);
@@ -294,8 +294,9 @@ const addSailings = (state: PlanState, connection: Connection & { type: "FERRY" 
             });
         }
         const rest = { ...state, index: index + 1, segments: [...segments, { connection, steps }] };
+        // A later sailing that makes fewer stops can arrive sooner and still connect.
         if (!addItineraries({ ...rest, startTime: sailing.arrival })) {
-            break;
+            continue;
         }
         found = true;
         // After the first ferry of a route, take only the first sailing that can be caught.

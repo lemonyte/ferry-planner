@@ -85,7 +85,7 @@ test("feed is stored for the next visit", async () => {
     const keeper = new FeedKeeper(storage);
 
     expect(keeper.timetable?.sailings("HSB", "LNG", DAY)).toHaveLength(1);
-    expect(keeper.fetchedAt).toBe(NOON);
+    expect(keeper.checkedAt).toBe(NOON);
     expect(fetch).toHaveBeenCalledTimes(1);
 });
 
@@ -169,7 +169,7 @@ test("refresh replaces the feed if it changed", async () => {
 
     expect(await keeper.refresh()).toBe(true);
     expect(await sailings(keeper, "LNG", "HSB")).toBe(1);
-    expect(keeper.fetchedAt).toBe(NOON + HOUR);
+    expect(keeper.checkedAt).toBe(NOON + HOUR);
     expect(new FeedKeeper(storage).timetable?.sailings("LNG", "HSB", DAY)).toHaveLength(1);
 });
 
@@ -189,7 +189,8 @@ test("refresh does not request the feed again within an hour, including after a 
 
 test("refresh sends the ETag to download the feed only if it changed", async () => {
     const fetch = serve({ body: makeArchive(), etag: '"first"' }, 304);
-    const keeper = new FeedKeeper(new MemoryStorage());
+    const storage = new MemoryStorage();
+    const keeper = new FeedKeeper(storage);
     expect(await keeper.refresh()).toBe(true);
 
     now.mockReturnValue(NOON + HOUR);
@@ -197,7 +198,8 @@ test("refresh sends the ETag to download the feed only if it changed", async () 
     expect(await keeper.refresh()).toBe(false);
     expect(fetch).toHaveBeenLastCalledWith(FEED_URL, { headers: { "If-None-Match": '"first"' } });
     expect(keeper.timetable).toBeDefined();
-    expect(keeper.fetchedAt).toBe(NOON);
+    expect(keeper.checkedAt).toBe(NOON + HOUR);
+    expect(new FeedKeeper(storage).checkedAt).toBe(NOON + HOUR);
     // The feed was unchanged, so the next check is an hour later.
     now.mockReturnValue(NOON + 2 * HOUR - 1000);
     expect(await keeper.refresh()).toBe(false);

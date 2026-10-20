@@ -46,9 +46,9 @@ test("selectItineraries returns the ten fastest itineraries across routes", () =
         "vancouver-TSA-DUK-CMX-PWR-TEX-van_anda 08:59>18:44",
         "vancouver-HSB-NAN-CMX-PWR-TEX-van_anda 12:15>22:39",
         "vancouver-TSA-SWB-CMX-PWR-TEX-van_anda 11:44>22:39",
-        "vancouver-TSA-SWB-BTW-MIL-CMX-PWR-TEX-van_anda 11:44>22:39",
+        "vancouver-TSA-SWB-CMX-PWR-TEX-van_anda 07:44>18:44",
     ]);
-    expect(found.more).toBe(7);
+    expect(found.more).toBe(1);
     expect(found.departed).toBe(0);
 });
 
@@ -58,11 +58,11 @@ test("selectItineraries returns the ten earliest departures if sorted by departu
     expect(summarize(found.itineraries).slice(0, 4)).toEqual([
         "vancouver-TSA-DUK-CMX-PWR-TEX-van_anda 03:59>13:34",
         `${SUNSHINE_COAST} 06:20>13:34`,
-        "vancouver-TSA-SWB-BTW-MIL-CMX-PWR-TEX-van_anda 06:44>18:44",
         "vancouver-TSA-SWB-CMX-PWR-TEX-van_anda 07:44>18:44",
+        `${SUNSHINE_COAST} 08:40>16:49`,
     ]);
     expect(found.itineraries).toHaveLength(10);
-    expect(found.more).toBe(7);
+    expect(found.more).toBe(1);
 });
 
 test("journey that changes vessels at a terminal has one sailing to it and one from it", () => {
@@ -83,16 +83,16 @@ test("journey that changes vessels at a terminal has one sailing to it and one f
 test("departed itineraries are excluded and counted", () => {
     const found = pick(plansFor("vancouver", "van_anda"), "2026-10-08T09:00:00", { sort: "departure" });
 
-    expect(found.itineraries[0]?.depart).toBe("2026-10-08T09:09:30");
-    expect(found.itineraries).toHaveLength(10);
-    expect(found.departed).toBe(17);
-    expect(found.more).toBe(1);
+    expect(found.itineraries[0]?.depart).toBe("2026-10-08T09:55:50");
+    expect(found.itineraries).toHaveLength(6);
+    expect(found.departed).toBe(12);
+    expect(found.more).toBe(0);
 });
 
 test("no itineraries are returned after all have departed", () => {
     const found = pick(plansFor("vancouver", "van_anda"), "2026-10-08T16:00:00");
 
-    expect(found).toMatchObject({ itineraries: [], more: 0, departed: 34 });
+    expect(found).toMatchObject({ itineraries: [], more: 0, departed: 22 });
 });
 
 test("all returns every itinerary, starting with the default selection", () => {
@@ -101,7 +101,7 @@ test("all returns every itinerary, starting with the default selection", () => {
 
     const found = pick(plans, BEFORE, { all: true });
 
-    expect(found.itineraries).toHaveLength(17);
+    expect(found.itineraries).toHaveLength(11);
     expect(found.more).toBe(0);
     expect(found.itineraries.slice(0, 10)).toEqual(first.itineraries);
 });

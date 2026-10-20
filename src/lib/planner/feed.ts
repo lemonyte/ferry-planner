@@ -34,8 +34,8 @@ export type FeedStorage = Pick<Storage, "getItem" | "setItem">;
  */
 export class FeedKeeper {
     timetable?: Timetable;
-    /** Epoch milliseconds when the feed in use was downloaded. */
-    fetchedAt?: number;
+    /** Epoch milliseconds when the feed was last checked for changes, or downloaded if it was never checked. */
+    checkedAt?: number;
     private etag?: string;
     /** Epoch milliseconds before which the feed is not requested again. */
     private checkAfter = 0;
@@ -48,9 +48,9 @@ export class FeedKeeper {
         // Storage can hold a feed in an older format.
         if (stored?.version === FEED_VERSION) {
             this.etag = stored.etag;
-            this.fetchedAt = stored.fetchedAt;
+            this.checkedAt = Number(this.read(CHECKED_KEY)) || stored.fetchedAt;
             this.timetable = new Timetable(stored.feed);
-            this.checkAfter = (Number(this.read(CHECKED_KEY)) || 0) + CHECK_INTERVAL_MS;
+            this.checkAfter = this.checkedAt + CHECK_INTERVAL_MS;
         }
     }
 
@@ -85,8 +85,9 @@ export class FeedKeeper {
         try {
             const changed = await this.fetchFeed();
             this.failed = false;
-            this.checkAfter = Date.now() + CHECK_INTERVAL_MS;
-            this.write(CHECKED_KEY, Date.now());
+            this.checkedAt = Date.now();
+            this.checkAfter = this.checkedAt + CHECK_INTERVAL_MS;
+            this.write(CHECKED_KEY, this.checkedAt);
             return changed;
         } catch (error) {
             this.failed = true;
@@ -113,10 +114,9 @@ export class FeedKeeper {
             console.warn("no sailings in the GTFS feed for some terminals", feed.unserved);
         }
         this.etag = etag;
-        this.fetchedAt = Date.now();
         this.timetable = new Timetable(feed);
         // If storing fails, the feed is still used until the page closes.
-        this.write(FEED_KEY, { version: FEED_VERSION, etag, fetchedAt: this.fetchedAt, feed } satisfies StoredFeed);
+        this.write(FEED_KEY, { version: FEED_VERSION, etag, fetchedAt: Date.now(), feed } satisfies StoredFeed);
         return true;
     }
 

@@ -18,8 +18,8 @@ export interface Planner {
 
 /** State of the schedules, for display. */
 export const schedules = $state<{
-    /** Epoch milliseconds when the schedules in use were downloaded, if any. */
-    fetchedAt?: number;
+    /** Epoch milliseconds when the schedules were last checked for changes, if there are any schedules. */
+    checkedAt?: number;
     online: boolean;
 }>({ online: true });
 
@@ -54,7 +54,7 @@ export const hasSchedules = (): boolean => {
  */
 export const getPlanner = async (): Promise<Planner | undefined> => {
     const [timetable, planner] = await Promise.all([getKeeper().getTimetable(), import("#lib/planner/plan.ts")]);
-    schedules.fetchedAt = getKeeper().fetchedAt;
+    schedules.checkedAt = getKeeper().checkedAt;
     missed ||= timetable === undefined;
     return (
         timetable && {
@@ -69,7 +69,7 @@ const refresh = async (retry = false): Promise<void> => {
     const replaces = keeper.timetable !== undefined;
     try {
         const changed = await keeper.refresh(retry);
-        schedules.fetchedAt = keeper.fetchedAt;
+        schedules.checkedAt = keeper.checkedAt;
         // The page was rendered with the previous schedules, or without any.
         if (changed && (replaces || missed)) {
             missed = false;
@@ -92,7 +92,7 @@ export const watchSchedules = (): (() => void) => {
         schedules.online = navigator.onLine;
     };
     setOnline();
-    schedules.fetchedAt = getKeeper().fetchedAt;
+    schedules.checkedAt = getKeeper().checkedAt;
     window.addEventListener("offline", setOnline, stop);
     window.addEventListener(
         "online",
