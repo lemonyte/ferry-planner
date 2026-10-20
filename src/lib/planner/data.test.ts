@@ -1,8 +1,10 @@
 import { expect, test } from "vitest";
 
 import { carConnections } from "./data/car-connections.ts";
+import { carFuel } from "./data/car-fuel.ts";
 import { ferryConnections } from "./data/ferry-connections.ts";
 import { cities, locations, terminals } from "./data/locations.ts";
+import { terminalDetails } from "./data/terminal-details.ts";
 
 // These checks replace validating the data files at startup.
 
@@ -37,9 +39,23 @@ test("car connections connect two different locations", () => {
             // Courtenay and Comox Valley are 0 km apart.
             expect(connection.duration).toBeGreaterThanOrEqual(0);
             expect(connection.distance).toBeGreaterThanOrEqual(0);
-            expect(connection.fuel).toBeGreaterThanOrEqual(0);
         }
     }
+});
+
+test("each car connection has its fuel usage, and no other connection has one", () => {
+    const keys = (connections: Record<string, Record<string, unknown> | undefined>) =>
+        Object.entries(connections).flatMap(([origin, destinations]) =>
+            Object.keys(destinations ?? {}).map((destination) => `${origin}-${destination}`),
+        );
+    expect(keys(carFuel)).toEqual(keys(carConnections));
+    for (const fuel of Object.values(carFuel).flatMap((destinations) => Object.values(destinations ?? {}))) {
+        expect(fuel).toBeGreaterThanOrEqual(0);
+    }
+});
+
+test("each terminal has its details, and no other location has them", () => {
+    expect(Object.keys(terminalDetails)).toEqual(Object.keys(terminals));
 });
 
 test("ferry connections connect two different terminals", () => {
