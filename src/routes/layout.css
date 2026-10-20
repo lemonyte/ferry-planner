@@ -23,6 +23,25 @@
     --color-sea-950: #001e29;
 }
 
+/* Home screen app on iOS, where the system blurs the top of the page under the status bar. */
+@custom-variant ios-app {
+    @media (display-mode: standalone) {
+        @supports (-webkit-touch-callout: none) {
+            @slot;
+        }
+    }
+}
+
+/* The status bar of the iOS home screen app shows this colour. The page itself is `bg-paper`. */
+body {
+    background-color: var(--color-sea-900);
+}
+
+/* Side padding of the page, wider beside the notch of a phone in landscape. */
+@utility safe-x {
+    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+}
+
 /* Edge shaped like the waves of the icon, in the current background colour. Place it below the element that it ends. */
 @utility wave {
     height: 0.5rem;
@@ -103,9 +122,11 @@
     @apply rounded-full px-2 py-0.5 text-xs font-semibold;
 }
 
-/* Dot of a step on the line down the left of a list of steps. */
+/* Dot of a step on the line down the left of a list of steps. The dot is a background color, which browsers leave
+   out when printing unless `print-color-adjust` is `exact`. */
 @utility step-dot {
     @apply absolute top-2 left-[-1.4rem] size-2.5 rounded-full ring-2 ring-white;
+    print-color-adjust: exact;
 }
 
 /* Page title and date, side by side if both fit. */
