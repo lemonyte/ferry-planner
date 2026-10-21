@@ -34,6 +34,7 @@
         "oxfmt": "^0.72.0",
         "oxlint": "^1.89.0",
         "oxlint-tsgolint": "^7.0.2004",
+        "super-sitemap": "^2.0.6",
         "svelte": "^5.57.2",
         "svelte-check": "^4.7.7",
         "tailwindcss": "^4.3.3",
