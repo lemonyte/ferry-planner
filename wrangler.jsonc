@@ -5,7 +5,7 @@
     "main": ".svelte-kit/cloudflare/_worker.js",
     "compatibility_date": "2026-10-07",
     "compatibility_flags": ["nodejs_als"],
-    "routes": [{ "pattern": "beta.ferryplanner.ca", "custom_domain": true }],
+    "routes": [{ "pattern": "ferryplanner.ca", "custom_domain": true }],
     "workers_dev": false,
     "preview_urls": false,
     "assets": {
