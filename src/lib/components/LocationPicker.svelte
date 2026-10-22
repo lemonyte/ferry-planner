@@ -3,7 +3,7 @@
     import { flushSync } from "svelte";
 
     import { filterPlaces, placeName } from "#lib/locations.ts";
-    import { cities, terminals } from "#lib/planner/data/locations.ts";
+    import { cities, locations, terminals } from "#lib/planner/data/locations.ts";
 
     interface Props {
         /** Form field name for the ID of the selected place. */
@@ -19,6 +19,7 @@
     let open = $state(false);
     let typed = $state("");
     let list = $state<HTMLElement | null>(null);
+    let input = $state<HTMLInputElement | null>(null);
     const groups = $derived(
         [
             { heading: "Cities and towns", places: filterPlaces(cities, typed) },
@@ -36,6 +37,12 @@
     inputValue={placeName(value)}
     onOpenChangeComplete={(open) => {
         if (!open) {
+            // Tab closes the list without selecting, so select the place whose name is typed in full.
+            const text = input?.value.trim().toLowerCase();
+            const match = Object.values(locations).find((place) => place.name.toLowerCase() === text);
+            if (match) {
+                value = match.id;
+            }
             typed = "";
         }
     }}
@@ -44,6 +51,7 @@
         <label for={id} class="field-label">{label}</label>
         <Combobox.Input
             {id}
+            bind:ref={input}
             class="field pr-16 placeholder:text-stone-400 sm:pr-3"
             placeholder="{label}: city or terminal"
             defaultValue={placeName(value)}
