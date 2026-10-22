@@ -28,7 +28,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Run hooks
-        uses: j178/prek-action@v3.0.0
+        uses: j178/prek-action@v3.0.2
 
   test:
     runs-on: ubuntu-latest
