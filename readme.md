@@ -2,6 +2,8 @@
 
 This website is a tool that calculates possible routes between places with [BC Ferries](https://bcferries.com) sailings.
 
+<img width="767" height="351" alt="Screenshot" src="https://github.com/user-attachments/assets/26fcbaaf-b25f-4091-9332-dccab11950c2" />
+
 ## How it works
 
 The site is a [SvelteKit](https://svelte.dev/docs/kit) app that works in the browser:
