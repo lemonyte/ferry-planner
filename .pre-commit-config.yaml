@@ -2,21 +2,19 @@ repos:
   - repo: builtin
     hooks:
       - id: check-added-large-files
+        # car-connections.ts is about 600 KB.
+        args: [--maxkb=1024]
       - id: check-case-conflict
       - id: check-json
-      - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.17
+  - repo: local
     hooks:
-      - id: ruff-check
-      - id: ruff-format
-
-  - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.49
-    hooks:
-      - id: ty
+      - id: check
+        name: check
+        entry: bun run check
+        language: system
+        pass_filenames: false

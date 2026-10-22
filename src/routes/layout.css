@@ -1,0 +1,153 @@
+@import "tailwindcss";
+@import "@fontsource/fira-sans-condensed/latin-600.css";
+
+@theme {
+    /* Used for the name of the site, headings, and trip durations. */
+    --font-display: "Fira Sans Condensed", ui-sans-serif, system-ui, sans-serif;
+
+    /* Page background. */
+    --color-paper: #fcfaf6;
+
+    /* Brand colour. `sea-700` is the background of the icons in `static/`, and `sea-900` is the `theme-color`. */
+    --color-sea-50: #eef9fb;
+    --color-sea-100: #daf2f5;
+    --color-sea-200: #b8e4ea;
+    --color-sea-300: #8aced9;
+    --color-sea-400: #51aebd;
+    --color-sea-500: #268fa2;
+    --color-sea-600: #0b758a;
+    --color-sea-700: #005c70;
+    --color-sea-800: #044758;
+    --color-sea-900: #013342;
+    --color-sea-950: #001e29;
+}
+
+/* Home screen app on iOS, where the system blurs the top of the page under the status bar. */
+@custom-variant ios-app {
+    @media (display-mode: standalone) {
+        @supports (-webkit-touch-callout: none) {
+            @slot;
+        }
+    }
+}
+
+/* The status bar of the iOS home screen app shows this colour. The page itself is `bg-paper`. */
+body {
+    background-color: var(--color-sea-900);
+}
+
+/* Side padding of the page, wider beside the notch of a phone in landscape. */
+@utility safe-x {
+    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+}
+
+/* Edge shaped like the waves of the icon, in the current background colour. Place it below the element that it ends. */
+@utility wave {
+    height: 0.5rem;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 2' preserveAspectRatio='none'%3E%3Cpath d='M0 1c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1V-1H0z'/%3E%3C/svg%3E")
+        repeat-x left top / 2.5rem 100%;
+}
+
+/* Page and section headings. */
+@utility heading {
+    @apply font-display font-semibold;
+}
+
+@utility card {
+    @apply rounded-xl border border-stone-200 bg-white;
+}
+
+/* On a phone, a card of trips spans the screen width so that the bars are as wide as possible. */
+@utility card-bleed {
+    @apply -mx-4 border-y border-stone-200 bg-white sm:mx-0 sm:rounded-xl sm:border-x;
+}
+
+@utility alert {
+    @apply rounded-xl border border-amber-300 bg-amber-50 p-4;
+}
+
+/* Base for buttons and for links styled as buttons. Combine with `btn-primary` or `btn-secondary`. */
+@utility btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4;
+}
+
+@utility btn-primary {
+    @apply bg-sea-700 font-semibold text-white hover:bg-sea-800;
+}
+
+@utility btn-secondary {
+    @apply border border-stone-300 bg-white font-medium hover:bg-stone-100;
+}
+
+/* Round icon-only button. */
+@utility btn-icon {
+    @apply flex size-11 items-center justify-center rounded-full hover:bg-stone-100;
+}
+
+/* Button label that is visually hidden if the button is too narrow for both its icon and the label.
+   The button must be a container. */
+@utility label-if-fits {
+    @apply sr-only @[5rem]:not-sr-only;
+}
+
+/* Sort or group option. Highlighted if `aria-current` or `aria-checked` is `true`. */
+@utility choice {
+    @apply flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-medium text-stone-700;
+
+    &:hover {
+        @apply bg-stone-100;
+    }
+
+    &[aria-current="true"],
+    &[aria-checked="true"] {
+        @apply bg-sea-700 text-white;
+    }
+}
+
+@utility field {
+    @apply h-12 w-full rounded-lg border border-stone-300 bg-white px-3 text-base;
+}
+
+/* On a phone, field labels are visually hidden. */
+@utility field-label {
+    @apply sr-only text-sm font-medium text-stone-700 sm:not-sr-only sm:mb-1 sm:block;
+}
+
+@utility link {
+    @apply inline-flex min-h-8 items-center text-sea-800 underline;
+}
+
+@utility badge {
+    @apply rounded-full px-2 py-0.5 text-xs font-semibold;
+}
+
+/* Dot of a step on the line down the left of a list of steps. The dot is a background color, which browsers leave
+   out when printing unless `print-color-adjust` is `exact`. */
+@utility step-dot {
+    @apply absolute top-2 left-[-1.4rem] size-2.5 rounded-full ring-2 ring-white;
+    print-color-adjust: exact;
+}
+
+/* Page title and date, side by side if both fit. */
+@utility title-row {
+    @apply flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1;
+}
+
+/* The prerendered home page is also the HTML of a search. `src/app.html` sets `data-searched` on a search,
+   so that the introduction is not shown until the trips replace it. */
+html[data-searched] .intro {
+    display: none;
+}
+
+/* Prevent the page from scrolling behind the open options dialog. */
+html:has(dialog[open]) {
+    overflow: hidden;
+}
+
+/* Safari on iOS centers a date value and sizes it to its content unless styled.
+   This left-aligns the value, and the padding of the field centers it vertically. */
+input[type="date"]::-webkit-date-and-time-value {
+    min-height: 1.5em;
+    margin: 0;
+    text-align: left;
+}

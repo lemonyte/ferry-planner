@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en-CA">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <!-- The status bar of the iOS home screen app shows the `body` background, which is the header colour. -->
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="text-scale" content="scale" />
+        <meta name="theme-color" content="#013342" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta property="og:site_name" content="Ferry Planner" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://ferryplanner.ca/og.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Ferry Planner: plan a trip by ferry in British Columbia" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <script>
+            // The home page is prerendered without a search. See `html[data-searched]` in `src/routes/layout.css`.
+            if (location.pathname === "/" && location.search.includes("from=")) {
+                document.documentElement.dataset.searched = "";
+            }
+        </script>
+        <script src="/a/script.js" data-site-id="b623bd73f80c" defer></script>
+        %sveltekit.head%
+    </head>
+    <body data-sveltekit-preload-data="tap">
+        <div style="display: contents">%sveltekit.body%</div>
+    </body>
+</html>

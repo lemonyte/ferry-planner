@@ -2,28 +2,33 @@
 
 This website is a tool that calculates possible routes between places with [BC Ferries](https://bcferries.com) sailings.
 
-## Requirements
+## How it works
 
-- [Python 3.11](https://www.python.org/downloads/) or higher
+The site is a [SvelteKit](https://svelte.dev/docs/kit) app that works in the browser:
+
+- The browser downloads the BC Ferries [GTFS](https://gtfs.org) feed, reads it, and keeps it in local storage.
+- Routes are planned in the browser from that feed and the locations and connections in [`src/lib/planner/data/`](src/lib/planner/data).
+- A service worker keeps the site itself, so it opens without a connection, and it can be installed as an app. Trips can be found offline once the feed has been downloaded.
+
+The app is served by a [Cloudflare Worker](https://developers.cloudflare.com/workers/).
 
 ## Development
 
-To develop this project, install the required packages and run the server with the following commands:
+You need [Bun](https://bun.sh), and [prek](https://prek.j178.dev) to run the checks before each commit (`prek install`).
 
 ```bash
-pip install -e .
-uvicorn ferry_planner.server:app --reload
+bun install
+bun run dev      # the website at http://localhost:5173
+bun run test
+bun run check    # check types, lint, and formatting
+bun run build
+bun run preview  # the built site as Cloudflare serves it, at http://localhost:4173
+bun run deploy
 ```
 
-### Building CSS output
+The service worker only keeps files in the built site, so try the site offline with `bun run preview`.
 
-You need to build the CSS file with [Tailwind](https://tailwindcss.com/docs/installation/tailwind-cli) before running the server for the first time:
-
-```bash
-npx @tailwindcss/cli -i ./src/ferry_planner/static/style-in.css -o ./src/ferry_planner/static/style-out.css
-```
-
-Navigate to <http://localhost:8000> to preview the website.
+The expected results in [`test/fixtures/`](test/fixtures) are written by the planner itself. After a change that is meant to change them, write them again with `bun test/export-fixtures.ts` and look over what has changed.
 
 ## Disclaimer
 

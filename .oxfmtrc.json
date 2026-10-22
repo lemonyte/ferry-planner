@@ -1,0 +1,16 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "ignorePatterns": ["**/worker-configuration.d.ts"],
+    "tabWidth": 4,
+    "printWidth": 120,
+    "sortImports": true,
+    "svelte": true,
+    "overrides": [
+        {
+            "files": ["*.yaml", "*.yml", "*.md"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
+}

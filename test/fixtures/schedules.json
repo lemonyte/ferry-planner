@@ -1,0 +1,88 @@
+[
+    {
+        "request": {
+            "origin": "HSB",
+            "destination": "NAN",
+            "date": "2026-10-08"
+        },
+        "response": {
+            "sailings": [
+                {
+                    "departure": 1791440100000,
+                    "arrival": 1791446100000,
+                    "stops": []
+                },
+                {
+                    "departure": 1791448500000,
+                    "arrival": 1791454500000,
+                    "stops": []
+                },
+                {
+                    "departure": 1791457500000,
+                    "arrival": 1791463500000,
+                    "stops": []
+                },
+                {
+                    "departure": 1791465900000,
+                    "arrival": 1791471900000,
+                    "stops": []
+                },
+                {
+                    "departure": 1791483600000,
+                    "arrival": 1791489600000,
+                    "stops": []
+                },
+                {
+                    "departure": 1791491400000,
+                    "arrival": 1791497400000,
+                    "stops": []
+                },
+                {
+                    "departure": 1791499200000,
+                    "arrival": 1791505200000,
+                    "stops": []
+                }
+            ],
+            "url": "https://www.bcferries.com/routes-fares/schedules/daily/HSB-NAN?&scheduleDate=10/08/2026"
+        }
+    },
+    {
+        "request": {
+            "origin": "TSA",
+            "destination": "PST",
+            "date": "2026-10-08"
+        },
+        "response": {
+            "sailings": [
+                {
+                    "departure": 1791487800000,
+                    "arrival": 1791496620000,
+                    "stops": ["PSB", "PVB"]
+                }
+            ],
+            "url": "https://www.bcferries.com/routes-fares/schedules/daily/TSA-PST?&scheduleDate=10/08/2026"
+        }
+    },
+    {
+        "request": {
+            "origin": "PPR",
+            "destination": "PPH",
+            "date": "2026-10-08"
+        },
+        "response": {
+            "sailings": [],
+            "url": "https://www.bcferries.com/routes-fares/schedules/daily/PPR-PPH?&scheduleDate=10/08/2026"
+        }
+    },
+    {
+        "request": {
+            "origin": "HSB",
+            "destination": "NAN",
+            "date": "2027-06-01"
+        },
+        "response": {
+            "sailings": [],
+            "url": "https://www.bcferries.com/routes-fares/schedules/daily/HSB-NAN?&scheduleDate=06/01/2027"
+        }
+    }
+]
