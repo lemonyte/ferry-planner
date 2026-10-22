@@ -1,13 +1,13 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "ferry-planner-web",
+    "name": "ferry-planner",
     "account_id": "ae45a1d061b34cb20834281764537327",
     "main": ".svelte-kit/cloudflare/_worker.js",
     "compatibility_date": "2026-10-07",
     "compatibility_flags": ["nodejs_als"],
     "routes": [{ "pattern": "ferryplanner.ca", "custom_domain": true }],
     "workers_dev": false,
-    "preview_urls": false,
+    "preview_urls": true,
     "assets": {
         "binding": "ASSETS",
         "directory": ".svelte-kit/cloudflare",
