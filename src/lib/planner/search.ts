@@ -17,13 +17,12 @@ const isAsGood = (a: Itinerary, b: Itinerary): boolean => {
  * Check if an itinerary is redundant because another on the same route is as good or better.
  *
  * Itineraries on a route use the same ferries and drives, so one that departs earlier without arriving
- * sooner is the same journey with a longer wait.
+ * sooner is the same journey with a longer wait. `route` holds the itineraries on the route of `itinerary`.
  */
-const isNoUse = (itinerary: Itinerary, index: number, itineraries: Itinerary[]): boolean => {
-    return itineraries.some(
+const isNoUse = (itinerary: Itinerary, index: number, route: Itinerary[]): boolean => {
+    return route.some(
         (other, otherIndex) =>
             otherIndex !== index &&
-            other.route === itinerary.route &&
             isAsGood(other, itinerary) &&
             // Of two equally good itineraries, keep the first.
             (!isAsGood(itinerary, other) || otherIndex < index),
@@ -37,11 +36,16 @@ const isNoUse = (itinerary: Itinerary, index: number, itineraries: Itinerary[]):
  */
 export const selectItineraries = (itineraries: Itinerary[], now: string, options: SelectOptions): Selection => {
     const isLeftOut = (itinerary: Itinerary): boolean => (options.underway ? itinerary.arrive : itinerary.depart) < now;
-    const leftOut = itineraries.filter(isLeftOut);
-    const ranked = itineraries
-        .filter((itinerary) => !isLeftOut(itinerary))
-        .filter((itinerary, index, candidates) => !isNoUse(itinerary, index, candidates))
-        .sort(compareItineraries[options.sort]);
+    const groups = Map.groupBy(itineraries, isLeftOut);
+    const leftOut = groups.get(true) ?? [];
+    const candidates = groups.get(false) ?? [];
+    // Compared only within each route, and kept in their original order so that ties sort as before.
+    const kept = new Set(
+        [...Map.groupBy(candidates, (itinerary) => itinerary.route).values()].flatMap((route) =>
+            route.filter((itinerary, index) => !isNoUse(itinerary, index, route)),
+        ),
+    );
+    const ranked = candidates.filter((itinerary) => kept.has(itinerary)).sort(compareItineraries[options.sort]);
     const shown = options.all ? ranked : ranked.slice(0, SHOWN);
     return {
         itineraries: shown,

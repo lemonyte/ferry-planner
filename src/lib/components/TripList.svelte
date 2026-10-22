@@ -26,7 +26,7 @@
     /** Number of trips shown per route before the rest are expanded. */
     const TRIPS_PER_ROUTE_GROUP = 3;
     // Sort and filter links replace the history entry and keep the scroll position.
-    const STAY = { "data-sveltekit-replacestate": true, "data-sveltekit-reset": "false" } as const;
+    const STAY_LINK_OPTIONS = { "data-sveltekit-replacestate": true, "data-sveltekit-reset": "false" } as const;
     const SORT_LABELS: Record<Query["sort"], string> = {
         duration: "Duration",
         departure: "Departure",
@@ -88,13 +88,15 @@
     {:else if query.underway}
         <p class="mt-3 text-sm text-stone-600">
             Trips that have left but not arrived yet are shown.
-            <a class="link font-medium" href={linkTo({ underway: false })} {...STAY}>Hide them</a>
+            <a class="link font-medium" href={linkTo({ underway: false })} {...STAY_LINK_OPTIONS}>Hide them</a>
         </p>
     {:else if result.departed > 0}
         <p class="mt-3 text-sm text-stone-600">
             Trips that have already left today are not shown.
             {#if result.underway > 0}
-                <a class="link font-medium" href={linkTo({ underway: true })} {...STAY}>Show those still under way</a>
+                <a class="link font-medium" href={linkTo({ underway: true })} {...STAY_LINK_OPTIONS}
+                    >Show those still under way</a
+                >
             {/if}
         </p>
     {/if}
@@ -104,7 +106,7 @@
             <span class="text-sm whitespace-nowrap text-stone-600" aria-hidden="true">Sort by</span>
             <div class="flex rounded-lg border border-stone-300 bg-white p-0.5">
                 {#each SORTS as sort (sort)}
-                    <a class="choice" href={linkTo({ sort })} aria-current={sort === query.sort} {...STAY}>
+                    <a class="choice" href={linkTo({ sort })} aria-current={sort === query.sort} {...STAY_LINK_OPTIONS}>
                         {SORT_LABELS[sort]}
                     </a>
                 {/each}

@@ -1,5 +1,6 @@
 import type { Query } from "#lib/query.ts";
 
+import { cached } from "./cache.ts";
 import { carConnections } from "./data/car-connections.ts";
 import { ferryConnections } from "./data/ferry-connections.ts";
 import {
@@ -108,8 +109,15 @@ const getConnectionsFrom = (origin: LocationId): [LocationId, Connection["type"]
     ];
 };
 
+/** Routes by origin and destination. They depend only on the connection data, which does not change. */
+const foundRoutes = new Map<string, readonly (readonly LocationId[])[]>();
+
 /** Find the routes between two locations, each as a list of location IDs. */
-export const findRoutes = (origin: LocationId, destination: LocationId): LocationId[][] => {
+export const findRoutes = (origin: LocationId, destination: LocationId): readonly (readonly LocationId[])[] => {
+    return cached(foundRoutes, `${origin}-${destination}`, () => searchRoutes(origin, destination));
+};
+
+const searchRoutes = (origin: LocationId, destination: LocationId): LocationId[][] => {
     const routes: LocationId[][] = [];
     const route: LocationId[] = [];
     // Land groups already left by ferry on this route. A route does not return to them.
@@ -164,25 +172,13 @@ export const makeItineraries = (
     /** Current local time. */
     now: number,
 ): Itinerary[] => {
-    const itineraries: Itinerary[] = [];
-    for (const route of findRoutes(origin, destination)) {
-        addItineraries({
-            itineraries,
-            route,
-            index: 1,
-            segments: [],
-            startTime: startOfDay(options.date),
-            options,
-            timetable,
-            now,
-        });
-    }
-    return itineraries;
+    return findRoutes(origin, destination).flatMap((route) =>
+        planRoute({ route, index: 1, segments: [], startTime: startOfDay(options.date), options, timetable, now }),
+    );
 };
 
 interface PlanState {
-    itineraries: Itinerary[];
-    route: LocationId[];
+    route: readonly LocationId[];
     /** Index in the route of the destination of the next segment. */
     index: number;
     /** Segments of the route so far. */
@@ -193,24 +189,21 @@ interface PlanState {
     now: number;
 }
 
-/** Add itineraries for the rest of a route. Returns whether any were added. */
-const addItineraries = (state: PlanState): boolean => {
+/** Make the itineraries for the rest of a route. */
+const planRoute = (state: PlanState): Itinerary[] => {
     const { route, index, segments, startTime, options } = state;
     const [origin, destination] = [route[index - 1], route[index]];
     if (!origin || !destination) {
         // A route from a location to itself has no segments.
-        if (segments.length > 0) {
-            state.itineraries.push(makeItinerary(segments, state.now));
-        }
-        return segments.length > 0;
+        return segments.length > 0 ? [makeItinerary(segments, state.now)] : [];
     }
     const connection = getConnection(origin, destination);
     if (connection?.type === "FERRY") {
-        return addSailings(state, connection);
+        return planSailings(state, connection);
     }
     // Skip long drives.
     if (!connection || (!options.long && connection.duration > DRIVING_DURATION_LIMIT)) {
-        return false;
+        return [];
     }
     const arriveTime = startTime + connection.duration * 1000;
     const drive: TimedStep = {
@@ -220,7 +213,7 @@ const addItineraries = (state: PlanState): boolean => {
         end: arriveTime,
         description: `Drive ${Math.round(connection.distance)} km to ${connection.destination.name}`,
     };
-    return addItineraries({
+    return planRoute({
         ...state,
         index: index + 1,
         segments: [...segments, { connection, steps: [drive] }],
@@ -252,18 +245,18 @@ const getDeadline = (
     return ["departure", 0];
 };
 
-/** Add itineraries for the rest of a route, for each sailing that can be caught. Returns whether any were added. */
-const addSailings = (state: PlanState, connection: Connection & { type: "FERRY" }): boolean => {
+/** Make the itineraries for the rest of a route, for each sailing that can be caught. */
+const planSailings = (state: PlanState, connection: Connection & { type: "FERRY" }): Itinerary[] => {
     const { index, segments, startTime, options } = state;
     const { origin, destination } = connection;
     const day = startOfDay(startTime);
     // Skip routes that continue on another day, unless overnight journeys are included.
     if (!options.long && day !== startOfDay(segments[0]?.steps[0]?.start ?? startTime)) {
-        return false;
+        return [];
     }
     const schedule = getSchedule(state.timetable, origin.id as TerminalId, destination.id as TerminalId, day);
     const [deadlineName, deadlineMinutes] = getDeadline(origin, connection.bookable, options.checkin);
-    let found = false;
+    const found: Itinerary[][] = [];
     for (const sailing of schedule.sailings) {
         // Skip routes that take more than one day.
         if (!options.long && sailing.arrival - startTime > MS_PER_DAY) {
@@ -294,17 +287,18 @@ const addSailings = (state: PlanState, connection: Connection & { type: "FERRY" 
             });
         }
         const rest = { ...state, index: index + 1, segments: [...segments, { connection, steps }] };
+        const itineraries = planRoute({ ...rest, startTime: sailing.arrival });
         // A later sailing that makes fewer stops can arrive sooner and still connect.
-        if (!addItineraries({ ...rest, startTime: sailing.arrival })) {
+        if (itineraries.length === 0) {
             continue;
         }
-        found = true;
+        found.push(itineraries);
         // After the first ferry of a route, take only the first sailing that can be caught.
         if (!options.long && segments.some((segment) => segment.connection.type === "FERRY")) {
             break;
         }
     }
-    return found;
+    return found.flat();
 };
 
 const mapParameter = (location: Location): string => {
@@ -359,21 +353,18 @@ const makeItinerary = (routeSegments: readonly Segment[], now: number): Itinerar
         description: `Arrive at ${last.connection.destination.name}`,
     });
 
-    let drivingDistance = 0;
+    const drivingDistance = segments.reduce(
+        (total, { connection }) => total + (connection.type === "CAR" ? connection.distance : 0),
+        0,
+    );
     // The ID is derived from the route and its sailings only. It excludes the search time, at which a drive
     // with no ferry starts, so that the same itinerary keeps its ID in later searches.
-    const parts: string[] = [];
-    for (const { connection, steps } of segments) {
-        if (connection.type === "CAR") {
-            drivingDistance += connection.distance;
-        }
-        parts.push(connection.destination.id);
-        for (const step of steps) {
-            if (step.kind === "FERRY") {
-                parts.push(formatLocal(step.start), formatLocal(step.end));
-            }
-        }
-    }
+    const parts = segments.flatMap(({ connection, steps }) => [
+        connection.destination.id,
+        ...steps
+            .filter((step) => step.kind === "FERRY")
+            .flatMap((step) => [formatLocal(step.start), formatLocal(step.end)]),
+    ]);
     const waypoints = segments.slice(1).map((segment) => mapParameter(segment.connection.origin));
     return {
         id: hashText(parts.join(" ")),

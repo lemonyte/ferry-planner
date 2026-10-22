@@ -5,7 +5,6 @@
     import { install, promptInstall } from "#lib/install.svelte.ts";
 </script>
 
-<!-- Side by side on wider screens, in equal columns whether one or both are shown. -->
 <div class="mt-6 grid gap-3 sm:auto-cols-fr sm:grid-flow-col print:hidden">
     <p class="card flex gap-3 p-4 text-sm text-stone-700">
         <Heart class="mt-1.5 size-5 shrink-0 text-amber-500" />

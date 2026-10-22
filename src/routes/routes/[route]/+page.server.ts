@@ -68,22 +68,20 @@ export const load = ({ params }) => {
         from: { id: from, name: placeName(from) },
         to: { id: to, name: placeName(to) },
         /** Each way as its drives and sailings in order. */
-        ways: route.ways.map((way) => {
-            const steps: (Drive | Sailing)[] = [];
-            let place: LocationId = from;
-            for (const [depart, arrive] of way) {
-                steps.push(...getDrives(place, depart), {
+        ways: route.ways.map((way): (Drive | Sailing)[] => [
+            // Each sailing is reached by a drive from the previous sailing, or from the start.
+            ...way.flatMap(([depart, arrive], index): (Drive | Sailing)[] => [
+                ...getDrives(way[index - 1]?.[1] ?? from, depart),
+                {
                     kind: "FERRY",
                     depart: getTerminal(depart),
                     arrive: getTerminal(arrive),
                     reservationClose: ferryConnections[depart]?.[arrive]?.bookable
                         ? terminals[depart].res_close
                         : undefined,
-                });
-                place = arrive;
-            }
-            steps.push(...getDrives(place, to));
-            return steps;
-        }),
+                },
+            ]),
+            ...getDrives(way.at(-1)?.[1] ?? from, to),
+        ]),
     };
 };

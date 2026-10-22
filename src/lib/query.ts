@@ -57,27 +57,17 @@ export const readQuery = (url: URL): Query => {
 
 /** Serialize a search as a URL query string, omitting defaults. */
 export const toSearch = (query: Query): string => {
-    const params = new URLSearchParams({ from: query.from, to: query.to, date: query.date });
-    if (query.checkin !== "reservation") {
-        params.set("checkin", query.checkin);
-    }
-    if (query.early !== DEFAULT_EARLY) {
-        params.set("early", String(query.early));
-    }
-    if (query.long) {
-        params.set("long", "1");
-    }
-    if (query.all) {
-        params.set("all", "1");
-    }
-    if (query.sort !== "duration") {
-        params.set("sort", query.sort);
-    }
-    if (query.group) {
-        params.set("group", "route");
-    }
-    if (query.underway) {
-        params.set("underway", "1");
-    }
+    const params = new URLSearchParams({
+        from: query.from,
+        to: query.to,
+        date: query.date,
+        ...(query.checkin !== "reservation" && { checkin: query.checkin }),
+        ...(query.early !== DEFAULT_EARLY && { early: String(query.early) }),
+        ...(query.long && { long: "1" }),
+        ...(query.all && { all: "1" }),
+        ...(query.sort !== "duration" && { sort: query.sort }),
+        ...(query.group && { group: "route" }),
+        ...(query.underway && { underway: "1" }),
+    });
     return `?${params}`;
 };

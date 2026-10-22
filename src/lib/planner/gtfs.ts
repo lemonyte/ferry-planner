@@ -1,5 +1,6 @@
 import { unzipSync } from "fflate";
 
+import { cached } from "./cache.ts";
 import { MS_PER_DAY } from "./time.ts";
 
 /**
@@ -82,16 +83,19 @@ interface Call {
  */
 export const parseFeed = (data: Uint8Array, locations: Record<string, [number, number]>): Feed => {
     const archive = unzipSync(data, { filter: (file) => FILES.includes(file.name) });
-    const stopLocations = new Map<string, string | undefined>();
-    for (const row of readTable(archive, "stops.txt")) {
-        // Stops that are not boarding points, such as entrances, can lack coordinates.
-        if (row.stop_lat && row.stop_lon) {
-            stopLocations.set(
-                required(row, "stop_id"),
-                nearestLocation(parseNumber(row.stop_lat), parseNumber(row.stop_lon), locations),
-            );
-        }
-    }
+    const stopLocations = new Map(
+        readTable(archive, "stops.txt").flatMap((row): [string, string | undefined][] =>
+            // Stops that are not boarding points, such as entrances, can lack coordinates.
+            row.stop_lat && row.stop_lon
+                ? [
+                      [
+                          required(row, "stop_id"),
+                          nearestLocation(parseNumber(row.stop_lat), parseNumber(row.stop_lon), locations),
+                      ],
+                  ]
+                : [],
+        ),
+    );
     const feedInfo = readTable(archive, "feed_info.txt", true)[0];
     const trips = new Map(
         readTable(archive, "trips.txt").map((row) => [
@@ -99,14 +103,16 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
             { service: required(row, "service_id"), route: required(row, "route_id") },
         ]),
     );
-    const calendar: Feed["calendar"] = {};
-    for (const row of readTable(archive, "calendar.txt", true)) {
-        calendar[required(row, "service_id")] = {
-            weekdays: WEEKDAYS.map((weekday) => required(row, weekday) === "1"),
-            startDate: parseDate(row.start_date),
-            endDate: parseDate(row.end_date),
-        };
-    }
+    const calendar: Feed["calendar"] = Object.fromEntries(
+        readTable(archive, "calendar.txt", true).map((row) => [
+            required(row, "service_id"),
+            {
+                weekdays: WEEKDAYS.map((weekday) => required(row, weekday) === "1"),
+                startDate: parseDate(row.start_date),
+                endDate: parseDate(row.end_date),
+            },
+        ]),
+    );
     const calendarDates: Feed["calendarDates"] = {};
     for (const row of readTable(archive, "calendar_dates.txt", true)) {
         const service = required(row, "service_id");
@@ -134,32 +140,33 @@ export const parseFeed = (data: Uint8Array, locations: Record<string, [number, n
             });
         }
     }
-    const legs: Leg[] = [];
-    for (const [trip, calls] of tripCalls) {
+    const legs = [...tripCalls].flatMap(([trip, calls]): Leg[] => {
         const { service, route } = trips.get(trip) ?? {};
         if (service === undefined || route === undefined) {
             throw new Error(`trip ${trip} has stop times but no service`);
         }
-        calls.sort((a, b) => a.sequence - b.sequence);
-        for (const [index, call] of calls.entries()) {
-            const nextCall = calls[index + 1];
-            if (nextCall && call.location !== nextCall.location) {
-                legs.push({
-                    departure: call.departure,
-                    arrival: nextCall.arrival,
-                    origin: call.location,
-                    destination: nextCall.location,
-                    trip,
-                    route,
-                    canBoard: call.canBoard,
-                    canAlight: nextCall.canAlight,
-                    // The BC Ferries feed lists dates added to or removed from a single trip under a service
-                    // named `{service}{trip}`, which takes priority over the service of the trip.
-                    services: [service + trip, service],
-                });
-            }
-        }
-    }
+        const sorted = calls.toSorted((a, b) => a.sequence - b.sequence);
+        return sorted.flatMap((call, index) => {
+            const nextCall = sorted[index + 1];
+            return nextCall && call.location !== nextCall.location
+                ? [
+                      {
+                          departure: call.departure,
+                          arrival: nextCall.arrival,
+                          origin: call.location,
+                          destination: nextCall.location,
+                          trip,
+                          route,
+                          canBoard: call.canBoard,
+                          canAlight: nextCall.canAlight,
+                          // The BC Ferries feed lists dates added to or removed from a single trip under a service
+                          // named `{service}{trip}`, which takes priority over the service of the trip.
+                          services: [service + trip, service],
+                      },
+                  ]
+                : [];
+        });
+    });
     const served = new Set(legs.flatMap((leg) => [leg.origin, leg.destination]));
     return {
         startDate: feedInfo?.feed_start_date ? parseDate(feedInfo.feed_start_date) : undefined,
@@ -190,13 +197,9 @@ export class Timetable {
 
     /** Get the sailings between two locations on a date, given as the local time at the start of the day. */
     sailings(origin: string, destination: string, date: number): readonly Sailing[] {
-        const key = `${origin}-${destination}-${date}`;
-        let sailings = this.found.get(key);
-        if (!sailings) {
-            sailings = this.findSailings(origin, destination, date);
-            this.found.set(key, sailings);
-        }
-        return sailings;
+        return cached(this.found, `${origin}-${destination}-${date}`, () =>
+            this.findSailings(origin, destination, date),
+        );
     }
 
     private findSailings(origin: string, destination: string, date: number): Sailing[] {
@@ -223,18 +226,15 @@ export class Timetable {
 
     /** Get the legs that run on a service day, by origin. */
     private legsFrom(serviceDate: number): Map<string, Leg[]> {
-        let legsFrom = this.running.get(serviceDate);
-        if (!legsFrom) {
+        return cached(this.running, serviceDate, () => {
             const day = formatDate(serviceDate);
             // `getUTCDay()` counts from Sunday, and the calendar from Monday.
             const weekday = (new Date(serviceDate).getUTCDay() + 6) % 7;
-            legsFrom = Map.groupBy(
+            return Map.groupBy(
                 this.feed.legs.filter((leg) => this.runsOn(leg.services, day, weekday)),
                 (leg) => leg.origin,
             );
-            this.running.set(serviceDate, legsFrom);
-        }
-        return legsFrom;
+        });
     }
 
     /** Check if a trip runs on a date. The first of its services with an entry for the date decides. */
@@ -272,20 +272,26 @@ const parseCsv = (text: string): string[][] => {
     const records: string[][] = [];
     let record: string[] = [];
     let value = "";
-    let quoted = false;
-    for (let index = 0; index < text.length; index++) {
-        const character = text[index];
-        if (quoted) {
-            if (character !== '"') {
-                value += character;
-            } else if (text[index + 1] === '"') {
-                value += '"';
-                index++;
-            } else {
-                quoted = false;
+    // Copies each run of plain text whole, which is much faster than copying it a character at a time.
+    const special = /[",\n\r]/g;
+    let index = 0;
+    while (index < text.length) {
+        special.lastIndex = index;
+        const match = special.exec(text);
+        const end = match?.index ?? text.length;
+        value += text.slice(index, end);
+        index = end + 1;
+        const character = match?.[0];
+        if (character === '"') {
+            // Copy up to the closing quote, or to the end of an unclosed value. Two quotes in a row stand for one.
+            let close = text.indexOf('"', index);
+            while (close !== -1 && text[close + 1] === '"') {
+                value += text.slice(index, close + 1);
+                index = close + 2;
+                close = text.indexOf('"', index);
             }
-        } else if (character === '"') {
-            quoted = true;
+            value += text.slice(index, close === -1 ? text.length : close);
+            index = close === -1 ? text.length : close + 1;
         } else if (character === ",") {
             record.push(value);
             value = "";
@@ -297,9 +303,8 @@ const parseCsv = (text: string): string[][] => {
                 records.push(record);
             }
             record = [];
-        } else if (character !== "\r") {
-            value += character;
         }
+        // A `\r` outside quotes is dropped.
     }
     if (value !== "" || record.length > 0) {
         records.push([...record, value]);
@@ -445,8 +450,8 @@ const fastestPath = (firstLeg: Leg, destination: string, legsFrom: Map<string, L
     }
     const path: Leg[] = [];
     while (lastLeg) {
-        path.unshift(lastLeg);
+        path.push(lastLeg);
         lastLeg = previousLegs.get(lastLeg);
     }
-    return path;
+    return path.reverse();
 };
