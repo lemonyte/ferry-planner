@@ -40,8 +40,8 @@
     });
 </script>
 
-<!-- Every search is the same page to a search engine. -->
-<Head {title} description={DESCRIPTION} canonical="/" />
+<!-- A search lists the trips of one day, so it is kept out of search results. The route pages are indexed instead. -->
+<Head {title} description={DESCRIPTION} canonical={searched ? undefined : "/"} />
 
 <svelte:head>
     {#if !searched}
